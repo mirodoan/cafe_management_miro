@@ -1,0 +1,173 @@
+<!--
+  Trang đăng nhập cho ứng dụng Cafe Management
+  Sử dụng Thymeleaf để binding dữ liệu với Spring Boot.
+  Tích hợp các thư viện: TailwindCSS, FontAwesome, Google Fonts.
+-->
+
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Đăng nhập - Cafe Hub</title>
+
+    <!-- Font Inter: Nhúng font chữ Inter từ Google Fonts -->
+    <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+            rel="stylesheet"
+    />
+
+    <!-- Font Awesome: Thư viện icon -->
+    <link
+            crossorigin="anonymous"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+            referrerpolicy="no-referrer"
+            rel="stylesheet"
+    />
+
+    <!-- Tailwind CDN: Sử dụng Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- CSS: Nhúng file CSS cho giao diện chính và login -->
+    <link rel="stylesheet" th:href="@{/css/main.css}"/>
+    <link rel="stylesheet" th:href="@{/css/login.css}"/>
+    <!-- JS login -->
+    <script th:src="@{/js/login/login.js}"></script>
+</head>
+<body>
+<div class="login-container">
+    <!-- Bên trái: Phần thương hiệu và thông điệp marketing cho quán cafe -->
+    <div class="background-layers">
+        <div class="bg-layer-overlay"></div>
+        <div class="cafe-icons-container">
+            <div class="text-white text-center z-20 px-4 mb-4">
+                <p class="text-xl lg:text-2xl font-bold mb-2">
+                    Tăng tốc quán café của bạn!
+                </p>
+                <p class="text-lg lg:text-xl font-light">
+                    Tối ưu mọi thao tác quản lý – từ pha chế đến doanh thu.
+                </p>
+            </div>
+            <!-- Icon cafe để tăng nhận diện thương hiệu -->
+            <div class="cafe-icons top">
+                <i class="fas fa-coffee"></i>
+                <i class="fas fa-mug-hot"></i>
+                <i class="fas fa-seedling"></i>
+            </div>
+            <div class="cafe-icons bottom">
+                <i class="fas fa-utensils"></i>
+                <i class="fas fa-store-alt"></i>
+                <i class="fas fa-cash-register"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bên phải: Form đăng nhập, hiển thị logo, slogan, và xử lý đăng nhập -->
+    <div class="login-form-section">
+        <div class="logo">
+            <i class="fas fa-mug-hot"></i>
+            <h1><span>Cafe</span> Hub</h1>
+        </div>
+        <p class="slogan">Chốt đơn nhanh – Quản lý nhẹ tênh!</p>
+
+        <!-- Popup thông báo lỗi hoặc thành công khi đăng nhập từ AuthController, tự động ẩn sau 3 giây -->
+        <div
+                id="alert-popup"
+                th:if="${error != null or success != null}"
+                th:classappend="${error} ? 'bg-red-600' : 'bg-green-600'"
+                class="w-full mb-4 px-6 py-4 rounded shadow flex items-center gap-2 text-white text-base font-medium transition-opacity duration-300"
+        >
+            <i
+                    th:class="${error} ? 'fas fa-exclamation-circle' : 'fas fa-check-circle'"
+                    class="mr-2"
+            ></i>
+            <span th:text="${error != null ? error : success}"></span>
+            <button
+                    type="button"
+                    onclick="closeAlertPopup()"
+                    class="ml-4 text-lg font-bold"
+            >
+                &times;
+            </button>
+        </div>
+
+        <!-- Form đăng nhập: Binding với Spring Boot + Thymeleaf -->
+        <form
+                action="/login"
+                id="loginForm"
+                method="post"
+                th:action="@{/login}"
+                th:object="${login}"
+        >
+            <!-- CSRF token: Bảo vệ chống tấn công Cross-Site Request Forgery -->
+            <input
+                    type="hidden"
+                    th:name="${_csrf.parameterName}"
+                    th:value="${_csrf.token}"
+            />
+
+            <!-- Form nhập tên đăng nhập với validate và hiển thị lỗi nếu có -->
+            <div class="form-group">
+                <label for="tenDangNhap">
+                    <i class="fas fa-user-circle"></i> Tên đăng nhập:
+                </label>
+                <input
+                        id="tenDangNhap"
+                        name="username"
+                        type="text"
+                        placeholder="Ví dụ: nhanvien_a"
+                        required
+                        minlength="3"
+                        pattern="^(?!\s*$).{3,}$"
+                        th:field="*{username}"
+                        oninvalid="this.setCustomValidity('Tên đăng nhập phải có ít nhất 3 ký tự và không được để trống hoặc toàn dấu cách')"
+                        oninput="this.setCustomValidity('')"
+                />
+                <!-- Hiển thị lỗi validate cho trường tên đăng nhập -->
+                <p
+                        class="text-red-500 text-sm mt-1"
+                        th:if="${#fields.hasErrors('username')}"
+                        th:errors="*{username}"
+                ></p>
+            </div>
+
+            <!-- Form nhập mật khẩu với validate, hiển thị lỗi, và nút ẩn/hiện mật khẩu -->
+            <div class="form-group">
+                <label for="matKhau"><i class="fas fa-key"></i> Mật khẩu:</label>
+                <div class="password-wrapper">
+                    <input
+                            id="matKhau"
+                            name="password"
+                            placeholder="********"
+                            type="password"
+                            th:field="*{password}"
+                            required
+                            minlength="6"
+                            pattern="^(?!\s*$).{6,}$"
+                            oninvalid="this.setCustomValidity('Mật khẩu phải có ít nhất 6 ký tự và không được để trống hoặc toàn dấu cách')"
+                            oninput="this.setCustomValidity('')"
+                    />
+                    <!-- Nút ẩn/hiện mật khẩu khi người dùng bấm vào icon con mắt -->
+                    <i
+                            class="fas fa-eye password-toggle-icon"
+                            id="togglePassword"
+                    ></i>
+                    <!-- Hiển thị lỗi validate cho trường mật khẩu -->
+                    <p
+                            class="text-red-500 text-sm mt-1"
+                            th:if="${#fields.hasErrors('password')}"
+                            th:errors="*{password}"
+                    ></p>
+                </div>
+            </div>
+
+            <!-- Nút đăng nhập, gửi dữ liệu lên server -->
+            <button class="btn-login" type="submit">
+                <i class="fas fa-sign-in-alt"></i> Đăng nhập
+            </button>
+        </form>
+    </div>
+
+</div>
+</body>
+</html>

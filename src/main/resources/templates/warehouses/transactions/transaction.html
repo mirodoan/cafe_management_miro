@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout}"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Quản lý giao dịch nhập xuất</title>
+    <style>
+      /* Hover effects for buttons */
+      .hover-lift {
+        transition: transform 0.2s ease-in-out;
+      }
+
+      .hover-lift:hover {
+        transform: translateY(-2px);
+      }
+
+      /* Badge animation */
+      .badge-animate {
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      layout:fragment="content"
+      class="bg-[#fefae0] min-h-screen w-full px-6 py-8"
+    >
+      <div class="max-w-[1500px] mx-auto">
+        <div class="bg-white rounded-xl shadow-lg p-6">
+          <!-- Tiêu đề + nút thêm -->
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-3xl font-bold text-[#3e2723]">
+              Danh sách Giao Dịch Nhập Xuất
+            </h2>
+            <div class="flex gap-2">
+              <a
+                th:href="@{/warehouse/transaction/import/create}"
+                class="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg shadow transition-colors duration-200 hover-lift"
+              >
+                Thêm Đơn Nhập
+              </a>
+              <a
+                th:href="@{/warehouse/transaction/export/create}"
+                class="bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2 rounded-lg shadow transition-colors duration-200 hover-lift"
+              >
+                Thêm Đơn Xuất
+              </a>
+            </div>
+          </div>
+
+          <!-- Form tìm kiếm -->
+          <div class="mb-6">
+            <form
+              th:action="@{/warehouse/transaction}"
+              method="get"
+              class="flex gap-3"
+            >
+              <div class="flex-1 relative">
+                <input
+                  type="text"
+                  name="keyword"
+                  id="searchTransactionInput"
+                  th:value="${keyword}"
+                  placeholder="Tìm kiếm theo tên hàng hóa..."
+                  class="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                />
+                <!-- Nút X để xóa -->
+                <button
+                  type="button"
+                  id="clearTransactionBtn"
+                  class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
+                  style="display: none"
+                >
+                  ✕
+                </button>
+              </div>
+              <button
+                type="submit"
+                class="bg-green-600 hover:bg-green-700 text-white font-medium px-6 py-2 rounded-lg shadow transition-colors duration-200"
+              >
+                🔍 Tìm kiếm
+              </button>
+            </form>
+
+            <!-- Breadcrumb khi đang tìm kiếm -->
+            <div th:if="${keyword != null and !keyword.isEmpty()}" class="mt-2">
+              <span class="text-sm text-gray-600">
+                Kết quả tìm kiếm cho: "<span
+                  th:text="${keyword}"
+                  class="font-semibold text-blue-600"
+                ></span
+                >" •
+                <a
+                  th:href="@{/warehouse/transaction}"
+                  class="text-blue-600 hover:text-blue-800 underline"
+                  >Xem tất cả giao dịch</a
+                >
+              </span>
+            </div>
+          </div>
+
+          <!-- Bảng danh sách giao dịch -->
+          <div
+            class="overflow-x-auto border border-gray-300 rounded-xl shadow bg-white"
+          >
+            <table class="w-full text-sm text-gray-800">
+              <thead
+                class="bg-[#FFF8E1] text-xs font-semibold text-gray-700 uppercase"
+              >
+                <tr>
+                  <th class="px-4 py-3 text-left min-w-[150px]">Tên</th>
+                  <th class="px-4 py-3 text-left min-w-[80px]">Loại</th>
+                  <th class="px-4 py-3 text-left min-w-[100px]">Ngày</th>
+                  <th class="px-4 py-3 text-left min-w-[80px]">Số lượng</th>
+                  <th class="px-4 py-3 text-left min-w-[60px]">Đơn vị</th>
+                  <th class="px-4 py-3 text-right min-w-[120px]">Đơn giá</th>
+                  <th class="px-4 py-3 text-right min-w-[120px]">Thành tiền</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200">
+                <!-- Dữ liệu động từ backend -->
+                <tr
+                  th:each="transaction, stat : ${transactions.transactions}"
+                  class="hover:bg-[#f9f9f9] transition"
+                >
+                  <td
+                    class="px-4 py-3 font-medium"
+                    th:text="${transaction.productName}"
+                  ></td>
+                  <td class="px-4 py-3">
+                    <span
+                      th:if="${transaction.type == 'IMPORT'}"
+                      class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 whitespace-nowrap"
+                    >
+                      Nhập
+                    </span>
+                    <span
+                      th:if="${transaction.type == 'EXPORT'}"
+                      class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800 whitespace-nowrap"
+                    >
+                      Xuất
+                    </span>
+                  </td>
+                  <td
+                    class="px-4 py-3 whitespace-nowrap"
+                    th:text="${#temporals.format(transaction.importDate != null ? transaction.importDate : transaction.exportDate, 'dd/MM/yyyy')}"
+                  ></td>
+                  <td class="px-4 py-3" th:text="${transaction.quantity}"></td>
+                  <td class="px-4 py-3" th:text="${transaction.unitName}"></td>
+                  <td
+                    class="px-4 py-3 text-right whitespace-nowrap"
+                    th:text="${#numbers.formatDecimal(transaction.unitPrice, 0, 'COMMA', 2, 'POINT')} + ' đ'"
+                  ></td>
+                  <td
+                    class="px-4 py-3 text-right whitespace-nowrap"
+                    th:text="${#numbers.formatDecimal(transaction.totalAmount, 0, 'COMMA', 2, 'POINT')} + ' đ'"
+                  ></td>
+                </tr>
+                <tr th:if="${transactions.transactions.size() == 0}">
+                  <td colspan="7" class="text-center py-6 text-gray-400">
+                    Không có giao dịch nào.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Phân trang cho giao dịch -->
+          <div
+            class="flex items-center justify-between mt-6 text-sm text-gray-600"
+          >
+            <div class="flex items-center gap-4">
+              <span
+                >Trang <span th:text="${transactions.pageNumber + 1}"></span> /
+                <span th:text="${transactions.totalPages}"></span
+              ></span>
+              <span
+                >Tổng:
+                <span th:text="${transactions.totalElements}"></span> giao
+                dịch</span
+              >
+            </div>
+            <nav th:if="${transactions.totalPages > 1}">
+              <ul class="inline-flex items-center gap-1">
+                <!-- Trước -->
+                <li>
+                  <a
+                    th:if="${transactions.pageNumber == 0}"
+                    href="#"
+                    class="px-3 py-1.5 rounded border transition text-gray-300 border-gray-300 bg-gray-100 cursor-not-allowed pointer-events-none"
+                    >Trước</a
+                  >
+                  <a
+                    th:if="${transactions.pageNumber > 0}"
+                    th:href="@{/warehouse/transaction(page=${transactions.pageNumber - 1},keyword=${keyword})}"
+                    class="px-3 py-1.5 rounded border transition text-gray-700 border-gray-300 bg-white hover:bg-gray-100"
+                    >Trước</a
+                  >
+                </li>
+                <!-- Trang -->
+                <li
+                  th:each="pageNum : ${#numbers.sequence(1, transactions.totalPages)}"
+                >
+                  <a
+                    th:href="@{/warehouse/transaction(page=${pageNum - 1},keyword=${keyword})}"
+                    th:classappend="${transactions.pageNumber + 1 == pageNum} ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'"
+                    class="px-3 py-1.5 rounded border text-sm font-medium transition"
+                  >
+                    <span th:text="${pageNum}"></span>
+                  </a>
+                </li>
+                <!-- Tiếp -->
+                <li>
+                  <a
+                    th:if="${transactions.pageNumber + 1 >= transactions.totalPages}"
+                    href="#"
+                    class="px-3 py-1.5 rounded border transition text-gray-300 border-gray-300 bg-gray-100 cursor-not-allowed pointer-events-none"
+                    >Tiếp</a
+                  >
+                  <a
+                    th:if="${transactions.pageNumber + 1 < transactions.totalPages}"
+                    th:href="@{/warehouse/transaction(page=${transactions.pageNumber + 1},keyword=${keyword})}"
+                    class="px-3 py-1.5 rounded border transition text-gray-700 border-gray-300 bg-white hover:bg-gray-100"
+                    >Tiếp</a
+                  >
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- JavaScript cho search functionality -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        // Transaction search functionality
+        const searchTransactionInput = document.getElementById(
+          'searchTransactionInput'
+        );
+        const clearTransactionBtn = document.getElementById(
+          'clearTransactionBtn'
+        );
+        const searchTransactionForm = searchTransactionInput
+          ? searchTransactionInput.closest('form')
+          : null;
+
+        // Show clear button if there's a keyword from server
+        if (searchTransactionInput && clearTransactionBtn) {
+          const hasKeyword =
+            searchTransactionInput.value &&
+            searchTransactionInput.value.trim() !== '';
+          clearTransactionBtn.style.display = hasKeyword ? 'block' : 'none';
+        }
+
+        // Clear transaction search
+        if (clearTransactionBtn) {
+          clearTransactionBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            searchTransactionInput.value = '';
+            clearTransactionBtn.style.display = 'none';
+            window.location.href = '/warehouse/transaction';
+          });
+        }
+
+        // Show/hide clear button on input
+        if (searchTransactionInput) {
+          searchTransactionInput.addEventListener('input', function () {
+            if (clearTransactionBtn) {
+              clearTransactionBtn.style.display =
+                this.value.trim() === '' ? 'none' : 'block';
+            }
+          });
+
+          // Enter key to submit form
+          searchTransactionInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter' && searchTransactionForm) {
+              e.preventDefault();
+              searchTransactionForm.submit();
+            }
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

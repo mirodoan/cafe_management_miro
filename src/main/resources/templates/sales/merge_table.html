@@ -1,0 +1,228 @@
+<!-- Popup Modal: Gộp bàn (Merge Table) -->
+<div xmlns:th="http://www.thymeleaf.org" th:fragment="merge-table-modal">
+    <div
+            th:if="${showMergeModal}"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
+            style="overflow-y:auto;"
+    >
+        <div class="bg-white/90 p-8 rounded-2xl shadow-2xl border border-[#b5c99a] max-w-4xl w-full relative">
+            <!-- Nút đóng modal -->
+            <button
+                    type="button"
+                    onclick="closeMergeTableModal()"
+                    class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-xl"
+            >×
+            </button>
+            <!-- Icon và tiêu đề -->
+            <div
+                    class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gradient-to-tr from-[#b5c99a] to-[#f6e7cb] rounded-full shadow-lg p-2"
+            >
+                <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-12 w-12 text-[#3e2723]"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                >
+                    <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M8 17l4 4 4-4m0-5V3m-8 4v4a4 4 0 004 4h4"
+                    />
+                </svg>
+            </div>
+            <h3 class="text-3xl font-extrabold mb-6 text-center tracking-tight" style="color: #3e2723">
+                Gộp bàn
+            </h3>
+            <!-- Hiển thị lỗi từ controller nếu có -->
+            <div
+                    th:if="${errorMessage}"
+                    class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6 text-center font-semibold"
+            >
+                <span th:text="${errorMessage}"></span>
+            </div>
+            <form
+                    th:action="@{/sale/merge-tables}"
+                    th:object="${mergeTableRequest}"
+                    method="post"
+                    id="merge-table-form"
+                    autocomplete="off"
+                    class="space-y-6"
+            >
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
+                    <!-- Chọn các bàn cần gộp -->
+                    <div>
+                        <fieldset class="border border-[#b5c99a] rounded-lg p-4">
+                            <legend class="font-semibold text-[#3e2723] px-2 text-lg">
+                                Chọn các bàn cần gộp
+                            </legend>
+                            <div class="max-h-60 overflow-y-auto space-y-3 mt-4">
+                                <div th:each="table : ${occupiedTables}">
+                                    <label class="flex items-center gap-3 cursor-pointer p-2 hover:bg-[#f6e7cb] rounded">
+                                        <input
+                                                type="checkbox"
+                                                name="tableIds"
+                                                th:value="${table.id}"
+                                                class="merge-table-checkbox w-4 h-4"
+                                        />
+                                        <span th:text="${table.tableName}" class="font-medium"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
+                    <!-- Icon mũi tên cho mobile -->
+                    <div class="lg:hidden flex justify-center py-2">
+                        <div class="flex items-center">
+                            <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="h-5 w-5 text-[#b5c99a] animate-bounce"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                            >
+                                <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M19 14l-7 7m0 0l-7-7m7 7V3"
+                                />
+                            </svg>
+                            <span class="text-xs text-[#3e2723] ml-2 font-medium">Gộp vào</span>
+                        </div>
+                    </div>
+                    <!-- Icon mũi tên giữa hai cột (desktop) -->
+                    <div class="hidden lg:flex justify-center items-center">
+                        <div class="flex flex-col items-center">
+                            <div class="bg-gradient-to-r from-[#b5c99a] to-[#f6e7cb] rounded-full p-3 shadow-lg">
+                                <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="h-6 w-6 text-[#3e2723] animate-pulse"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                >
+                                    <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M13 7l5 5m0 0l-5 5m5-5H6"
+                                    />
+                                </svg>
+                            </div>
+                            <span class="text-xs text-[#3e2723] mt-2 font-medium">Gộp vào</span>
+                        </div>
+                    </div>
+                    <!-- Chọn bàn gộp đến -->
+                    <div>
+                        <fieldset class="border border-[#b5c99a] rounded-lg p-4">
+                            <legend class="font-semibold text-[#3e2723] px-2 text-lg">
+                                Chọn bàn gộp đến
+                            </legend>
+                            <div class="max-h-60 overflow-y-auto space-y-3 mt-4" id="merge-target-list">
+                                <p class="text-gray-500 text-center py-4">
+                                    Vui lòng chọn các bàn cần gộp bên trái trước
+                                </p>
+                            </div>
+                        </fieldset>
+                    </div>
+                </div>
+                <div
+                        id="merge-error-message"
+                        class="text-red-600 text-center font-semibold min-h-[24px]"
+                ></div>
+                <div class="flex justify-end space-x-4 mt-8">
+                    <button
+                            type="submit"
+                            class="bg-gradient-to-tr from-[#3e2723] to-[#b5c99a] text-white px-8 py-3 rounded-lg font-semibold shadow hover:scale-105 hover:from-[#5d4037] hover:to-[#b5c99a] transition-all duration-200"
+                    >
+                        Gộp bàn
+                    </button>
+                    <button
+                            type="button"
+                            onclick="closeMergeTableModal()"
+                            class="bg-gray-400 hover:bg-gray-500 text-white px-8 py-3 rounded-lg font-semibold shadow transition-all duration-200"
+                    >
+                        Hủy
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+        function closeMergeTableModal() {
+          window.location.href = '/sale';
+        }
+
+        // Xử lý dynamic radio bàn đích khi chọn checkbox bàn cần gộp
+        document.addEventListener('change', function (e) {
+          if (
+            e.target.classList &&
+            e.target.classList.contains('merge-table-checkbox')
+          ) {
+            const checkedBoxes = Array.from(
+              document.querySelectorAll('.merge-table-checkbox:checked')
+            );
+            const targetList = document.getElementById('merge-target-list');
+            targetList.innerHTML = '';
+            if (checkedBoxes.length === 0) {
+              targetList.innerHTML =
+                '<p class="text-gray-500 text-center py-4">Vui lòng chọn các bàn cần gộp bên trái trước</p>';
+              return;
+            }
+
+            checkedBoxes.forEach((cb) => {
+              const id = cb.value;
+              const label =
+                cb.parentElement.querySelector('span').textContent;
+              const labelEl = document.createElement('label');
+              labelEl.className =
+                'flex items-center gap-3 cursor-pointer p-2 hover:bg-[#f6e7cb] rounded';
+
+              const radio = document.createElement('input');
+              radio.type = 'radio';
+              radio.name = 'targetTableId';
+              radio.value = id;
+              radio.required = true;
+              radio.className = 'w-4 h-4';
+
+              const span = document.createElement('span');
+              span.textContent = label;
+              span.className = 'font-medium';
+              labelEl.appendChild(radio);
+              labelEl.appendChild(span);
+              targetList.appendChild(labelEl);
+            });
+          }
+        });
+
+        // Validate form trước khi submit
+        document.addEventListener('submit', function (e) {
+          if (e.target && e.target.id === 'merge-table-form') {
+            const checked = document.querySelectorAll(
+              '.merge-table-checkbox:checked'
+            );
+            const radio = document.querySelector(
+              'input[name="targetTableId"]:checked'
+            );
+
+            if (checked.length < 2) {
+              e.preventDefault();
+              document.getElementById('merge-error-message').textContent =
+                'Phải chọn ít nhất 2 bàn để gộp!';
+              return;
+            }
+
+            if (!radio) {
+              e.preventDefault();
+              document.getElementById('merge-error-message').textContent =
+                'Vui lòng chọn bàn gộp đến!';
+              return;
+            }
+            // Clear error message if validation passes
+            document.getElementById('merge-error-message').textContent = '';
+          }
+        });
+    </script>
+</div>

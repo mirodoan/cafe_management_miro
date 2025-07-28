@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html
+        lang="vi"
+        xmlns:th="http://www.thymeleaf.org"
+        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+        layout:decorate="~{layout}"
+>
+<head>
+    <title>Quản lý bán hàng</title>
+    <script src="/js/sales/table-select.js"></script>
+    <script src="/js/sales/payment-table.js"></script>
+    <script src="/js/sales/view-table.js"></script>
+    <script src="/js/sales/select-menu-table.js"></script>
+    <script src="/js/sales/reservation-table.js"></script>
+    <script src="/js/sales/cancel-reservation-table.js"></script>
+    <script src="/js/sales/move-table.js"></script>
+    <script src="/js/sales/split-table.js"></script>
+    <script src="/js/sales/merge-table.js"></script>
+
+    <link rel="stylesheet" href="/css/sales.css"/>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="flex flex-col">
+        <main class="w-full">
+            <div class="bg-[#fefae0] min-h-screen w-full px-6 py-8">
+                <div class="max-w-[1500px] mx-auto">
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <!-- Tiêu đề -->
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-3xl font-bold text-[#3e2723]">
+                                Danh sách bàn
+                            </h2>
+                        </div>
+
+                        <!-- Grid layout hiển thị trạng thái bàn -->
+                        <div class="grid grid-cols-5 gap-4 mb-6">
+                            <!-- Render danh sách bàn động từ model -->
+                            <div
+                                    th:each="table : ${tables}"
+                                    class="rounded-lg shadow-md hover:shadow-lg transition p-4 cursor-pointer"
+                                    th:classappend="${table.status.name() == 'AVABILALE' ? 'bg-green-100' : (table.status.name() == 'OCCUPIED' ? 'bg-red-100' : (table.status.name() == 'RESERVED' ? 'bg-yellow-100' : 'bg-gray-100'))}"
+                                    data-table
+                                    th:attr="data-status=${table.status.name()}, data-table-id=${table.id}"
+                            >
+                                <h3
+                                        th:text="${table.tableName}"
+                                        class="text-lg font-semibold text-gray-800 mb-2"
+                                ></h3>
+                                <p
+                                        th:text="${table.status.name() == 'AVAILABLE' ? 'Trống' : (table.status.name() == 'OCCUPIED' ? 'Đang sử dụng' : (table.status.name() == 'RESERVED' ? 'Đã đặt' : 'Không xác định'))}"
+                                        class="text-sm text-gray-600"
+                                ></p>
+                            </div>
+                        </div>
+
+                        <!-- Chức năng -->
+                        <div class="flex justify-center space-x-4 mb-4">
+                            <button
+                                    id="view-table-button"
+                                    class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                                    type="button"
+                            >
+                                Xem bàn
+                            </button>
+                            <button
+                                    id="move-table-button"
+                                    class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                                    type="button"
+                            >
+                                Chuyển bàn
+                            </button>
+                            <button
+                                    id="split-table-button"
+                                    class="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                                    type="button"
+                            >
+                                Tách bàn
+                            </button>
+                            <button
+                                    id="merge-table-button"
+                                    class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                                    type="button"
+                            >
+                                Gộp bàn
+                            </button>
+                            <button
+                                    id="cancel-table-button"
+                                    class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                                    type="button"
+                            >
+                                Hủy bàn
+                            </button>
+                            <button
+                                    type="button"
+                                    class="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600"
+                                    id="reservation-button"
+                            >
+                                Đặt bàn
+                            </button>
+                        </div>
+                        <div class="flex justify-center space-x-4">
+                            <form
+                                    th:action="@{/sale/show-select-menu-form}"
+                                    method="get"
+                                    id="select-menu-form"
+                                    style="display: inline"
+                            >
+                                <input
+                                        type="hidden"
+                                        name="tableId"
+                                        id="select-menu-table-id"
+                                />
+                                <button
+                                        class="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600"
+                                        id="select-menu-button"
+                                        type="submit"
+                                >
+                                    Chọn thực đơn
+                                </button>
+                            </form>
+                            <button
+                                    class="px-4 py-2 bg-teal-500 text-white rounded hover:bg-teal-600"
+                                    id="payment-button"
+                            >
+                                Thanh toán
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Merge Table Fragment -->
+                <div th:replace="sales/merge_table :: merge-table-modal"></div>
+
+                <!-- Modal Split Table Fragment -->
+                <div th:replace="sales/split_table :: split-table-modal"></div>
+
+                <!-- Modal Move Table Fragment -->
+                <div th:replace="sales/move_table :: move-table-modal"></div>
+
+                <!-- Modal Cancel Reservation Fragment -->
+                <div th:replace="sales/cancel_reservation :: cancel-reservation-modal"></div>
+
+                <!-- Modal Reservation Fragment -->
+                <div th:replace="sales/reservation :: reservation-modal"></div>
+
+                <!-- Modal Select Menu Fragment -->
+                <div th:replace="sales/select_menu :: select-menu-modal"></div>
+
+                <!-- Modal View Table Fragment -->
+                <div th:replace="sales/view_details :: view-detail-modal"></div>
+
+                <!-- Modal Payment Fragment -->
+                <div th:replace="sales/payment :: payment-modal"></div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

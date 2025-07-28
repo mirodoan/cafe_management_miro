@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html
+        xmlns:th="http://www.thymeleaf.org"
+        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+        layout:decorate="~{layout}"
+>
+<head>
+    <meta charset="UTF-8"/>
+    <title>Báo cáo thống kê</title>
+    <script>
+        function validateForm() {
+          const start = document.getElementById('start').value;
+          const end = document.getElementById('end').value;
+          const now = new Date().toISOString().split('T')[0];
+          if (start > end) {
+            alert('⚠️ Từ ngày phải nhỏ hơn hoặc bằng đến ngày.');
+            return false;
+          }
+          if (start > now || end > now) {
+            alert('⚠️ Ngày không được vượt quá ngày hiện tại.');
+            return false;
+          }
+          return true;
+        }
+    </script>
+</head>
+<body>
+<div
+        layout:fragment="content"
+        class="bg-[#fefae0] min-h-screen w-full px-6 py-8"
+>
+    <div class="max-w-[1100px] mx-auto">
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <!-- Tiêu đề -->
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-3xl font-bold text-[#3e2723]">
+                    📈 Báo cáo thống kê
+                </h2>
+                <a
+                        th:href="@{/report/download(startDate=${startDate}, endDate=${endDate}, type=${type})}"
+                        target="_blank"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm px-4 py-2 rounded shadow"
+                >
+                    📅 Tải PDF
+                </a>
+            </div>
+            <!-- Form lọc -->
+            <form
+                    method="get"
+                    action="/report"
+                    onsubmit="return validateForm()"
+                    class="flex flex-wrap gap-4 mb-6 items-end"
+            >
+                <div>
+                    <label class="block font-medium mb-1">Từ ngày:</label>
+                    <input
+                            type="date"
+                            name="startDate"
+                            id="start"
+                            required
+                            th:value="${startDate}"
+                            class="border px-3 py-2 rounded w-full"
+                    />
+                </div>
+                <div>
+                    <label class="block font-medium mb-1">Đến ngày:</label>
+                    <input
+                            type="date"
+                            name="endDate"
+                            id="end"
+                            required
+                            th:value="${endDate}"
+                            class="border px-3 py-2 rounded w-full"
+                    />
+                </div>
+                <div>
+                    <label class="block font-medium mb-1">Loại báo cáo:</label>
+                    <select
+                            name="type"
+                            id="type"
+                            required
+                            class="border px-3 py-2 rounded w-full"
+                    >
+                        <option
+                                th:value="EMPLOYEE_SALARY"
+                                th:selected="${type == 'EMPLOYEE_SALARY'}"
+                        >
+                            👥 Nhân viên & Lương
+                        </option>
+                        <option
+                                th:value="INVOICE_MONTHLY"
+                                th:selected="${type == 'INVOICE_MONTHLY'}"
+                        >
+                            🧾 Hóa đơn theo tháng
+                        </option>
+                        <option
+                                th:value="REVENUE_SUMMARY"
+                                th:selected="${type == 'REVENUE_SUMMARY'}"
+                        >
+                            📊 Doanh thu
+                        </option>
+                        <option
+                                th:value="EXPENSE_ONLY"
+                                th:selected="${type == 'EXPENSE_ONLY'}"
+                        >
+                            💸 Chi tiêu
+                        </option>
+                        <option
+                                th:value="IMPORT_ONLY"
+                                th:selected="${type == 'IMPORT_ONLY'}"
+                        >
+                            📅 Nhập hàng
+                        </option>
+                        <option
+                                th:value="EXPORT_ONLY"
+                                th:selected="${type == 'EXPORT_ONLY'}"
+                        >
+                            📄 Xuất hàng
+                        </option>
+                        <option
+                                th:value="IMPORT_EXPORT"
+                                th:selected="${type == 'IMPORT_EXPORT'}"
+                        >
+                            🔄 Nhập - Xuất
+                        </option>
+                    </select>
+                </div>
+                <div>
+                    <button
+                            type="submit"
+                            class="mt-6 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded shadow"
+                    >
+                        🔍 Xem báo cáo
+                    </button>
+                </div>
+            </form>
+            <!-- Thông báo lỗi -->
+            <div
+                    th:if="${error}"
+                    class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4"
+                    th:text="${error}"
+            ></div>
+            <!-- Không có dữ liệu -->
+            <div
+                    th:if="${reportData != null and #lists.isEmpty(reportData)}"
+                    class="bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-3 rounded mb-4"
+            >
+                ⚠️ Không có dữ liệu trong khoảng thời gian đã chọn.
+            </div>
+
+            <!-- Kết quả -->
+            <div th:if="${reportData != null and !#lists.isEmpty(reportData)}">
+                <div
+                        class="overflow-x-auto border border-gray-300 rounded-xl shadow bg-white mt-4"
+                >
+                    <div th:switch="${type}">
+                        <!-- EMPLOYEE_SALARY -->
+                        <table
+                                th:case="'EMPLOYEE_SALARY'"
+                                class="min-w-full text-sm text-gray-800"
+                        >
+                            <thead
+                                    class="bg-[#FFF8E1] text-xs font-semibold text-gray-700 uppercase"
+                            >
+                            <tr>
+                                <th class="px-4 py-3 text-left">Họ tên</th>
+                                <th class="px-4 py-3 text-left">SĐT</th>
+                                <th class="px-4 py-3 text-left">Địa chỉ</th>
+                                <th class="px-4 py-3 text-left">Chức vụ</th>
+                                <th class="px-4 py-3 text-right">Lương</th>
+                            </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                            <tr th:each="e : ${reportData}">
+                                <td class="px-4 py-3 text-left" th:text="${e.fullName}">
+                                    Tên
+                                </td>
+                                <td
+                                        class="px-4 py-3 text-left"
+                                        th:text="${e.phoneNumber}"
+                                >
+                                    SĐT
+                                </td>
+                                <td class="px-4 py-3 text-left" th:text="${e.address}">
+                                    Địa chỉ
+                                </td>
+                                <td
+                                        class="px-4 py-3 text-left"
+                                        th:text="${e.position.positionName}"
+                                >
+                                    Chức vụ
+                                </td>
+                                <td
+                                        class="px-4 py-3 text-right"
+                                        th:text="${#numbers.formatDecimal(e.position.salary, 0, 'COMMA', 2, 'POINT')}"
+                                >
+                                    Lương
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <!-- INVOICE_MONTHLY -->
+                        <table
+                                th:case="'INVOICE_MONTHLY'"
+                                class="min-w-full text-sm text-gray-800"
+                        >
+                            <thead
+                                    class="bg-[#FFF8E1] text-xs font-semibold text-gray-700 uppercase"
+                            >
+                            <tr>
+                                <th class="px-4 py-3 text-left">Mã hóa đơn</th>
+                                <th class="px-4 py-3 text-left">Ngày tạo</th>
+                                <th class="px-4 py-3 text-center">Trạng thái</th>
+                                <th class="px-4 py-3 text-right">Tổng tiền</th>
+                            </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                            <tr th:each="inv : ${reportData}">
+                                <td class="px-4 py-3 text-left" th:text="${inv.id}">#</td>
+                                <td
+                                        class="px-4 py-3 text-left"
+                                        th:text="${#temporals.format(inv.createdAt, 'dd/MM/yyyy HH:mm')}"
+                                >
+                                    Ngày
+                                </td>
+                                <td class="px-4 py-3 text-center" th:text="${inv.status}">
+                                    Trạng thái
+                                </td>
+                                <td
+                                        class="px-4 py-3 text-right"
+                                        th:text="${#numbers.formatDecimal(inv.totalAmount, 0, 'COMMA', 2, 'POINT')}"
+                                >
+                                    Tổng
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <!-- REVENUE_SUMMARY -->
+                        <table
+                                th:case="'REVENUE_SUMMARY'"
+                                class="min-w-full text-sm text-gray-800"
+                        >
+                            <thead
+                                    class="bg-[#FFF8E1] text-xs font-semibold text-gray-700 uppercase"
+                            >
+                            <tr>
+                                <th class="px-4 py-3 text-left">Ngày</th>
+                                <th class="px-4 py-3 text-right">Doanh thu</th>
+                                <th class="px-4 py-3 text-right">Chi phí</th>
+                            </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                            <tr th:each="r : ${reportData[0].summaries}">
+                                <td class="px-4 py-3 text-left" th:text="${r.date}">
+                                    Ngày
+                                </td>
+                                <td
+                                        class="px-4 py-3 text-right"
+                                        th:text="${#numbers.formatDecimal(r.income, 0, 'COMMA', 2, 'POINT')}"
+                                >
+                                    Doanh thu
+                                </td>
+                                <td
+                                        class="px-4 py-3 text-right"
+                                        th:text="${#numbers.formatDecimal(r.expense, 0, 'COMMA', 2, 'POINT')}"
+                                >
+                                    Chi phí
+                                </td>
+                            </tr>
+                            </tbody>
+                            <tfoot class="font-semibold bg-gray-100">
+                            <tr class="border-t">
+                                <td class="px-4 py-3 text-left">Tổng</td>
+                                <td
+                                        class="px-4 py-3 text-right"
+                                        th:text="${#numbers.formatDecimal(reportData[0].totalIncome, 0, 'COMMA', 2, 'POINT')}"
+                                >
+                                    0
+                                </td>
+                                <td
+                                        class="px-4 py-3 text-right"
+                                        th:text="${#numbers.formatDecimal(reportData[0].totalExpense, 0, 'COMMA', 2, 'POINT')}"
+                                >
+                                    0
+                                </td>
+                            </tr>
+                            </tfoot>
+                        </table>
+                        <!-- EXPENSE_ONLY -->
+                        <table
+                                th:case="'EXPENSE_ONLY'"
+                                class="min-w-full text-sm text-gray-800"
+                        >
+                            <thead
+                                    class="bg-[#FFF8E1] text-xs font-semibold text-gray-700 uppercase"
+                            >
+                            <tr>
+                                <th class="px-4 py-3 text-left">Tên chi tiêu</th>
+                                <th class="px-4 py-3 text-left">Ngày</th>
+                                <th class="px-4 py-3 text-right">Số tiền</th>
+                            </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                            <tr th:each="ex : ${reportData}">
+                                <td
+                                        class="px-4 py-3 text-left"
+                                        th:text="${ex.expenseName}"
+                                >
+                                    Tên
+                                </td>
+                                <td
+                                        class="px-4 py-3 text-left"
+                                        th:text="${ex.expenseDate}"
+                                >
+                                    Ngày
+                                </td>
+                                <td
+                                        class="px-4 py-3 text-right"
+                                        th:text="${#numbers.formatDecimal(ex.amount, 0, 'COMMA', 2, 'POINT')}"
+                                >
+                                    Số tiền
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <!-- IMPORT_ONLY -->
+                        <table
+                                th:case="'IMPORT_ONLY'"
+                                class="min-w-full text-sm text-gray-800"
+                        >
+                            <thead
+                                    class="bg-[#FFF8E1] text-xs font-semibold text-gray-700 uppercase"
+                            >
+                            <tr>
+                                <th class="px-4 py-3 text-left">Sản phẩm</th>
+                                <th class="px-4 py-3 text-left">Ngày nhập</th>
+                                <th class="px-4 py-3 text-right">Số lượng</th>
+                                <th class="px-4 py-3 text-right">Tổng tiền</th>
+                                <th class="px-4 py-3 text-left">Nhân viên</th>
+                            </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                            <tr th:each="imp : ${reportData}">
+                                <td
+                                        class="px-4 py-3 text-left"
+                                        th:text="${imp.product.productName}"
+                                >
+                                    SP
+                                </td>
+                                <td
+                                        class="px-4 py-3 text-left"
+                                        th:text="${imp.importDate}"
+                                >
+                                    Ngày
+                                </td>
+                                <td
+                                        class="px-4 py-3 text-right"
+                                        th:text="${imp.quantity}"
+                                >
+                                    SL
+                                </td>
+                                <td
+                                        class="px-4 py-3 text-right"
+                                        th:text="${#numbers.formatDecimal(imp.totalAmount, 0, 'COMMA', 2, 'POINT')}"
+                                >
+                                    Tổng
+                                </td>
+                                <td
+                                        class="px-4 py-3 text-left"
+                                        th:text="${imp.employee.fullName}"
+                                >
+                                    NV
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <!-- EXPORT_ONLY -->
+                        <table
+                                th:case="'EXPORT_ONLY'"
+                                class="min-w-full text-sm text-gray-800"
+                        >
+                            <thead
+                                    class="bg-[#FFF8E1] text-xs font-semibold text-gray-700 uppercase"
+                            >
+                            <tr>
+                                <th class="px-4 py-3 text-left">Sản phẩm</th>
+                                <th class="px-4 py-3 text-left">Ngày xuất</th>
+                                <th class="px-4 py-3 text-right">Số lượng</th>
+                                <th class="px-4 py-3 text-right">Tổng tiền</th>
+                                <th class="px-4 py-3 text-left">Nhân viên</th>
+                            </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                            <tr th:each="ex : ${reportData}">
+                                <td
+                                        class="px-4 py-3 text-left"
+                                        th:text="${ex.product.productName}"
+                                >
+                                    SP
+                                </td>
+                                <td
+                                        class="px-4 py-3 text-left"
+                                        th:text="${ex.exportDate}"
+                                >
+                                    Ngày
+                                </td>
+                                <td class="px-4 py-3 text-right" th:text="${ex.quantity}">
+                                    SL
+                                </td>
+                                <td
+                                        class="px-4 py-3 text-right"
+                                        th:text="${#numbers.formatDecimal(ex.totalExportAmount, 0, 'COMMA', 2, 'POINT')}"
+                                >
+                                    Tổng
+                                </td>
+                                <td
+                                        class="px-4 py-3 text-left"
+                                        th:text="${ex.employee.fullName}"
+                                >
+                                    NV
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <!-- IMPORT_EXPORT -->
+                        <div th:case="'IMPORT_EXPORT'">
+                            <h6 class="font-bold mt-3 mb-2 text-[#3e2723]">
+                                📅 Nhập hàng
+                            </h6>
+                            <table class="min-w-full text-sm text-gray-800 mb-6">
+                                <thead
+                                        class="bg-[#FFF8E1] text-xs font-semibold text-gray-700 uppercase"
+                                >
+                                <tr>
+                                    <th class="px-4 py-3 text-left">Sản phẩm</th>
+                                    <th class="px-4 py-3 text-left">Ngày nhập</th>
+                                    <th class="px-4 py-3 text-right">Số lượng</th>
+                                    <th class="px-4 py-3 text-right">Tổng tiền</th>
+                                    <th class="px-4 py-3 text-left">Nhân viên</th>
+                                </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                <tr th:each="imp : ${reportData[0].imports}">
+                                    <td
+                                            class="px-4 py-3 text-left"
+                                            th:text="${imp.product.productName}"
+                                    >
+                                        SP
+                                    </td>
+                                    <td
+                                            class="px-4 py-3 text-left"
+                                            th:text="${imp.importDate}"
+                                    >
+                                        Ngày
+                                    </td>
+                                    <td
+                                            class="px-4 py-3 text-right"
+                                            th:text="${imp.quantity}"
+                                    >
+                                        SL
+                                    </td>
+                                    <td
+                                            class="px-4 py-3 text-right"
+                                            th:text="${#numbers.formatDecimal(imp.totalAmount, 0, 'COMMA', 2, 'POINT')}"
+                                    >
+                                        Tổng
+                                    </td>
+                                    <td
+                                            class="px-4 py-3 text-left"
+                                            th:text="${imp.employee.fullName}"
+                                    >
+                                        NV
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                            <h6 class="font-bold mt-4 mb-2 text-[#3e2723]">
+                                📄 Xuất hàng
+                            </h6>
+                            <table class="min-w-full text-sm text-gray-800">
+                                <thead
+                                        class="bg-[#FFF8E1] text-xs font-semibold text-gray-700 uppercase"
+                                >
+                                <tr>
+                                    <th class="px-4 py-3 text-left">Sản phẩm</th>
+                                    <th class="px-4 py-3 text-left">Ngày xuất</th>
+                                    <th class="px-4 py-3 text-right">Số lượng</th>
+                                    <th class="px-4 py-3 text-right">Tổng tiền</th>
+                                    <th class="px-4 py-3 text-left">Nhân viên</th>
+                                </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                <tr th:each="ex : ${reportData[0].exports}">
+                                    <td
+                                            class="px-4 py-3 text-left"
+                                            th:text="${ex.product.productName}"
+                                    >
+                                        SP
+                                    </td>
+                                    <td
+                                            class="px-4 py-3 text-left"
+                                            th:text="${ex.exportDate}"
+                                    >
+                                        Ngày
+                                    </td>
+                                    <td
+                                            class="px-4 py-3 text-right"
+                                            th:text="${ex.quantity}"
+                                    >
+                                        SL
+                                    </td>
+                                    <td
+                                            class="px-4 py-3 text-right"
+                                            th:text="${#numbers.formatDecimal(ex.totalExportAmount, 0, 'COMMA', 2, 'POINT')}"
+                                    >
+                                        Tổng
+                                    </td>
+                                    <td
+                                            class="px-4 py-3 text-left"
+                                            th:text="${ex.employee.fullName}"
+                                    >
+                                        NV
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

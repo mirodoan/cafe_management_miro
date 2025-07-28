@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý khuyến mãi</title>
+</head>
+<body>
+<div layout:fragment="content" class="bg-[#fefae0] min-h-screen w-full px-6 py-8">
+    <div class="max-w-[1500px] mx-auto">
+        <div class="bg-white rounded-xl shadow-lg p-6">
+
+            <!-- Tiêu đề và nút thêm khuyến mãi -->
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-3xl font-bold text-[#3e2723]">Danh sách khuyến mãi</h2>
+                <a th:href="@{/promotion/create}"
+                   class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm px-4 py-2 rounded shadow">
+                    Thêm khuyến mãi
+                </a>
+            </div>
+
+            <!-- Form tìm kiếm khuyến mãi -->
+            <div class="mb-6">
+                <form th:action="@{/promotion}" method="get" class="flex gap-3">
+                    <div class="flex-1 relative">
+                        <input
+                                type="text"
+                                name="keyword"
+                                id="searchInput"
+                                th:value="${param.keyword}"
+                                placeholder="Tìm kiếm theo tên khuyến mãi..."
+                                class="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                        />
+
+                    </div>
+                    <button
+                            type="submit"
+                            class="bg-green-600 hover:bg-green-700 text-white font-medium px-6 py-2 rounded-lg shadow transition"
+                    >
+                        🔍 Tìm kiếm
+                    </button>
+                </form>
+
+                <!-- Hiển thị breadcrumb khi có từ khóa tìm kiếm -->
+                <div
+                        th:if="${param.keyword != null and param.keyword[0] != null and !param.keyword[0].isEmpty()}"
+                        class="mt-2"
+                >
+                    <span class="text-sm text-gray-600">
+                        Kết quả tìm kiếm cho: "<span
+                            th:text="${param.keyword[0]}"
+                            class="font-semibold text-blue-600"
+                    ></span
+                    >" •
+                        <a
+                                th:href="@{/promotion}"
+                                class="text-blue-600 hover:text-blue-800 underline"
+                        >Xem tất cả khuyến mãi</a>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Bảng danh sách khuyến mãi -->
+            <div class="overflow-x-auto border border-gray-300 rounded-xl shadow bg-white">
+                <table class="w-full text-sm text-gray-800 table-fixed">
+                    <thead class="bg-[#FFF8E1] text-xs font-semibold text-gray-700 uppercase">
+                    <tr>
+                        <th class="w-[25%] px-4 py-3 text-left">Tên khuyến mãi</th>
+                        <th class="w-[20%] px-4 py-3 text-left">Ngày bắt đầu</th>
+                        <th class="w-[20%] px-4 py-3 text-left">Ngày kết thúc</th>
+                        <th class="w-[15%] px-4 py-3 text-right">Giảm (%)</th>
+                        <th class="w-[20%] px-4 py-3 text-center">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                    <!-- Lặp qua danh sách khuyến mãi để hiển thị từng dòng -->
+                    <tr th:each="promotion : ${promotions}" class="hover:bg-[#f9f9f9] transition">
+                        <td class="px-4 py-3 font-medium" th:text="${promotion.promotionName}">Giảm buổi sáng</td>
+                        <td class="px-4 py-3" th:text="${#temporals.format(promotion.startDate, 'dd/MM/yyyy')}">
+                            01/01/2025
+                        </td>
+                        <td class="px-4 py-3" th:text="${#temporals.format(promotion.endDate, 'dd/MM/yyyy')}">
+                            31/01/2025
+                        </td>
+                        <td class="px-4 py-3 text-right" th:text="${promotion.discountValue + '%'}">15%</td>
+                        <td class="px-4 py-3">
+                            <div class="flex justify-center gap-2">
+                                <!-- Nút sửa khuyến mãi -->
+                                <a th:href="@{/promotion/update/{id}(id=${promotion.id})}"
+                                   class="bg-yellow-400 hover:bg-yellow-500 text-white text-xs font-medium px-3 py-1.5 rounded shadow">
+                                    Sửa
+                                </a>
+                                <!-- Nút xóa khuyến mãi (xóa mềm) -->
+                                <form th:action="@{/promotion/delete/{id}(id=${promotion.id})}" method="post"
+                                      th:id="'deleteForm-' + ${promotion.id}">
+                                    <button type="button"
+                                            th:attr="data-id=${promotion.id}, data-name=${promotion.promotionName}"
+                                            class="btn-delete bg-red-500 hover:bg-red-600 text-white text-xs font-medium px-3 py-1.5 rounded shadow transition">
+                                        Xóa
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Hiển thị nếu không có dữ liệu -->
+                    <tr th:if="${#lists.isEmpty(promotions)}">
+                        <td colspan="5" class="text-center text-gray-500 italic py-6">
+                            <span
+                                    th:if="${param.keyword != null and param.keyword[0] != null and !param.keyword[0].isEmpty()}"
+                                    th:text="'Không tìm thấy khuyến mãi nào với từ khóa: ' + ${param.keyword[0]}"
+                            ></span>
+                            <span
+                                    th:unless="${param.keyword != null and param.keyword[0] != null and !param.keyword[0].isEmpty()}"
+                            >
+                              Không có khuyến mãi nào được tìm thấy.
+                            </span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Phân trang danh sách khuyến mãi -->
+            <div class="flex items-center justify-between mt-6 text-sm text-gray-600">
+                <div>
+                    <span th:text="'Trang ' + (${currentPage + 1}) + ' / ' + ${totalPages}">Trang 1 / 1</span>
+                    |
+                    <span th:text="'Tổng: ' + ${totalElements} + ' khuyến mãi'">Tổng: 0 khuyến mãi</span>
+                </div>
+                <nav>
+                    <ul class="inline-flex items-center gap-1">
+                        <!-- Nút trang trước -->
+                        <li>
+                            <a th:href="@{/promotion(page=${currentPage - 1}, keyword=${param.keyword})}"
+                               th:class="'px-3 py-1.5 rounded border transition ' + (${currentPage == 0} ? 'text-gray-300 border-gray-300 bg-gray-100 cursor-not-allowed pointer-events-none' : 'text-blue-600 border-blue-300 hover:bg-blue-50')">
+                                Trước
+                            </a>
+                        </li>
+
+                        <!-- Các số trang -->
+                        <li th:each="pageNum : ${#numbers.sequence(0, totalPages - 1)}">
+                            <a th:href="@{/promotion(page=${pageNum}, keyword=${param.keyword})}"
+                               th:text="${pageNum + 1}"
+                               th:class="'px-3 py-1.5 rounded border text-sm font-medium transition ' +
+                                         (${pageNum} == ${currentPage} ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-300 text-gray-700 hover:bg-blue-50')">
+                            </a>
+                        </li>
+
+                        <!-- Nút trang tiếp -->
+                        <li>
+                            <a th:href="@{/promotion(page=${currentPage + 1}, keyword=${param.keyword})}"
+                               th:class="'px-3 py-1.5 rounded border transition ' + (${currentPage + 1 >= totalPages} ? 'text-gray-300 border-gray-300 bg-gray-100 cursor-not-allowed pointer-events-none' : 'text-blue-600 border-blue-300 hover:bg-blue-50')">
+                                Tiếp
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    // Khi nhập vào input tìm kiếm
+    if (searchInput) {
+      // Nhấn Enter khi đang focus input tìm kiếm sẽ submit form
+      searchInput.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          if (searchForm) searchForm.submit();
+        }
+      });
+    }
+
+    // Xử lý nút xóa khuyến mãi: xác nhận trước khi submit form xóa
+    const deleteButtons = document.querySelectorAll('.btn-delete');
+    deleteButtons.forEach((button) => {
+      button.addEventListener('click', function (e) {
+        e.preventDefault();
+        const promotionId = this.getAttribute('data-id');
+        const promotionName = this.getAttribute('data-name');
+
+        // Xác nhận với người dùng trước khi xóa
+        if (
+          confirm(`Bạn có chắc chắn muốn xóa khuyến mãi "${promotionName}"?`)
+        ) {
+          const form = document.getElementById('deleteForm-' + promotionId);
+          if (form) {
+            form.submit();
+          }
+        }
+      });
+    });
+</script>
+</body>
+</html>

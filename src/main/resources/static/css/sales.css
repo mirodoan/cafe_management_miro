@@ -1,0 +1,197 @@
+/* Sales page specific styles */
+
+/* Modal styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  padding: 2rem;
+  position: relative;
+  border: 1px solid #b5c99a;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  color: #6b7280;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.modal-close:hover {
+  color: #374151;
+}
+
+/* Table grid styles */
+.table-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.table-card {
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  padding: 1rem;
+  cursor: pointer;
+}
+
+.table-card:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.table-available {
+  background-color: #dcfce7;
+}
+
+.table-occupied {
+  background-color: #fecaca;
+}
+
+.table-reserved {
+  background-color: #fef3c7;
+}
+
+.table-default {
+  background-color: #f3f4f6;
+}
+
+/* Button styles */
+.btn-primary {
+  background: linear-gradient(to top right, #3e2723, #b5c99a);
+  color: white;
+  padding: 0.5rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s;
+}
+
+.btn-primary:hover {
+  transform: scale(1.05);
+  background: linear-gradient(to top right, #5d4037, #b5c99a);
+}
+
+.btn-secondary {
+  background-color: #6b7280;
+  color: white;
+  padding: 0.5rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  background-color: #4b5563;
+}
+
+/* Form styles */
+.form-input {
+  margin-top: 0.25rem;
+  display: block;
+  width: 100%;
+  border-radius: 0.5rem;
+  border: 1px solid #b5c99a;
+  background-color: #f6e7cb;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  padding: 0.75rem;
+  font-size: 1rem;
+}
+
+.form-input:focus {
+  border-color: #3e2723;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(181, 201, 154, 0.3);
+}
+
+.form-label {
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #3e2723;
+  margin-bottom: 0.25rem;
+}
+
+/* Error message styles */
+.error-message {
+  color: #dc2626;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  min-height: 1.25rem;
+}
+
+/* Table styles */
+.data-table {
+  min-width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+}
+
+.data-table th {
+  padding: 1rem;
+  text-align: left;
+  background-color: #f3f4f6;
+}
+
+.data-table td {
+  padding: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* Notification styles */
+.notification {
+  padding: 1rem 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1rem;
+}
+
+.notification-error {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+}
+
+.notification-success {
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .table-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .modal-content {
+    margin: 1rem;
+    max-width: calc(100% - 2rem);
+  }
+}
+
+@media (max-width: 640px) {
+  .table-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

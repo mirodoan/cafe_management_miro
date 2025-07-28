@@ -1,0 +1,106 @@
+<!-- Modal/Form Xác nhận hủy bàn: chỉ hiển thị khi showCancelReservationForm=true -->
+<div xmlns:th="http://www.thymeleaf.org" th:fragment="cancel-reservation-modal">
+    <div
+            th:if="${showCancelReservationForm}"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
+    >
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-xl w-full relative border border-[#b5c99a]">
+            <!-- Nút đóng modal -->
+            <button
+                    type="button"
+                    onclick="closeCancelReservationModal()"
+                    class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-xl"
+            >×</button>
+            <!-- Icon và tiêu đề -->
+            <div
+                    class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gradient-to-tr from-[#b5c99a] to-[#f6e7cb] rounded-full shadow-lg p-2"
+            >
+                <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-12 w-12 text-[#3e2723]"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                >
+                    <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.268 16.5c-.77.833.192 2.5 1.732 2.5z"
+                    />
+                </svg>
+            </div>
+            <h3
+                    class="text-3xl font-extrabold mb-6 text-center tracking-tight"
+                    style="color: #3e2723"
+            >
+                Xác nhận hủy bàn -
+                <span th:text="${selectedTable?.tableName ?: 'Bàn ' + (selectedTable?.id ?: '')}"></span>
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label class="block text-base font-semibold text-[#3e2723] mb-1">Khách hàng</label>
+                    <div class="mt-1 block w-full rounded-lg border border-[#b5c99a] bg-[#f6e7cb] px-3 py-2">
+                        <span th:text="${reservation?.customerName ?: '---'}"></span>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-base font-semibold text-[#3e2723] mb-1">Số điện thoại</label>
+                    <div class="mt-1 block w-full rounded-lg border border-[#b5c99a] bg-[#f6e7cb] px-3 py-2">
+                        <span th:text="${reservation?.customerPhone ?: '---'}"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t pt-4 mb-6">
+                <label class="block text-base font-semibold text-[#3e2723] mb-1">Thời gian đặt</label>
+                <div class="mt-1 block w-full rounded-lg border border-[#b5c99a] bg-[#f6e7cb] px-3 py-2">
+          <span
+                  th:if="${reservation?.reservationDate != null}"
+                  th:text="${#temporals.format(reservation.reservationDate, 'HH:mm dd/MM/yyyy')}"
+          ></span>
+                    <span th:if="${reservation?.reservationDate == null}">---</span>
+                </div>
+            </div>
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <p class="text-red-700 text-center font-medium">
+                    ⚠️ Bạn có chắc chắn muốn hủy bàn này?
+                </p>
+            </div>
+            <form
+                    th:action="@{/sale/cancel-reservation}"
+                    method="post"
+                    class="space-y-6"
+            >
+                <input
+                        type="hidden"
+                        name="_csrf"
+                        th:value="${_csrf.token}"
+                />
+                <input
+                        type="hidden"
+                        name="tableId"
+                        th:value="${selectedTable?.id}"
+                />
+                <div class="flex justify-end space-x-4">
+                    <button
+                            type="submit"
+                            class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-semibold shadow transition-all duration-200"
+                    >
+                        Xác nhận hủy
+                    </button>
+                    <button
+                            type="button"
+                            onclick="closeCancelReservationModal()"
+                            class="bg-gray-400 hover:bg-gray-500 text-white px-6 py-2 rounded-lg font-semibold shadow transition-all duration-200"
+                    >Hủy</button>
+                </div>
+            </form>
+            <script>
+                // Đóng modal: reload về trang chính sale
+                function closeCancelReservationModal() {
+                  window.location.href = '/sale';
+                }
+            </script>
+        </div>
+    </div>
+</div>

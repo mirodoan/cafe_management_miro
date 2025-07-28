@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout}"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Tạo đơn nhập</title>
+  </head>
+  <body>
+    <div
+      layout:fragment="content"
+      class="bg-[#fefae0] min-h-screen w-full flex justify-center items-start py-12 px-4"
+    >
+      <div
+        class="w-full max-w-lg bg-white p-10 rounded-2xl shadow-xl border border-gray-200"
+      >
+        <h1
+          class="text-3xl font-bold text-[#3e2723] mb-10 text-center tracking-wide"
+        >
+          Tạo đơn nhập hàng
+        </h1>
+        <form
+          th:action="@{/warehouse/transaction/import/create}"
+          th:object="${import}"
+          method="post"
+          class="space-y-6"
+          id="importForm"
+        >
+          <!-- Sản phẩm -->
+          <div>
+            <label
+              for="productId"
+              class="block text-[#3e2723] font-bold text-lg mb-2"
+            >
+              * Sản phẩm:
+            </label>
+            <select
+              th:field="*{productId}"
+              id="productId"
+              required
+              class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-blue-300 outline-none"
+            >
+              <option value="" disabled selected>-- Chọn sản phẩm --</option>
+              <option
+                th:each="product : ${products}"
+                th:value="${product.id}"
+                th:text="${product.productName}"
+              ></option>
+            </select>
+            <p
+              class="text-red-500 text-sm mt-1"
+              th:if="${#fields.hasErrors('productId')}"
+              th:errors="*{productId}"
+            ></p>
+          </div>
+
+          <!-- Ngày nhập -->
+          <div>
+            <label
+              for="importDate"
+              class="block text-[#3e2723] font-bold text-lg mb-2"
+            >
+              * Ngày nhập:
+            </label>
+            <input
+              type="date"
+              th:field="*{importDate}"
+              id="importDate"
+              th:attr="max=${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}"
+              required
+              oninvalid="this.setCustomValidity('Ngày nhập không được để trống và không được lớn hơn ngày hiện tại')"
+              oninput="this.setCustomValidity('')"
+              class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-blue-300 outline-none"
+            />
+            <p
+              class="text-red-500 text-sm mt-1"
+              th:if="${#fields.hasErrors('importDate')}"
+              th:errors="*{importDate}"
+            ></p>
+          </div>
+
+          <!-- Đơn giá nhập -->
+          <div>
+            <label
+              for="unitImportPrice"
+              class="block text-[#3e2723] font-bold text-lg mb-2"
+            >
+              * Đơn giá nhập (VNĐ):
+            </label>
+            <input
+              type="number"
+              th:field="*{unitImportPrice}"
+              id="unitImportPrice"
+              required
+              min="0"
+              step="0.01"
+              placeholder="Nhập đơn giá"
+              oninvalid="this.setCustomValidity('Đơn giá phải lớn hơn 0 và không được để trống')"
+              oninput="this.setCustomValidity('')"
+              class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-blue-300 outline-none"
+            />
+            <p
+              class="text-red-500 text-sm mt-1"
+              th:if="${#fields.hasErrors('unitImportPrice')}"
+              th:errors="*{unitImportPrice}"
+            ></p>
+          </div>
+
+          <!-- Số lượng -->
+          <div>
+            <label
+              for="quantity"
+              class="block text-[#3e2723] font-bold text-lg mb-2"
+            >
+              * Số lượng:
+            </label>
+            <input
+              type="number"
+              th:field="*{quantity}"
+              id="quantity"
+              required
+              min="1"
+              placeholder="Nhập số lượng"
+              oninvalid="this.setCustomValidity('Số lượng phải lớn hơn 0 và không được để trống')"
+              oninput="this.setCustomValidity('')"
+              class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-blue-300 outline-none"
+            />
+            <p
+              class="text-red-500 text-sm mt-1"
+              th:if="${#fields.hasErrors('quantity')}"
+              th:errors="*{quantity}"
+            ></p>
+          </div>
+
+          <!-- Nút hành động -->
+          <div class="flex justify-between items-center mt-8">
+            <a
+              th:href="@{/warehouse/transaction}"
+              class="bg-gray-500 hover:bg-gray-600 text-white font-semibold px-6 py-2 rounded-md shadow"
+            >
+              Hủy
+            </a>
+            <button
+              type="submit"
+              class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-6 py-2 rounded-md shadow"
+            >
+              Lưu
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

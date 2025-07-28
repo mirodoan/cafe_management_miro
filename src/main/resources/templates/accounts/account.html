@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout}"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Trang cá nhân</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" th:href="@{/css/account.css}" />
+    <style>
+      .disabled-button {
+        pointer-events: none !important;
+        opacity: 0.5 !important;
+        cursor: not-allowed !important;
+        background-color: #6b7280 !important; /* Gray background */
+      }
+
+      .disabled-button:hover {
+        background-color: #6b7280 !important;
+        transform: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div layout:fragment="content">
+      <main class="page-content">
+        <form
+          class="profile-card max-w-4xl mx-auto px-6"
+          th:action="@{/account/update}"
+          th:object="${account}"
+          method="post"
+        >
+          <input type="hidden" th:field="*{id}" />
+
+          <!-- Header -->
+          <div
+            class="profile-header bg-yellow-300 p-6 rounded-xl text-center mb-6"
+          >
+            <div class="avatar-container relative mx-auto mb-4 w-fit">
+              <img
+                alt="Ảnh đại diện"
+                class="avatar w-24 h-24 rounded-full border-4 border-white object-cover mx-auto"
+                id="avatarImage"
+                th:src="*{imageUrl != null and !#strings.isEmpty(imageUrl)} ? *{imageUrl} : 'https://randomuser.me/api/portraits/men/32.jpg'"
+              />
+              <input
+                type="text"
+                id="avatarUrlInput"
+                th:field="*{imageUrl}"
+                placeholder="Nhập URL ảnh đại diện hoặc để trống"
+                class="w-full border border-gray-300 rounded-xl px-4 py-2 mt-2 focus:ring-blue-400"
+                pattern="^$|^(https?://).*(jpg|jpeg|png|gif|bmp|webp)(\?.*)?$"
+                oninvalid="this.setCustomValidity('URL ảnh phải để trống hoặc là một liên kết hợp lệ có đuôi file ảnh (jpg, jpeg, png, gif, bmp, webp)')"
+                oninput="this.setCustomValidity(''); validateImageUrl(this);"
+                readonly
+                style="display: none"
+              />
+              <p
+                class="text-red-500 text-sm mt-1"
+                th:if="${#fields.hasErrors('imageUrl')}"
+                th:errors="*{imageUrl}"
+              ></p>
+              <span
+                class="edit-icon absolute bottom-0 right-0 bg-white p-1 rounded-full border shadow cursor-pointer hover:bg-gray-100"
+                id="editAvatar"
+                style="display: none"
+              >
+                <i class="fas fa-pen text-sm"></i>
+              </span>
+            </div>
+            <h3 class="text-2xl font-bold" th:text="*{fullName}">
+              Tên người dùng
+            </h3>
+            <div class="flex justify-center">
+              <!-- Hiển thị chức vụ, luôn giữ binding kể cả khi validate lỗi -->
+              <input
+                type="text"
+                th:field="*{positionName}"
+                placeholder="Chưa có thông tin"
+                disabled
+                class="text-center font-semibold text-yellow-700 bg-white px-4 py-1 rounded-full shadow w-auto border-none outline-none"
+                style="min-width: 180px"
+              />
+              <!-- Hidden input để submit giá trị lên server, tránh mất binding khi validate lỗi -->
+              <input type="hidden" th:field="*{positionName}" />
+            </div>
+            <!-- <p class="text-md" th:field="*{positionName}">Chức vụ</p> -->
+          </div>
+
+          <!-- Thông tin cá nhân -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Họ tên -->
+            <div class="info-field relative">
+              <label for="fullName" class="font-semibold mb-1 block"
+                >HỌ TÊN</label
+              >
+              <div class="input-wrapper relative">
+                <input
+                  id="fullName"
+                  th:field="*{fullName}"
+                  readonly
+                  type="text"
+                  class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-blue-400"
+                  required
+                  minlength="2"
+                  maxlength="50"
+                  pattern="^(?!\s*$).{2,}$"
+                  oninvalid="this.setCustomValidity('Họ tên phải có ít nhất 2 ký tự và không được để trống hoặc toàn dấu cách')"
+                  oninput="this.setCustomValidity(''); validateFullName(this);"
+                />
+                <span
+                  class="edit-icon absolute bottom-2 right-2 text-gray-500 cursor-pointer hover:text-blue-500"
+                  style="display: none"
+                >
+                  <i class="fas fa-pen text-sm"></i>
+                </span>
+                <p
+                  class="text-red-500 text-sm mt-1"
+                  th:if="${#fields.hasErrors('fullName')}"
+                  th:errors="*{fullName}"
+                ></p>
+              </div>
+            </div>
+
+            <!-- Tên đăng nhập -->
+            <div class="info-field">
+              <label for="username" class="font-semibold mb-1 block"
+                >TÊN ĐĂNG NHẬP</label
+              >
+              <input
+                id="username"
+                th:field="*{username}"
+                readonly
+                type="text"
+                class="w-full border border-gray-300 rounded-xl px-4 py-2 bg-gray-100"
+              />
+            </div>
+
+            <!-- Mật khẩu -->
+            <div class="info-field">
+              <label for="password" class="font-semibold mb-1 block"
+                >MẬT KHẨU</label
+              >
+              <input
+                id="password"
+                value="*******"
+                readonly
+                type="password"
+                class="w-full border border-gray-300 rounded-xl px-4 py-2 bg-gray-100"
+              />
+            </div>
+
+            <!-- Số điện thoại -->
+            <div class="info-field relative">
+              <label for="phoneNumber" class="font-semibold mb-1 block"
+                >SỐ ĐIỆN THOẠI</label
+              >
+              <div class="input-wrapper relative">
+                <input
+                  id="phoneNumber"
+                  th:field="*{phoneNumber}"
+                  readonly
+                  type="text"
+                  class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-blue-400"
+                  required
+                  minlength="10"
+                  maxlength="11"
+                  pattern="^[0-9]{10,11}$"
+                  oninvalid="this.setCustomValidity('Số điện thoại phải có 10-11 chữ số và chỉ chứa số')"
+                  oninput="this.setCustomValidity(''); validatePhoneNumber(this);"
+                />
+                <span
+                  class="edit-icon absolute bottom-2 right-2 text-gray-500 cursor-pointer hover:text-blue-500"
+                  style="display: none"
+                >
+                  <i class="fas fa-pen text-sm"></i>
+                </span>
+                <p
+                  class="text-red-500 text-sm mt-1"
+                  th:if="${#fields.hasErrors('phoneNumber')}"
+                  th:errors="*{phoneNumber}"
+                ></p>
+              </div>
+            </div>
+
+            <!-- Địa chỉ -->
+            <div class="info-field relative">
+              <label for="address" class="font-semibold mb-1 block"
+                >ĐỊA CHỈ</label
+              >
+              <div class="input-wrapper relative">
+                <input
+                  id="address"
+                  th:field="*{address}"
+                  readonly
+                  type="text"
+                  class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-blue-400"
+                  minlength="5"
+                  maxlength="200"
+                  pattern="^$|^(?!\s*$).{5,}$"
+                  oninvalid="this.setCustomValidity('Địa chỉ phải có ít nhất 5 ký tự nếu nhập, hoặc để trống')"
+                  oninput="this.setCustomValidity(''); validateAddress(this);"
+                />
+                <span
+                  class="edit-icon absolute bottom-2 right-2 text-gray-500 cursor-pointer hover:text-blue-500"
+                  style="display: none"
+                >
+                  <i class="fas fa-pen text-sm"></i>
+                </span>
+                <p
+                  class="text-red-500 text-sm mt-1"
+                  th:if="${#fields.hasErrors('address')}"
+                  th:errors="*{address}"
+                ></p>
+              </div>
+            </div>
+
+            <!-- Lương -->
+            <div class="info-field">
+              <label id="salary" class="font-semibold mb-1 block">LƯƠNG</label>
+              <input
+                type="text"
+                th:value="${account.salary != null ? #numbers.formatDecimal(account.salary, 0, 'POINT', 0, 'COMMA') : 'Chưa có thông tin'}"
+                readonly
+                class="w-full px-3 py-2 border rounded bg-gray-100"
+              />
+              <input type="hidden" th:field="*{salary}" />
+            </div>
+          </div>
+
+          <!-- Nút hành động -->
+          <div class="profile-actions mt-8 flex justify-center gap-4">
+            <button
+              class="btn-edit bg-yellow-400 hover:bg-yellow-500 text-white font-semibold px-5 py-2 rounded-lg shadow flex items-center gap-2"
+              id="editButton"
+              type="button"
+            >
+              <i class="fas fa-pen"></i> Chỉnh sửa
+            </button>
+            <button
+              class="btn-save bg-green-500 hover:bg-green-600 text-white font-semibold px-5 py-2 rounded-lg shadow flex items-center gap-2"
+              id="saveButton"
+              style="display: none"
+              type="submit"
+              th:disabled="${#fields.hasErrors()}"
+            >
+              <i class="fas fa-save"></i> Lưu thay đổi
+            </button>
+            <button
+              class="btn-cancel bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold px-5 py-2 rounded-lg shadow flex items-center gap-2"
+              id="cancelButton"
+              style="display: none"
+              type="button"
+            >
+              <i class="fas fa-times"></i> Hủy
+            </button>
+          </div>
+        </form>
+      </main>
+
+      <!-- Script -->
+      <script>
+        document.addEventListener('DOMContentLoaded', function () {
+          // Frontend validation functions
+          window.validateFullName = function (input) {
+            const value = input.value.trim();
+            const errorElement = input
+              .closest('.input-wrapper')
+              .querySelector('.text-red-500');
+
+            if (value.length < 2) {
+              showFieldError(input, 'Họ tên phải có ít nhất 2 ký tự');
+              return false;
+            } else if (value.length > 50) {
+              showFieldError(input, 'Họ tên không được vượt quá 50 ký tự');
+              return false;
+            } else if (!/^[a-zA-ZÀ-ỹ\s]+$/.test(value)) {
+              showFieldError(
+                input,
+                'Họ tên chỉ được chứa chữ cái và khoảng trắng'
+              );
+              return false;
+            } else {
+              clearFieldErrorByElement(errorElement);
+              return true;
+            }
+          };
+
+          window.validatePhoneNumber = function (input) {
+            const value = input.value.trim();
+            const errorElement = input
+              .closest('.input-wrapper')
+              .querySelector('.text-red-500');
+
+            if (!/^[0-9]{10,11}$/.test(value)) {
+              showFieldError(
+                input,
+                'Số điện thoại phải có 10-11 chữ số và chỉ chứa số'
+              );
+              return false;
+            } else if (!value.startsWith('0')) {
+              showFieldError(input, 'Số điện thoại phải bắt đầu bằng số 0');
+              return false;
+            } else {
+              clearFieldErrorByElement(errorElement);
+              return true;
+            }
+          };
+
+          window.validateAddress = function (input) {
+            const value = input.value.trim();
+            const errorElement = input
+              .closest('.input-wrapper')
+              .querySelector('.text-red-500');
+
+            if (value === '') {
+              // Cho phép để trống địa chỉ
+              clearFieldErrorByElement(errorElement);
+              return true;
+            } else if (value.length < 5) {
+              showFieldError(input, 'Địa chỉ phải có ít nhất 5 ký tự nếu nhập');
+              return false;
+            } else if (value.length > 200) {
+              showFieldError(input, 'Địa chỉ không được vượt quá 200 ký tự');
+              return false;
+            } else {
+              clearFieldErrorByElement(errorElement);
+              return true;
+            }
+          };
+
+          window.validateImageUrl = function (input) {
+            const value = input.value.trim();
+            const errorElement = document
+              .querySelector('#avatarImage')
+              .closest('.avatar-container')
+              .querySelector('.text-red-500');
+
+            if (value === '') {
+              // Cho phép để trống URL ảnh
+              clearFieldErrorByElement(errorElement);
+              return true;
+            } else if (
+              !/^(https?:\/\/).*\.(jpg|jpeg|png|gif|bmp|webp)(\?.*)?$/i.test(
+                value
+              )
+            ) {
+              showFieldError(
+                input,
+                'URL ảnh phải là một liên kết hợp lệ và có đuôi file ảnh (jpg, jpeg, png, gif, bmp, webp)'
+              );
+              return false;
+            } else {
+              clearFieldErrorByElement(errorElement);
+              return true;
+            }
+          };
+
+          // Helper functions for error display
+          function showFieldError(input, message) {
+            let errorElement;
+
+            // Xử lý riêng cho avatar
+            if (input.id === 'avatarUrlInput') {
+              errorElement = document
+                .querySelector('#avatarImage')
+                .closest('.avatar-container')
+                .querySelector('.text-red-500');
+            } else {
+              errorElement = input
+                .closest('.input-wrapper')
+                ?.querySelector('.text-red-500');
+            }
+
+            if (errorElement) {
+              errorElement.textContent = message;
+              errorElement.style.display = 'block';
+              console.log(`Showing error for ${input.id}: ${message}`);
+            } else {
+              console.log(`Could not find error element for ${input.id}`);
+            }
+          }
+
+          function clearFieldErrorByElement(errorElement) {
+            if (errorElement) {
+              errorElement.textContent = '';
+              errorElement.style.display = 'none';
+            }
+          }
+          const editButton = document.getElementById('editButton');
+          const saveButton = document.getElementById('saveButton');
+          const cancelButton = document.getElementById('cancelButton');
+          const avatarImage = document.getElementById('avatarImage');
+          const avatarUrlInput = document.getElementById('avatarUrlInput');
+          const avatarEditIcon = document.getElementById('editAvatar');
+          const editIcons = document.querySelectorAll('.edit-icon');
+          const form = document.querySelector('form');
+
+          // Ngăn chặn form submit khi có lỗi
+          form.addEventListener('submit', function (e) {
+            // Kiểm tra lỗi backend
+            const errorElements = document.querySelectorAll('.text-red-500');
+            let hasBackendError = false;
+
+            errorElements.forEach((element) => {
+              if (
+                element.textContent &&
+                element.textContent.trim().length > 0 &&
+                element.style.display !== 'none'
+              ) {
+                hasBackendError = true;
+              }
+            });
+
+            // Kiểm tra validation frontend
+            let hasFrontendError = false;
+            const fullNameInput = document.getElementById('fullName');
+            const phoneNumberInput = document.getElementById('phoneNumber');
+            const addressInput = document.getElementById('address');
+            const avatarUrlInput = document.getElementById('avatarUrlInput');
+
+            if (!fullNameInput.readOnly && !validateFullName(fullNameInput)) {
+              hasFrontendError = true;
+            }
+            if (
+              !phoneNumberInput.readOnly &&
+              !validatePhoneNumber(phoneNumberInput)
+            ) {
+              hasFrontendError = true;
+            }
+            if (!addressInput.readOnly && !validateAddress(addressInput)) {
+              hasFrontendError = true;
+            }
+            // Kiểm tra avatar URL (luôn validate vì có thể thay đổi qua popup)
+            if (!validateImageUrl(avatarUrlInput)) {
+              hasFrontendError = true;
+            }
+
+            if (hasBackendError || hasFrontendError) {
+              console.log('Form submit prevented due to validation errors');
+              e.preventDefault();
+              e.stopPropagation();
+              alert('Vui lòng sửa các lỗi trước khi lưu!');
+              return false;
+            }
+          });
+
+          const editableInputs = [
+            document.getElementById('fullName'),
+            document.getElementById('phoneNumber'),
+            document.getElementById('address'),
+          ];
+          // Lưu lại giá trị ban đầu của positionName để không bị mất khi chuyển chế độ
+          const positionNameInput = document.querySelector(
+            'input[th\\:field="*{positionName}"][type="text"]'
+          );
+          const positionNameHidden = document.querySelector(
+            'input[th\\:field="*{positionName}"][type="hidden"]'
+          );
+          let originalPositionName = positionNameInput
+            ? positionNameInput.value
+            : '';
+
+          const originalValues = {};
+
+          function setEditMode(editing) {
+            editableInputs.forEach((input) => {
+              input.readOnly = !editing;
+              const field = input.closest('.info-field');
+              if (editing) {
+                field.classList.add('editing');
+                if (!originalValues[input.id])
+                  originalValues[input.id] = input.value;
+              } else {
+                field.classList.remove('editing');
+              }
+            });
+
+            // Đảm bảo giữ lại giá trị chức vụ khi chuyển chế độ
+            if (positionNameInput && positionNameHidden) {
+              if (!originalPositionName)
+                originalPositionName = positionNameInput.value;
+              // Khi chuyển sang edit, giữ nguyên giá trị
+              if (editing) {
+                positionNameInput.value = originalPositionName;
+                positionNameHidden.value = originalPositionName;
+              } else {
+                // Khi cancel, khôi phục lại giá trị gốc
+                positionNameInput.value = originalPositionName;
+                positionNameHidden.value = originalPositionName;
+              }
+            }
+
+            editIcons.forEach(
+              (icon) => (icon.style.display = editing ? 'flex' : 'none')
+            );
+            editButton.style.display = editing ? 'none' : 'flex';
+            saveButton.style.display = editing ? 'flex' : 'none';
+            cancelButton.style.display = editing ? 'flex' : 'none';
+
+            if (editing && !originalValues.avatar) {
+              originalValues.avatar = avatarImage.src;
+              originalValues.avatarUrlInput = avatarUrlInput.value;
+            }
+          }
+
+          editButton.addEventListener('click', () => {
+            setEditMode(true);
+            // Khi chuyển sang edit mode, kiểm tra và cập nhật trạng thái nút lưu
+            updateSaveButtonState();
+          });
+
+          cancelButton.addEventListener('click', () => {
+            editableInputs.forEach(
+              (input) => (input.value = originalValues[input.id])
+            );
+
+            // Khôi phục avatar
+            if (originalValues.avatar) {
+              avatarImage.src = originalValues.avatar;
+            }
+            if (originalValues.avatarUrlInput !== undefined) {
+              avatarUrlInput.value = originalValues.avatarUrlInput;
+            }
+
+            // Khôi phục lại giá trị chức vụ khi cancel
+            if (positionNameInput && positionNameHidden) {
+              positionNameInput.value = originalPositionName;
+              positionNameHidden.value = originalPositionName;
+            }
+
+            // Xóa tất cả error messages frontend
+            document
+              .querySelectorAll('.text-red-500')
+              .forEach((errorElement) => {
+                if (
+                  errorElement.textContent &&
+                  !errorElement.getAttribute('th:if')
+                ) {
+                  // Chỉ xóa error của frontend, không động vào error của backend (có th:if)
+                  errorElement.textContent = '';
+                  errorElement.style.display = 'none';
+                }
+              });
+
+            setEditMode(false);
+          });
+
+          avatarEditIcon.addEventListener('click', () => {
+            const currentUrl = avatarUrlInput.value || '';
+            const newUrl = prompt('Nhập URL ảnh đại diện mới:', currentUrl);
+
+            if (newUrl !== null) {
+              // User không cancel prompt
+              // Lưu giá trị cũ để khôi phục nếu cần
+              const oldUrl = avatarUrlInput.value;
+              const oldImageSrc = avatarImage.src;
+
+              // Cập nhật giá trị mới
+              avatarUrlInput.value = newUrl.trim();
+
+              // Validate URL
+              if (validateImageUrl(avatarUrlInput)) {
+                // Nếu URL hợp lệ, cập nhật ảnh
+                if (newUrl.trim() === '') {
+                  // Nếu để trống, dùng ảnh mặc định
+                  avatarImage.src =
+                    'https://randomuser.me/api/portraits/men/32.jpg';
+                } else {
+                  avatarImage.src = newUrl.trim();
+                }
+                console.log(
+                  'Avatar URL updated successfully to:',
+                  newUrl.trim()
+                );
+
+                // Test load ảnh để đảm bảo URL hoạt động
+                const testImg = new Image();
+                testImg.onload = function () {
+                  console.log('Image loaded successfully');
+                };
+                testImg.onerror = function () {
+                  console.log('Image failed to load, but URL format is valid');
+                  showFieldError(
+                    avatarUrlInput,
+                    'URL ảnh không thể tải được. Vui lòng kiểm tra lại.'
+                  );
+                };
+                testImg.src = newUrl.trim();
+              } else {
+                // Nếu URL không hợp lệ, khôi phục giá trị cũ
+                avatarUrlInput.value = oldUrl;
+                avatarImage.src = oldImageSrc;
+                console.log('Avatar URL validation failed, restored old value');
+              }
+
+              // Cập nhật trạng thái nút sau khi thay đổi
+              setTimeout(() => {
+                updateSaveButtonState();
+              }, 100);
+            }
+          });
+
+          // Đảm bảo nút Lưu luôn disable nếu có lỗi validate từ backend
+          function updateSaveButtonState() {
+            console.log('Checking save button state...'); // Debug log
+
+            // Debug tất cả error elements
+            debugAllErrors();
+
+            // Kiểm tra xem có lỗi validate từ backend không (các thẻ p với class text-red-500 có nội dung)
+            const errorElements = document.querySelectorAll('.text-red-500');
+            let hasBackendError = false;
+
+            errorElements.forEach((element) => {
+              // Kiểm tra nếu phần tử lỗi có nội dung và đang hiển thị
+              if (
+                element.textContent &&
+                element.textContent.trim().length > 0 &&
+                element.style.display !== 'none' &&
+                element.offsetParent !== null // Kiểm tra element có thực sự visible không
+              ) {
+                console.log('Found error:', element.textContent.trim()); // Debug log
+                hasBackendError = true;
+              }
+            });
+
+            console.log('Has backend error:', hasBackendError); // Debug log
+
+            if (saveButton) {
+              const isEditMode = saveButton.style.display !== 'none';
+              console.log('Is edit mode:', isEditMode); // Debug log
+
+              // Luôn disable nếu có lỗi từ backend, bất kể user có thay đổi gì hay không
+              if (isEditMode && hasBackendError) {
+                console.log('Disabling save button due to errors'); // Debug log
+                saveButton.disabled = true;
+                saveButton.style.opacity = '0.5';
+                saveButton.style.cursor = 'not-allowed';
+                saveButton.title = 'Vui lòng sửa các lỗi trước khi lưu';
+                // Thêm class để đảm bảo nút không thể click
+                saveButton.classList.add('disabled-button');
+                // Ngăn chặn form submit khi có lỗi - sử dụng addEventListener thay vì onclick
+                saveButton.removeEventListener('click', preventSubmit);
+                saveButton.addEventListener('click', preventSubmit);
+              } else if (isEditMode) {
+                console.log('Enabling save button'); // Debug log
+                saveButton.disabled = false;
+                saveButton.style.opacity = '1';
+                saveButton.style.cursor = 'pointer';
+                saveButton.title = 'Lưu thay đổi';
+                saveButton.classList.remove('disabled-button');
+                // Khôi phục lại function submit bình thường
+                saveButton.removeEventListener('click', preventSubmit);
+              }
+            }
+          }
+
+          // Function riêng để ngăn chặn submit
+          function preventSubmit(e) {
+            console.log('Preventing submit due to errors');
+            e.preventDefault();
+            e.stopPropagation();
+            alert('Vui lòng sửa các lỗi trước khi lưu!');
+            return false;
+          }
+
+          // Debug function để xem tất cả error elements
+          function debugAllErrors() {
+            const allErrors = document.querySelectorAll('.text-red-500');
+            console.log('=== DEBUG ALL ERRORS ===');
+            allErrors.forEach((error, index) => {
+              console.log(`Error ${index}:`, {
+                text: error.textContent.trim(),
+                display: error.style.display,
+                visible: error.offsetParent !== null,
+                element: error,
+              });
+            });
+            console.log('=========================');
+          }
+
+          // Thêm function để xóa lỗi cũ khi user nhập dữ liệu mới (client-side validation)
+          function clearFieldError(fieldName) {
+            console.log(`Attempting to clear error for field: ${fieldName}`); // Debug log
+
+            // Phương pháp 1: Tìm theo ID của input và tìm error element gần nhất
+            const mainInput = document.getElementById(fieldName);
+            if (mainInput) {
+              const parentWrapper =
+                mainInput.closest('.info-field') ||
+                mainInput.closest('.input-wrapper');
+              if (parentWrapper) {
+                const errorElements =
+                  parentWrapper.querySelectorAll('.text-red-500');
+                errorElements.forEach((errorElement) => {
+                  if (
+                    errorElement.textContent &&
+                    errorElement.textContent.trim().length > 0
+                  ) {
+                    console.log(
+                      `Clearing error: ${errorElement.textContent.trim()}`
+                    ); // Debug log
+                    errorElement.textContent = '';
+                    errorElement.style.display = 'none';
+                  }
+                });
+              }
+            }
+
+            // Phương pháp 2: Tìm tất cả input có th:field tương ứng (backup method)
+            const inputElements = document.querySelectorAll(
+              `input[th\\:field="*{${fieldName}}"]`
+            );
+            inputElements.forEach((inputElement) => {
+              const parentWrapper =
+                inputElement.closest('.input-wrapper') ||
+                inputElement.closest('.info-field') ||
+                inputElement.parentElement;
+
+              if (parentWrapper) {
+                const errorElements =
+                  parentWrapper.querySelectorAll('.text-red-500');
+                errorElements.forEach((errorElement) => {
+                  if (
+                    errorElement.textContent &&
+                    errorElement.textContent.trim().length > 0
+                  ) {
+                    console.log(
+                      `Clearing error (backup): ${errorElement.textContent.trim()}`
+                    ); // Debug log
+                    errorElement.textContent = '';
+                    errorElement.style.display = 'none';
+                  }
+                });
+              }
+            });
+          }
+
+          // Gọi khi DOM load
+          updateSaveButtonState();
+
+          // Cập nhật state khi user thay đổi input
+          editableInputs.forEach((input) => {
+            input.addEventListener('input', function () {
+              console.log(`Input changed: ${input.id} = "${input.value}"`); // Debug log
+
+              // Kiểm tra validation frontend và backend
+              const inputId = input.id;
+              let isValid = false;
+
+              if (inputId === 'fullName') {
+                isValid = validateFullName(input);
+                if (isValid && input.value.trim().length >= 2) {
+                  console.log('Clearing fullName error'); // Debug log
+                  clearFieldError('fullName');
+                }
+              } else if (inputId === 'phoneNumber') {
+                isValid = validatePhoneNumber(input);
+                if (isValid && /^[0-9]{10,11}$/.test(input.value.trim())) {
+                  console.log('Clearing phoneNumber error'); // Debug log
+                  clearFieldError('phoneNumber');
+                }
+              } else if (inputId === 'address') {
+                isValid = validateAddress(input);
+                if (isValid && input.value.trim().length >= 5) {
+                  console.log('Clearing address error'); // Debug log
+                  clearFieldError('address');
+                }
+              }
+
+              // Sau khi validate, kiểm tra lại trạng thái nút
+              setTimeout(() => {
+                updateSaveButtonState();
+              }, 100); // Delay nhỏ để đảm bảo DOM đã cập nhật
+            });
+
+            // Thêm event listener cho blur để validate khi user rời khỏi field
+            input.addEventListener('blur', function () {
+              const inputId = input.id;
+              if (!input.readOnly) {
+                // Chỉ validate khi đang ở edit mode
+                if (inputId === 'fullName') {
+                  validateFullName(input);
+                } else if (inputId === 'phoneNumber') {
+                  validatePhoneNumber(input);
+                } else if (inputId === 'address') {
+                  validateAddress(input);
+                }
+                setTimeout(() => {
+                  updateSaveButtonState();
+                }, 100);
+              }
+            });
+          });
+        });
+      </script>
+    </div>
+  </body>
+</html>

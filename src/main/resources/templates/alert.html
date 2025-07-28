@@ -1,0 +1,14 @@
+<div th:fragment="alerts">
+  <script
+    th:if="${success != null and !#strings.isEmpty(success)}"
+    th:inline="javascript"
+  >
+    showSuccess([[${success}]]);
+  </script>
+  <script
+    th:if="${error != null and !#strings.isEmpty(error)}"
+    th:inline="javascript"
+  >
+    showError([[${error}]]);
+  </script>
+</div>

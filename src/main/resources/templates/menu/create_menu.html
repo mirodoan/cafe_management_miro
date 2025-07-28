@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout}"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Thêm thực đơn</title>
+  </head>
+  <body>
+    <div
+      layout:fragment="content"
+      class="bg-[#fefae0] min-h-screen w-full flex justify-center items-start py-12 px-4"
+    >
+      <div
+        class="w-full max-w-4xl bg-white p-10 rounded-2xl shadow-xl border border-gray-200"
+      >
+        <h1
+          class="text-3xl font-bold text-[#3e2723] mb-10 text-center tracking-wide"
+        >
+          Thêm thực đơn
+        </h1>
+        <form th:action="@{'/menu/create'}" th:object="${menu}" method="post">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Tên món -->
+            <div class="space-y-6">
+              <div>
+                <label
+                  for="itemName"
+                  class="block text-[#3e2723] font-bold text-lg mb-2"
+                  >* Tên món:</label
+                >
+                <input
+                  type="text"
+                  th:field="*{itemName}"
+                  id="itemName"
+                  required
+                  minlength="3"
+                  maxlength="100"
+                  pattern="^(?!\s*$).{3,}$"
+                  oninvalid="this.setCustomValidity('Tên món phải có ít nhất 3 ký tự và không được để trống hoặc toàn dấu cách')"
+                  oninput="this.setCustomValidity('')"
+                  class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-yellow-400 focus:border-yellow-500 outline-none"
+                />
+                <p
+                  class="text-red-500 text-sm mt-1"
+                  th:if="${#fields.hasErrors('itemName')}"
+                  th:errors="*{itemName}"
+                ></p>
+              </div>
+            </div>
+            <!-- Giá tiền -->
+            <div class="space-y-6">
+              <div>
+                <label
+                  for="currentPrice"
+                  class="block text-[#3e2723] font-bold text-lg mb-2"
+                  >* Giá tiền (VNĐ):</label
+                >
+                <input
+                  type="number"
+                  th:field="*{currentPrice}"
+                  id="currentPrice"
+                  required
+                  min="0.01"
+                  step="0.01"
+                  placeholder="Nhập giá tiền"
+                  oninvalid="this.setCustomValidity('Giá tiền phải là số hợp lệ và lớn hơn 0')"
+                  oninput="this.setCustomValidity('')"
+                  class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-yellow-400 focus:border-yellow-500 outline-none"
+                />
+                <p
+                  class="text-red-500 text-sm mt-1"
+                  th:if="${#fields.hasErrors('currentPrice')}"
+                  th:errors="*{currentPrice}"
+                ></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hiển thị lỗi chung -->
+          <div th:if="${#fields.hasGlobalErrors()}" class="mb-4">
+            <div
+              th:each="error : ${#fields.globalErrors()}"
+              class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-2"
+            >
+              <span th:text="${error}">Error message</span>
+            </div>
+          </div>
+
+          <!-- Danh sách nguyên liệu -->
+          <div class="mt-10">
+            <h2 class="text-xl font-bold text-[#3e2723] mb-4">
+              Danh sách nguyên liệu
+            </h2>
+            <div class="overflow-x-auto">
+              <table class="min-w-full bg-[#e3f2fd] rounded-lg">
+                <thead>
+                  <tr>
+                    <th class="px-4 py-2 text-left">Nguyên liệu</th>
+                    <th class="px-4 py-2 text-left">Trọng lượng</th>
+                    <th class="px-4 py-2 text-left">Đơn vị</th>
+                    <th class="px-4 py-2 text-center">Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody id="ingredientTableBody">
+                  <tr th:each="detail,iter : *{menuDetails}">
+                    <td>
+                      <select
+                        th:field="*{menuDetails[__${iter.index}__].productId}"
+                        required
+                        oninvalid="this.setCustomValidity('Vui lòng chọn nguyên liệu')"
+                        oninput="this.setCustomValidity('')"
+                        class="border border-gray-300 rounded-md px-3 py-2 w-full"
+                      >
+                        <option value="">-- Chọn nguyên liệu --</option>
+                        <option
+                          th:each="product : ${products}"
+                          th:value="${product.id}"
+                          th:text="${product.productName}"
+                          th:selected="${product.id == detail.productId}"
+                        ></option>
+                      </select>
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        th:field="*{menuDetails[__${iter.index}__].quantity}"
+                        required
+                        oninvalid="this.setCustomValidity('Trọng lượng phải lớn hơn 0')"
+                        oninput="this.setCustomValidity('')"
+                        class="border border-gray-300 rounded-md px-3 py-2 w-full"
+                      />
+                    </td>
+                    <td>
+                      <select
+                        th:field="*{menuDetails[__${iter.index}__].unitId}"
+                        required
+                        oninvalid="this.setCustomValidity('Vui lòng chọn đơn vị tính')"
+                        oninput="this.setCustomValidity('')"
+                        class="border border-gray-300 rounded-md px-3 py-2 w-full"
+                      >
+                        <option value="">-- Chọn đơn vị --</option>
+                        <option
+                          th:each="unit : ${units}"
+                          th:value="${unit.id}"
+                          th:text="${unit.unitName}"
+                          th:selected="${unit.id == detail.unitId}"
+                        ></option>
+                      </select>
+                    </td>
+                    <td class="text-center">
+                      <button
+                        type="button"
+                        class="text-red-500 hover:underline btn-remove-ingredient"
+                      >
+                        Xóa
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <button
+              type="button"
+              id="addIngredientBtn"
+              class="mt-4 px-6 py-2 border-2 border-blue-500 text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition"
+            >
+              + Thêm nguyên liệu
+            </button>
+          </div>
+          <!-- Nút hành động -->
+          <div class="flex justify-between items-center mt-10">
+            <a
+              th:href="@{/menu}"
+              class="bg-gray-500 hover:bg-gray-600 text-white font-semibold px-6 py-2 rounded-md shadow"
+              >Hủy</a
+            >
+            <button
+              type="submit"
+              class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-6 py-2 rounded-md shadow"
+            >
+              Thêm
+            </button>
+          </div>
+        </form>
+      </div>
+      <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+          const addBtn = document.getElementById('addIngredientBtn');
+          const tableBody = document.getElementById('ingredientTableBody');
+          const products = /*[[${products}]]*/ [];
+          const units = /*[[${units}]]*/ [];
+
+          // Thêm nguyên liệu
+          addBtn.addEventListener('click', function () {
+            const rowCount = tableBody.querySelectorAll('tr').length;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>
+                <select name="menuDetails[${rowCount}].productId" required 
+                        oninvalid="this.setCustomValidity('Vui lòng chọn nguyên liệu')"
+                        oninput="this.setCustomValidity('')"
+                        class="border border-gray-300 rounded-md px-3 py-2 w-full">
+                  <option value="">-- Chọn nguyên liệu --</option>
+                  ${products
+                    .map(
+                      (p) => `<option value="${p.id}">${p.productName}</option>`
+                    )
+                    .join('')}
+                </select>
+              </td>
+              <td>
+                <input type="number" min="0.01" step="0.01" name="menuDetails[${rowCount}].quantity" required
+                       oninvalid="this.setCustomValidity('Trọng lượng phải lớn hơn 0')"
+                       oninput="this.setCustomValidity('')"
+                       class="border border-gray-300 rounded-md px-3 py-2 w-full" />
+              </td>
+              <td>
+                <select name="menuDetails[${rowCount}].unitId" required
+                        oninvalid="this.setCustomValidity('Vui lòng chọn đơn vị tính')"
+                        oninput="this.setCustomValidity('')"
+                        class="border border-gray-300 rounded-md px-3 py-2 w-full">
+                  <option value="">-- Chọn đơn vị --</option>
+                  ${units
+                    .map(
+                      (u) => `<option value="${u.id}">${u.unitName}</option>`
+                    )
+                    .join('')}
+                </select>
+              </td>
+              <td class="text-center">
+                <button type="button" class="text-red-500 hover:underline btn-remove-ingredient">Xóa</button>
+              </td>
+            `;
+            tableBody.appendChild(tr);
+          });
+
+          // Xóa nguyên liệu
+          tableBody.addEventListener('click', function (e) {
+            if (e.target.classList.contains('btn-remove-ingredient')) {
+              e.target.closest('tr').remove();
+            }
+          });
+        });
+      </script>
+    </div>
+  </body>
+</html>

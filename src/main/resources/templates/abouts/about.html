@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+  <meta charset="UTF-8">
+  <title>Giới thiệu phần mềm</title>
+</head>
+<body>
+
+<!-- Nội dung chính kế thừa layout -->
+<div layout:fragment="content">
+  <!-- Container căn giữa khối nội dung -->
+  <div class="w-full flex justify-center px-4 py-12">
+    <div class="w-full max-w-3xl bg-[#FFCA28] rounded-xl shadow-lg p-6 text-[#212121]">
+
+      <!-- Header -->
+      <div class="flex items-center mb-4">
+        <div class="bg-blue-600 text-white text-xs px-3 py-1 rounded-full font-semibold mr-3">
+          Version 1.0
+        </div>
+        <h2 class="text-2xl font-bold">PHẦN MỀM QUẢN LÝ ABC</h2>
+      </div>
+
+      <!-- Nội dung giới thiệu -->
+      <p class="text-[16px] leading-relaxed mb-4">
+        Phần mềm này giúp cho quán cà phê quý khách áp dụng công nghệ thông tin để quản lý tốt công việc kinh doanh.
+        Phần mềm <strong>ABC</strong> thể hiện hết những chức năng, công việc của người quản lý, cũng như người nhân viên,
+        nhằm đạt được hiệu quả cao nhất.
+      </p>
+
+      <!-- Tác giả -->
+      <p class="font-semibold mb-1">Tác giả: <span class="text-black font-bold">ABC team</span></p>
+      <a href="https://www.ABCteam.com" class="text-blue-700 underline hover:text-blue-900">www.ABCteam.com</a>
+
+      <!-- Nút trợ giúp -->
+      <div class="mt-6 text-center">
+        <button class="bg-gray-200 hover:bg-gray-300 text-black px-4 py-2 rounded flex items-center justify-center gap-2 mx-auto">
+          <span class="text-lg">❓</span> Hướng dẫn / Trợ giúp
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

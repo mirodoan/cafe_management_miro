@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout}"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Quản lý Thu Chi</title>
+  </head>
+  <body>
+    <div
+      layout:fragment="content"
+      class="bg-[#fefae0] min-h-screen w-full px-6 py-8"
+    >
+      <div class="max-w-[900px] mx-auto">
+        <div class="bg-white rounded-xl shadow-lg p-6">
+          <!-- Tiêu đề + nút thêm -->
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-3xl font-bold text-[#3e2723]">Danh sách Thu Chi</h2>
+            <a
+              th:href="@{/budget/create}"
+              class="bg-green-600 hover:bg-green-700 text-white font-semibold text-sm px-4 py-2 rounded shadow"
+            >
+              Thêm khoản chi
+            </a>
+          </div>
+
+          <!-- Form lọc ngày -->
+          <form
+            th:action="@{/budget/budget}"
+            method="get"
+            class="flex flex-wrap gap-4 mb-6 items-end"
+          >
+            <div>
+              <label class="block font-medium mb-1">Từ ngày:</label>
+              <input
+                type="date"
+                name="fromDate"
+                th:value="${filter.fromDate}"
+                class="border px-3 py-2 rounded w-full"
+              />
+            </div>
+            <div>
+              <label class="block font-medium mb-1">Đến ngày:</label>
+              <input
+                type="date"
+                name="toDate"
+                th:value="${filter.toDate}"
+                class="border px-3 py-2 rounded w-full"
+              />
+            </div>
+            <div>
+              <button
+                type="submit"
+                class="mt-6 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow"
+              >
+                Xem
+              </button>
+            </div>
+          </form>
+
+          <!-- Bảng thu chi -->
+          <div
+            class="overflow-x-auto border border-gray-300 rounded-xl shadow bg-white"
+          >
+            <table class="w-full text-sm text-gray-800 table-fixed">
+              <thead
+                class="bg-[#FFF8E1] text-xs font-semibold text-gray-700 uppercase"
+              >
+                <tr>
+                  <th class="w-[30%] px-4 py-3 text-left">Ngày</th>
+                  <th class="w-[35%] px-4 py-3 text-right">Thu (VNĐ)</th>
+                  <th class="w-[35%] px-4 py-3 text-right">Chi (VNĐ)</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200">
+                <tr th:if="${#lists.isEmpty(budgetPage.content)}">
+                  <td colspan="3" class="py-6 text-center text-gray-500 italic">
+                    Không có dữ liệu
+                  </td>
+                </tr>
+                <tr
+                  th:each="item : ${budgetPage.content}"
+                  class="hover:bg-[#f9f9f9] transition"
+                >
+                  <td
+                    class="px-4 py-3"
+                    th:text="${#temporals.format(item.date, 'dd/MM/yyyy')}"
+                  >
+                    01/01/2025
+                  </td>
+                  <td
+                    class="px-4 py-3 text-right"
+                    th:text="${item.income % 1 == 0} ?
+                                         ${#numbers.formatDecimal(item.income, 0, 'COMMA', 0, 'POINT')} :
+                                         ${#numbers.formatDecimal(item.income, 0, 'COMMA', 2, 'POINT')}"
+                  >
+                    0
+                  </td>
+                  <td
+                    class="px-4 py-3 text-right"
+                    th:text="${item.expense % 1 == 0} ?
+                                         ${#numbers.formatDecimal(item.expense, 0, 'COMMA', 0, 'POINT')} :
+                                         ${#numbers.formatDecimal(item.expense, 0, 'COMMA', 2, 'POINT')}"
+                  >
+                    0
+                  </td>
+                </tr>
+              </tbody>
+              <tfoot class="font-semibold bg-gray-100">
+                <tr class="border-t">
+                  <td class="px-4 py-3">Tổng</td>
+                  <td class="px-4 py-3 text-right" th:text="${totalIncomeText}">
+                    0
+                  </td>
+                  <td
+                    class="px-4 py-3 text-right"
+                    th:text="${totalExpenseText}"
+                  >
+                    0
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <!-- Phân trang -->
+          <div
+            th:if="${budgetPage.totalPages > 1}"
+            class="flex items-center justify-between mt-6 text-sm text-gray-600"
+          >
+            <div>
+              <span
+                th:text="'Trang ' + (${budgetPage.number + 1}) + ' / ' + ${budgetPage.totalPages}"
+                >Trang 1 / 1</span
+              >
+            </div>
+            <nav>
+              <ul class="inline-flex items-center gap-1">
+                <li>
+                  <a
+                    th:href="@{/budget/budget(fromDate=${filter.fromDate}, toDate=${filter.toDate}, page=${budgetPage.number - 1})}"
+                    th:class="'px-3 py-1.5 rounded border transition ' + (${budgetPage.number == 0} ? 'text-gray-300 border-gray-300 bg-gray-100 cursor-not-allowed pointer-events-none' : 'text-blue-600 border-blue-300 hover:bg-blue-50')"
+                  >
+                    Trước
+                  </a>
+                </li>
+                <li
+                  th:each="pageNum : ${#numbers.sequence(0, budgetPage.totalPages - 1)}"
+                >
+                  <a
+                    th:href="@{/budget/budget(fromDate=${filter.fromDate}, toDate=${filter.toDate}, page=${pageNum})}"
+                    th:text="${pageNum + 1}"
+                    th:class="'px-3 py-1.5 rounded border text-sm font-medium transition ' +
+                                         (${pageNum} == ${budgetPage.number} ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-300 text-gray-700 hover:bg-blue-50')"
+                  >
+                  </a>
+                </li>
+                <li>
+                  <a
+                    th:href="@{/budget/budget(fromDate=${filter.fromDate}, toDate=${filter.toDate}, page=${budgetPage.number + 1})}"
+                    th:class="'px-3 py-1.5 rounded border transition ' + (${budgetPage.number + 1 >= budgetPage.totalPages} ? 'text-gray-300 border-gray-300 bg-gray-100 cursor-not-allowed pointer-events-none' : 'text-blue-600 border-blue-300 hover:bg-blue-50')"
+                  >
+                    Tiếp
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

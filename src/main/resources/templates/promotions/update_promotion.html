@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout}"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Chỉnh sửa khuyến mãi</title>
+  </head>
+  <body>
+    <div
+      layout:fragment="content"
+      class="bg-[#fefae0] min-h-screen w-full flex justify-center items-start py-12 px-4"
+    >
+      <div
+        class="w-full max-w-md bg-white p-10 rounded-2xl shadow-xl border border-gray-200"
+      >
+        <h1
+          class="text-3xl font-bold text-[#3e2723] mb-10 text-center tracking-wide"
+        >
+          Chỉnh sửa khuyến mãi
+        </h1>
+
+        <form
+          th:action="@{/promotion/update}"
+          th:object="${promotion}"
+          method="post"
+          class="space-y-6"
+        >
+          <input type="hidden" th:field="*{id}" />
+
+          <!-- Tên khuyến mãi -->
+          <div>
+            <label
+              for="promotionName"
+              class="block text-[#3e2723] font-bold text-lg mb-2"
+              >* Tên khuyến mãi:</label
+            >
+            <input
+              type="text"
+              th:field="*{promotionName}"
+              id="promotionName"
+              required
+              minlength="5"
+              maxlength="100"
+              pattern="^(?!\s*$).{5,}$"
+              oninvalid="this.setCustomValidity('Tên khuyến mãi phải có ít nhất 5 ký tự và không được để trống hoặc toàn dấu cách')"
+              oninput="this.setCustomValidity('')"
+              class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-yellow-300 outline-none"
+            />
+            <p
+              class="text-red-500 text-sm mt-1"
+              th:if="${#fields.hasErrors('promotionName')}"
+              th:errors="*{promotionName}"
+            ></p>
+          </div>
+
+          <!-- Ngày bắt đầu -->
+          <div>
+            <label
+              for="startDate"
+              class="block text-[#3e2723] font-bold text-lg mb-2"
+              >* Ngày bắt đầu:</label
+            >
+            <input
+              type="date"
+              th:field="*{startDate}"
+              id="startDate"
+              required
+              oninvalid="this.setCustomValidity('Ngày bắt đầu không được để trống')"
+              oninput="this.setCustomValidity('')"
+              class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-yellow-300 outline-none"
+            />
+            <p
+              class="text-red-500 text-sm mt-1"
+              th:if="${#fields.hasErrors('startDate')}"
+              th:errors="*{startDate}"
+            ></p>
+          </div>
+
+          <!-- Ngày kết thúc -->
+          <div>
+            <label
+              for="endDate"
+              class="block text-[#3e2723] font-bold text-lg mb-2"
+              >* Ngày kết thúc:</label
+            >
+            <input
+              type="date"
+              th:field="*{endDate}"
+              id="endDate"
+              required
+              oninvalid="this.setCustomValidity('Ngày kết thúc phải lớn hơn ngày bắt đầu')"
+              oninput="this.setCustomValidity('')"
+              class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-yellow-300 outline-none"
+            />
+            <p
+              class="text-red-500 text-sm mt-1"
+              th:if="${#fields.hasErrors('endDate')}"
+              th:errors="*{endDate}"
+            ></p>
+          </div>
+
+          <!-- Phần trăm giảm -->
+          <div>
+            <label
+              for="discountValue"
+              class="block text-[#3e2723] font-bold text-lg mb-2"
+              >* Phần trăm giảm (%):</label
+            >
+            <input
+              type="number"
+              th:field="*{discountValue}"
+              id="discountValue"
+              step="0.01"
+              min="0.01"
+              max="100"
+              required
+              oninvalid="this.setCustomValidity('Phần trăm giảm phải lớn hơn 0 và nhỏ hơn hoặc bằng 100')"
+              oninput="this.setCustomValidity('')"
+              class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-yellow-300 outline-none"
+            />
+            <p
+              class="text-red-500 text-sm mt-1"
+              th:if="${#fields.hasErrors('discountValue')}"
+              th:errors="*{discountValue}"
+            ></p>
+          </div>
+
+          <!-- Nút hành động -->
+          <div class="flex justify-between items-center mt-8">
+            <a
+              th:href="@{/promotion}"
+              class="bg-gray-500 hover:bg-gray-600 text-white font-semibold px-6 py-2 rounded-md shadow"
+            >
+              Hủy
+            </a>
+            <button
+              type="submit"
+              class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-6 py-2 rounded-md shadow"
+            >
+              Lưu
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

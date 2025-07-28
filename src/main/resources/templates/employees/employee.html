@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout}"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Quản lý nhân viên</title>
+  </head>
+  <body>
+    <div
+      layout:fragment="content"
+      class="bg-[#fefae0] min-h-screen w-full px-6 py-8"
+    >
+      <div class="max-w-[1500px] mx-auto">
+        <div class="bg-white rounded-xl shadow-lg p-6">
+          <!-- Tiêu đề + nút thêm -->
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-3xl font-bold text-[#3e2723]">
+              Danh sách nhân viên
+            </h2>
+            <a
+              th:href="@{/employee/create}"
+              class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg shadow"
+            >
+              Thêm nhân viên
+            </a>
+          </div>
+
+          <!-- Form tìm kiếm -->
+          <div class="mb-6">
+            <form th:action="@{/employee}" method="get" class="flex gap-3">
+              <div class="flex-1 relative">
+                <input
+                  type="text"
+                  name="keyword"
+                  id="searchInput"
+                  th:value="${param.keyword}"
+                  placeholder="Tìm kiếm theo tên nhân viên..."
+                  class="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                />
+                <!-- Nút X để xóa -->
+                <button
+                  type="button"
+                  id="clearBtn"
+                  class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
+                  style="display: none"
+                >
+                  ✕
+                </button>
+              </div>
+              <button
+                type="submit"
+                class="bg-green-600 hover:bg-green-700 text-white font-medium px-6 py-2 rounded-lg shadow transition"
+              >
+                🔍 Tìm kiếm
+              </button>
+            </form>
+
+            <!-- Breadcrumb khi đang tìm kiếm -->
+            <div
+              th:if="${param.keyword != null and param.keyword[0] != null and !param.keyword[0].isEmpty()}"
+              class="mt-2"
+            >
+              <span class="text-sm text-gray-600">
+                Kết quả tìm kiếm cho: "<span
+                  th:text="${param.keyword[0]}"
+                  class="font-semibold text-blue-600"
+                ></span
+                >" •
+                <a
+                  th:href="@{/employee}"
+                  class="text-blue-600 hover:text-blue-800 underline"
+                  >Xem tất cả nhân viên</a
+                >
+              </span>
+            </div>
+          </div>
+
+          <!-- Bảng danh sách -->
+          <div
+            class="overflow-x-auto border border-gray-300 rounded-xl shadow bg-white"
+          >
+            <table class="w-full text-sm text-gray-800 table-fixed">
+              <thead
+                class="bg-[#FFF8E1] text-xs font-semibold text-gray-700 uppercase"
+              >
+                <tr>
+                  <th class="w-[30%] px-4 py-3 text-left">Họ và tên</th>
+                  <th class="w-[25%] px-4 py-3 text-left">Chức vụ</th>
+                  <th class="w-[20%] px-4 py-3 text-right">Lương</th>
+                  <th class="w-[25%] px-4 py-3 text-center">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200">
+                <tr
+                  th:each="employee : ${employees.employees}"
+                  class="hover:bg-[#f9f9f9] transition"
+                >
+                  <td
+                    class="px-4 py-3 font-medium"
+                    th:text="${employee.fullName}"
+                  >
+                    Nguyễn Văn A
+                  </td>
+                  <td class="px-4 py-3" th:text="${employee.positionName}">
+                    Thu ngân
+                  </td>
+                  <td
+                    class="px-4 py-3 text-right"
+                    th:text="${#numbers.formatInteger(employee.salary, 3, 'POINT')} + ' đ'"
+                  >
+                    7.000.000 đ
+                  </td>
+                  <td class="px-4 py-3">
+                    <div class="flex justify-center gap-2">
+                      <a
+                        th:href="@{/employee/update/{id}(id=${employee.id})}"
+                        class="bg-yellow-400 hover:bg-yellow-500 text-white text-xs font-medium px-3 py-1.5 rounded shadow"
+                      >
+                        Sửa
+                      </a>
+                      <form
+                        th:action="@{/employee/delete/{id}(id=${employee.id})}"
+                        method="post"
+                        th:id="'deleteForm-' + ${employee.id}"
+                      >
+                        <button
+                          type="button"
+                          th:attr="data-id=${employee.id}, data-name=${employee.fullName}"
+                          class="btn-delete bg-red-500 hover:bg-red-600 text-white text-xs font-medium px-3 py-1.5 rounded shadow transition"
+                        >
+                          Xóa
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Không có nhân viên -->
+                <tr th:if="${#lists.isEmpty(employees.employees)}">
+                  <td colspan="4" class="text-center text-gray-500 italic py-6">
+                    <span
+                      th:if="${param.keyword != null and param.keyword[0] != null and !param.keyword[0].isEmpty()}"
+                      th:text="'Không tìm thấy nhân viên nào với từ khóa: ' + ${param.keyword[0]}"
+                    >
+                    </span>
+                    <span
+                      th:unless="${param.keyword != null and param.keyword[0] != null and !param.keyword[0].isEmpty()}"
+                    >
+                      Không có nhân viên nào được tìm thấy.
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Phân trang -->
+          <div
+            class="flex items-center justify-between mt-6 text-sm text-gray-600"
+          >
+            <div>
+              <span
+                th:text="'Trang ' + (${employees.pageNumber + 1}) + ' / ' + ${employees.totalPages}"
+                >Trang 1 / 1</span
+              >
+              |
+              <span
+                th:text="'Tổng: ' + ${employees.totalElements} + ' nhân viên'"
+                >Tổng: 0 nhân viên</span
+              >
+            </div>
+            <nav>
+              <ul class="inline-flex items-center gap-1">
+                <!-- Trước -->
+                <li>
+                  <a
+                    th:href="@{/employee(page=${employees.pageNumber - 1}, keyword=${param.keyword})}"
+                    th:class="'px-3 py-1.5 rounded border transition ' + (${employees.pageNumber == 0} ? 'text-gray-300 border-gray-300 bg-gray-100 cursor-not-allowed pointer-events-none' : 'text-blue-600 border-blue-300 hover:bg-blue-50')"
+                  >
+                    Trước
+                  </a>
+                </li>
+
+                <!-- Trang -->
+                <li
+                  th:each="pageNum : ${#numbers.sequence(0, employees.totalPages - 1)}"
+                >
+                  <a
+                    th:href="@{/employee(page=${pageNum}, keyword=${param.keyword})}"
+                    th:text="${pageNum + 1}"
+                    th:class="'px-3 py-1.5 rounded border text-sm font-medium transition ' +
+                                         (${pageNum} == ${employees.pageNumber} ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-300 text-gray-700 hover:bg-blue-50')"
+                  >
+                  </a>
+                </li>
+
+                <!-- Tiếp -->
+                <li>
+                  <a
+                    th:href="@{/employee(page=${employees.pageNumber + 1}, keyword=${param.keyword})}"
+                    th:class="'px-3 py-1.5 rounded border transition ' + (${employees.pageNumber + 1 >= employees.totalPages} ? 'text-gray-300 border-gray-300 bg-gray-100 cursor-not-allowed pointer-events-none' : 'text-blue-600 border-blue-300 hover:bg-blue-50')"
+                  >
+                    Tiếp
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.getElementById('searchInput');
+        const clearBtn = document.getElementById('clearBtn');
+        const searchForm = searchInput.closest('form');
+
+        // Debug để kiểm tra elements
+        console.log('searchInput:', searchInput);
+        console.log('clearBtn:', clearBtn);
+        console.log('searchForm:', searchForm);
+
+        // Hiển thị nút X nếu có keyword từ server
+        if (searchInput && clearBtn) {
+          const hasKeyword =
+            searchInput.value && searchInput.value.trim() !== '';
+          if (hasKeyword) {
+            clearBtn.style.display = 'block';
+            console.log(
+              'Showing clear button because keyword exists:',
+              searchInput.value
+            );
+          } else {
+            clearBtn.style.display = 'none';
+          }
+        }
+
+        // Xử lý nút X để xóa tìm kiếm
+        if (clearBtn) {
+          clearBtn.addEventListener('click', function (e) {
+            e.preventDefault(); // Ngăn default behavior
+            console.log('Clear button clicked!');
+
+            searchInput.value = '';
+            clearBtn.style.display = 'none';
+
+            // Redirect trực tiếp thay vì submit form
+            window.location.href = '/employee';
+          });
+        } else {
+          console.log('Clear button not found!');
+        }
+
+        // Hiện/ẩn nút X khi nhập (bỏ auto-submit để tránh conflict)
+        searchInput.addEventListener('input', function () {
+          if (this.value.trim() === '') {
+            if (clearBtn) clearBtn.style.display = 'none';
+          } else {
+            if (clearBtn) clearBtn.style.display = 'block';
+          }
+        });
+
+        // Enter key để submit form
+        searchInput.addEventListener('keypress', function (e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            searchForm.submit();
+          }
+        });
+
+        // Xử lý nút xóa nhân viên
+        const deleteButtons = document.querySelectorAll('.btn-delete');
+        deleteButtons.forEach((button) => {
+          button.addEventListener('click', function (e) {
+            e.preventDefault();
+            const employeeId = this.getAttribute('data-id');
+            const employeeName = this.getAttribute('data-name');
+
+            if (
+              confirm(`Bạn có chắc chắn muốn xóa nhân viên "${employeeName}"?`)
+            ) {
+              const form = document.getElementById('deleteForm-' + employeeId);
+              if (form) {
+                form.submit();
+              }
+            }
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

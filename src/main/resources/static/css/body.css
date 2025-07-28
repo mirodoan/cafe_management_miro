@@ -1,0 +1,179 @@
+/* =====================
+   body.css - Dùng chung cho các trang kế thừa layout.html
+   ===================== */
+
+:root {
+    --body-content-bg: #fff;
+    --body-content-radius: var(--border-radius-default, 0.75rem);
+    --body-content-shadow: var(--shadow-md, 0 6px 15px rgba(0,0,0,0.1));
+    --body-content-padding: 2.5rem 2rem;
+    --body-content-maxwidth: 900px;
+    --body-content-margin: 2.5rem auto 0 auto;
+    --icon-edit: #1976D2;
+    --icon-edit-hover: #1565C0;
+    --icon-add: #43A047;
+    --icon-add-hover: #388E3C;
+    --icon-delete: #D32F2F;
+    --icon-delete-hover: #C62828;
+    --icon-save: var(--color-secondary, #FF6F61);
+    --icon-cancel: #6c757d;
+    --icon-cancel-hover: #5a6268;
+}
+
+.body-content {
+    background: var(--body-content-bg);
+    border-radius: var(--body-content-radius);
+    box-shadow: var(--body-content-shadow);
+    max-width: var(--body-content-maxwidth);
+    margin: var(--body-content-margin);
+    padding: var(--body-content-padding);
+    min-height: 300px;
+    position: relative;
+}
+
+/* Tiêu đề chính */
+.body-content-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    margin-bottom: 1.5rem;
+}
+
+/* Các nút hành động chung */
+.btn, .btn-edit, .btn-add, .btn-delete, .btn-save, .btn-cancel {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.2rem;
+    font-size: 1rem;
+    font-weight: 500;
+    border: none;
+    border-radius: var(--border-radius-default);
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+    outline: none;
+}
+.btn-edit {
+    background: var(--icon-edit);
+    color: #fff;
+}
+.btn-edit:hover {
+    background: var(--icon-edit-hover);
+}
+.btn-add {
+    background: var(--icon-add);
+    color: #fff;
+}
+.btn-add:hover {
+    background: var(--icon-add-hover);
+}
+.btn-delete {
+    background: var(--icon-delete);
+    color: #fff;
+}
+.btn-delete:hover {
+    background: var(--icon-delete-hover);
+}
+.btn-save {
+    background: var(--icon-save);
+    color: #fff;
+}
+.btn-save:hover {
+    background: var(--color-primary);
+}
+.btn-cancel {
+    background: var(--icon-cancel);
+    color: #fff;
+}
+.btn-cancel:hover {
+    background: var(--icon-cancel-hover);
+}
+
+/* Icon riêng lẻ (dùng cho <i> hoặc svg) */
+.icon-edit { color: var(--icon-edit); transition: color 0.2s; }
+.icon-edit:hover { color: var(--icon-edit-hover); }
+.icon-add { color: var(--icon-add); transition: color 0.2s; }
+.icon-add:hover { color: var(--icon-add-hover); }
+.icon-delete { color: var(--icon-delete); transition: color 0.2s; }
+.icon-delete:hover { color: var(--icon-delete-hover); }
+.icon-save { color: var(--icon-save); transition: color 0.2s; }
+.icon-cancel { color: var(--icon-cancel); transition: color 0.2s; }
+.icon-cancel:hover { color: var(--icon-cancel-hover); }
+
+/* Input, form chung */
+.body-content input[type="text"],
+.body-content input[type="password"],
+.body-content input[type="email"],
+.body-content textarea {
+    border: 1px solid #e2e8f0;
+    border-radius: var(--border-radius-default);
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    color: var(--color-text-main);
+    transition: border-color 0.3s, box-shadow 0.3s;
+    margin-bottom: 1rem;
+}
+.body-content input:focus,
+.body-content textarea:focus {
+    outline: none;
+    border-color: var(--color-secondary);
+    box-shadow: 0 0 0 2px rgba(255, 111, 97, 0.15);
+}
+
+/* Table chung */
+.body-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.5rem;
+    background: #fff;
+    border-radius: var(--border-radius-default);
+    overflow: hidden;
+    box-shadow: var(--shadow-default);
+}
+.body-content th, .body-content td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+}
+.body-content th {
+    background: var(--color-primary);
+    color: #fff;
+    font-weight: 600;
+}
+.body-content tr:nth-child(even) {
+    background: #faf6f2;
+}
+.body-content tr:hover {
+    background: var(--color-orange-pastel, #FFE0C2);
+}
+
+/* Alert/thông báo chung */
+.body-alert-success {
+    background: rgba(67, 160, 71, 0.1);
+    color: var(--color-success);
+    padding: 1rem 1.5rem;
+    border-radius: var(--border-radius-default);
+    border: 1px solid var(--color-success);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+.body-alert-error {
+    background: var(--color-error-bg);
+    color: var(--color-error-red);
+    padding: 1rem 1.5rem;
+    border-radius: var(--border-radius-default);
+    border: 1px solid var(--color-error-red);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* Responsive cho body-content */
+@media (max-width: 900px) {
+    .body-content {
+        max-width: 98vw;
+        padding: 1.2rem 0.5rem;
+    }
+} 

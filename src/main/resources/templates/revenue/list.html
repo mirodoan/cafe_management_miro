@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <title>📊 Xem Thu Chi</title>
+</head>
+
+<body>
+<div layout:fragment="content" class="container mt-5">
+    <div class="card shadow-sm">
+        <div class="card-header text-center bg-primary text-white">
+            <h4 class="mb-0">📊 Xem Thu Chi</h4>
+        </div>
+        <div class="card-body">
+
+            <!-- Form lọc theo ngày -->
+            <form action="/revenue" method="get" class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label for="startDate" class="form-label">Từ ngày:</label>
+                    <input type="date" id="startDate" name="startDate"
+                           class="form-control"
+                           th:value="${filter.startDate != null ? #temporals.format(filter.startDate, 'yyyy-MM-dd') : ''}">
+                    <div class="text-danger" th:if="${#fields.hasErrors('startDate')}"></div>
+                </div>
+                <div class="col-md-4">
+                    <label for="endDate" class="form-label">Đến ngày:</label>
+                    <input type="date" id="endDate" name="endDate"
+                           class="form-control"
+                           th:value="${filter.endDate != null ? #temporals.format(filter.endDate, 'yyyy-MM-dd') : ''}">
+                    <div class="text-danger" th:if="${#fields.hasErrors('endDate')}"></div>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-success w-100">🔍 Xem</button>
+                </div>
+            </form>
+
+            <!-- Bảng dữ liệu -->
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover text-center align-middle">
+                    <thead class="table-dark">
+                    <tr>
+                        <th scope="col">📅 Ngày</th>
+                        <th scope="col">💰 Thu</th>
+                        <th scope="col">💸 Chi</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:if="${revenue != null}" th:each="item : ${revenue.summaries}">
+                        <td th:text="${#temporals.format(item.date, 'dd/MM/yyyy')}">__/__/____</td>
+                        <td th:text="${#numbers.formatDecimal(item.income ?: 0, 0, 'POINT', 0, 'COMMA')} + ' VND'">0</td>
+                        <td th:text="${#numbers.formatDecimal(item.expense ?: 0, 0, 'POINT', 0, 'COMMA')} + ' VND'">0</td>
+                    </tr>
+                    <tr th:if="${revenue != null}" class="table-secondary fw-bold">
+                        <td>Tổng</td>
+                        <td th:text="${#numbers.formatDecimal(revenue.totalIncome ?: 0, 0, 'POINT', 0, 'COMMA')} + ' VND'">0</td>
+                        <td th:text="${#numbers.formatDecimal(revenue.totalExpense ?: 0, 0, 'POINT', 0, 'COMMA')} + ' VND'">0</td>
+                    </tr>
+                    <tr th:if="${revenue == null}">
+                        <td colspan="3" class="text-muted">Không có dữ liệu trong khoảng thời gian đã chọn.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="col-12">
+                <div class="text-danger" th:if="${#fields.hasGlobalErrors()}"
+                     th:each="err : ${#fields.globalErrors()}" th:text="${err}"></div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

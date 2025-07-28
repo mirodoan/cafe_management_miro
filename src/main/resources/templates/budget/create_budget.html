@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout}"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Thêm Chi Tiêu</title>
+  </head>
+  <body>
+    <div
+      layout:fragment="content"
+      class="bg-[#fefae0] min-h-screen w-full px-6 py-8"
+    >
+      <div class="max-w-[500px] mx-auto">
+        <div class="bg-white rounded-xl shadow-lg p-6">
+          <h2 class="text-2xl font-semibold text-gray-800 mb-6">
+            Thêm Chi Tiêu
+          </h2>
+
+          <form
+            th:action="@{/budget/create}"
+            method="post"
+            th:object="${expenseRequest}"
+            class="space-y-5"
+          >
+            <!-- Ngày -->
+            <div>
+              <label class="block font-medium mb-1">Ngày</label>
+              <input
+                type="date"
+                th:field="*{expenseDate}"
+                th:attr="max=${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}"
+                required
+                oninvalid="this.setCustomValidity('Vui lòng chọn ngày chi tiêu không quá ngày hôm nay')"
+                oninput="this.setCustomValidity('')"
+                class="w-full border px-3 py-2 rounded border-gray-300 focus:border-yellow-500 focus:ring-yellow-500"
+              />
+              <div
+                th:if="${#fields.hasErrors('expenseDate')}"
+                th:errors="*{expenseDate}"
+                class="text-red-600 text-sm mt-1"
+              ></div>
+            </div>
+
+            <!-- Khoản chi -->
+            <div>
+              <label class="block font-medium mb-1">Khoản chi</label>
+              <input
+                type="text"
+                th:field="*{expenseName}"
+                required
+                minlength="3"
+                maxlength="50"
+                pattern="^(?!\s*$).{3,}$"
+                placeholder="Ví dụ: Mua nguyên liệu"
+                oninvalid="this.setCustomValidity('Khoản chi phải có ít nhất 3 ký tự và không được để trống hoặc toàn dấu cách')"
+                oninput="this.setCustomValidity('')"
+                class="w-full border px-3 py-2 rounded border-gray-300 focus:border-yellow-500 focus:ring-yellow-500"
+              />
+              <div
+                th:if="${#fields.hasErrors('expenseName')}"
+                th:errors="*{expenseName}"
+                class="text-red-600 text-sm mt-1"
+              ></div>
+            </div>
+
+            <!-- Số tiền -->
+            <div>
+              <label class="block font-medium mb-1">Số tiền (VNĐ)</label>
+              <input
+                type="number"
+                th:field="*{amount}"
+                step="0.01"
+                min="1000"
+                required
+                oninvalid="this.setCustomValidity('Số tiền phải lớn hơn 1.000 VNĐ')"
+                oninput="this.setCustomValidity('')"
+                class="w-full border px-3 py-2 rounded border-gray-300 focus:border-yellow-500 focus:ring-yellow-500"
+              />
+              <div
+                th:if="${#fields.hasErrors('amount')}"
+                th:errors="*{amount}"
+                class="text-red-600 text-sm mt-1"
+              ></div>
+            </div>
+
+            <!-- Hành động -->
+            <div class="flex justify-end gap-4 mt-6">
+              <a
+                th:href="@{/budget/budget}"
+                class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded shadow-sm border border-gray-300"
+                >Hủy</a
+              >
+              <button
+                type="submit"
+                class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold px-4 py-2 rounded shadow-sm border border-yellow-400"
+              >
+                Lưu
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

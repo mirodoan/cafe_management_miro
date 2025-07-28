@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout}"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Cập nhật hàng hóa</title>
+  </head>
+  <body>
+    <div
+      layout:fragment="content"
+      class="bg-[#fefae0] min-h-screen w-full flex justify-center items-start py-12 px-4"
+    >
+      <div
+        class="w-full max-w-md bg-white p-10 rounded-2xl shadow-xl border border-gray-200"
+      >
+        <h1
+          class="text-3xl font-bold text-[#3e2723] mb-10 text-center tracking-wide"
+        >
+          Cập nhật hàng hóa
+        </h1>
+        <form
+          th:action="@{/warehouse/product/update}"
+          th:object="${product}"
+          method="post"
+          class="space-y-6"
+        >
+          <input type="hidden" th:field="*{productId}" />
+          <!-- Tên hàng hóa -->
+          <div>
+            <label
+              for="productName"
+              class="block text-[#3e2723] font-bold text-lg mb-2"
+            >
+              * Tên hàng hóa:
+            </label>
+            <input
+              type="text"
+              th:field="*{productName}"
+              id="productName"
+              required
+              minlength="3"
+              maxlength="100"
+              pattern="^(?!\s*$).{3,}$"
+              oninvalid="this.setCustomValidity('Tên hàng hóa tối thiểu 3 ký tự, không được để trống hoặc toàn dấu cách')"
+              oninput="this.setCustomValidity('')"
+              class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-blue-300 outline-none"
+            />
+            <p
+              class="text-red-500 text-sm mt-1"
+              th:if="${#fields.hasErrors('productName')}"
+              th:errors="*{productName}"
+            ></p>
+          </div>
+          <!-- Đơn vị tính (readonly) -->
+          <div>
+            <label
+              for="unitName"
+              class="block text-[#3e2723] font-bold text-lg mb-2"
+            >
+              Đơn vị tính:
+            </label>
+            <input
+              type="text"
+              id="unitName"
+              th:value="${product.unitName}"
+              readonly
+              class="w-full border border-gray-200 bg-gray-100 rounded-md px-4 py-3 text-base text-gray-600 outline-none"
+            />
+          </div>
+          <!-- Nút hành động -->
+          <div class="flex justify-between items-center mt-8">
+            <a
+              th:href="@{/warehouse/product}"
+              class="bg-gray-500 hover:bg-gray-600 text-white font-semibold px-6 py-2 rounded-md shadow"
+            >
+              Hủy
+            </a>
+            <button
+              type="submit"
+              class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-6 py-2 rounded-md shadow"
+            >
+              Lưu
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

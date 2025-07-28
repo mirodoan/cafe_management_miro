@@ -1,0 +1,268 @@
+<!-- fragments/payment.html -->
+<!-- Modal/Form Thanh toán: chỉ hiển thị khi showPaymentModal=true và orderDetail!=null -->
+<div xmlns:th="http://www.thymeleaf.org" th:fragment="payment-modal">
+    <div
+            th:if="${showPaymentModal} and ${orderDetail != null}"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
+    >
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-xl w-full relative border border-[#b5c99a]">
+            <button
+                    type="button"
+                    onclick="closePaymentModal()"
+                    class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-xl"
+            >×
+            </button>
+            <h3
+                    class="text-3xl font-extrabold mb-6 text-center tracking-tight"
+                    style="color: #3e2723"
+            >
+                Thanh toán -
+                <span th:text="${orderDetail.tableName}"></span>
+            </h3>
+            <div class="mb-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-base font-semibold text-[#3e2723] mb-1">Khách hàng</label>
+                        <div class="mt-1 block w-full rounded-lg border border-[#b5c99a] bg-[#f6e7cb] px-3 py-2">
+                            <span th:text="${orderDetail.customerName ?: '---'}"></span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-base font-semibold text-[#3e2723] mb-1">Số điện thoại</label>
+                        <div class="mt-1 block w-full rounded-lg border border-[#b5c99a] bg-[#f6e7cb] px-3 py-2">
+                            <span th:text="${orderDetail.customerPhone ?: '---'}"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="overflow-x-auto mb-6">
+                <table class="min-w-full border rounded-lg">
+                    <thead>
+                    <tr class="bg-gray-200">
+                        <th class="px-4 py-2 text-left">Tên món</th>
+                        <th class="px-4 py-2 text-center">Số lượng</th>
+                        <th class="px-4 py-2 text-center">Đơn giá (VND)</th>
+                        <th class="px-4 py-2 text-center">Thành tiền</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:if="${orderDetail.items == null or #lists.isEmpty(orderDetail.items)}">
+                        <td colspan="4" class="text-center text-gray-500">Chưa có thông tin chọn món</td>
+                    </tr>
+                    <tr th:each="item : ${orderDetail.items}">
+                        <td class="px-4 py-2" th:text="${item.menuItemName}"></td>
+                        <td class="px-4 py-2 text-center" th:text="${item.quantity}"></td>
+                        <td class="px-4 py-2 text-center"
+                            th:text="${#numbers.formatDecimal(item.price, 2, 'COMMA', 0, 'POINT').replaceAll('([.,]00)$','').replaceAll('([.,][1-9]0)$','$1'.replace('0',''))}">
+                        </td>
+                        <td class="px-4 py-2 text-center"
+                            th:text="${#numbers.formatDecimal(item.amount, 2, 'COMMA', 0, 'POINT').replaceAll('([.,]00)$','').replaceAll('([.,][1-9]0)$','$1'.replace('0',''))}">
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="flex justify-end mb-4">
+                <span class="font-bold text-lg text-[#3e2723]">Tổng tiền:</span>
+                <span
+                        id="totalAmountValue"
+                        class="ml-2 font-bold text-lg text-[#3e2723]"
+                        th:text="${#numbers.formatDecimal(orderDetail.totalAmount ?: 0, 2, 'COMMA', 0, 'POINT').replaceAll('([.,]00)$','').replaceAll('([.,][1-9]0)$','$1'.replace('0',''))}">
+        </span>
+            </div>
+            <form
+                    id="payment-form"
+                    th:action="@{/sale/pay-invoice}"
+                    method="post"
+                    class="mt-6 flex flex-col items-center"
+            >
+                <input
+                        type="hidden"
+                        name="tableId"
+                        th:value="${orderDetail.tableId}"
+                />
+                <div class="flex flex-col w-full max-w-xs mb-4">
+                    <label for="customerPaid" class="block text-base font-semibold text-[#3e2723] mb-1">Khách
+                        đưa:</label>
+                    <input
+                            type="text"
+                            id="customerPaid"
+                            name="customerPaid"
+                            class="border border-gray-400 rounded px-3 py-2 text-right font-bold text-lg"
+                            placeholder="0.00"
+                            autocomplete="off"
+                            oninput="validateInput(this)"
+                            onkeypress="return isValidKeyPress(event)"
+                            onpaste="return handlePaste(event)"
+                    />
+                    <span
+                            id="customerPaidError"
+                            class="text-red-500 text-sm mt-1 min-h-[20px]"
+                            style="display: none"
+                    ></span>
+                </div>
+                <div class="flex flex-col w-full max-w-xs mb-6">
+                    <label class="block text-base font-semibold text-[#3e2723] mb-1">Thối lại:</label>
+                    <span id="changeAmount" class="font-bold text-lg text-[#3e2723]">0</span>
+                </div>
+                <button
+                        type="submit"
+                        class="bg-gradient-to-tr from-[#3e2723] to-[#b5c99a] text-white px-8 py-3 rounded-lg font-semibold shadow hover:scale-105 hover:from-[#5d4037] hover:to-[#b5c99a] transition-all duration-200"
+                >
+                    Xác nhận thanh toán
+                </button>
+            </form>
+            <script>
+                // Helper: parse VND string to float
+                function parseVND(str) {
+                  if (!str) return 0;
+                  return parseFloat(str.replace(/,/g, ''));
+                }
+                function formatVND(num) {
+                  return num.toLocaleString('vi-VN', {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 2,
+                  });
+                }
+                function isValidKeyPress(event) {
+                  const charCode = event.which || event.keyCode;
+                  const char = String.fromCharCode(charCode);
+                  const inputValue = event.target.value;
+                  if ([8, 9, 27, 13, 46].includes(charCode)) return true;
+                  if ((charCode === 65 || charCode === 67 || charCode === 86 || charCode === 88) && event.ctrlKey) return true;
+                  if (charCode < 48 || charCode > 57) {
+                    if (char === '.') {
+                      if (inputValue.includes('.')) return false;
+                      return true;
+                    }
+                    return false;
+                  }
+                  if (inputValue.includes('.')) {
+                    const parts = inputValue.split('.');
+                    if (parts[1] && parts[1].length >= 2) return false;
+                  }
+                  return true;
+                }
+
+                function validateInput(input) {
+                  let value = input.value;
+                  value = value.replace(/[^0-9.]/g, '');
+                  const dotCount = (value.match(/\./g) || []).length;
+                  if (dotCount > 1) {
+                    const firstDotIndex = value.indexOf('.');
+                    value = value.substring(0, firstDotIndex + 1) + value.substring(firstDotIndex + 1).replace(/\./g, '');
+                  }
+                  if (value.includes('.')) {
+                    const parts = value.split('.');
+                    if (parts[1] && parts[1].length > 2) {
+                      parts[1] = parts[1].substring(0, 2);
+                      value = parts[0] + '.' + parts[1];
+                    }
+                  }
+                  if (value.startsWith('.')) {
+                    value = '0' + value;
+                  }
+                  input.value = value;
+                  updateChange();
+                }
+
+                function handlePaste(event) {
+                  event.preventDefault();
+                  const paste = (event.clipboardData || window.clipboardData).getData('text');
+                  let cleanPaste = paste.replace(/[^0-9.]/g, '');
+                  const dotCount = (cleanPaste.match(/\./g) || []).length;
+                  if (dotCount > 1) {
+                    const firstDotIndex = cleanPaste.indexOf('.');
+                    cleanPaste = cleanPaste.substring(0, firstDotIndex + 1) + cleanPaste.substring(firstDotIndex + 1).replace(/\./g, '');
+                  }
+                  if (cleanPaste.includes('.')) {
+                    const parts = cleanPaste.split('.');
+                    if (parts[1] && parts[1].length > 2) {
+                      parts[1] = parts[1].substring(0, 2);
+                      cleanPaste = parts[0] + '.' + parts[1];
+                    }
+                  }
+                  if (cleanPaste.startsWith('.')) {
+                    cleanPaste = '0' + cleanPaste;
+                  }
+                  event.target.value = cleanPaste;
+                  updateChange();
+                  return false;
+                }
+
+                const totalAmountEl = document.getElementById('totalAmountValue');
+                const customerPaidInput = document.getElementById('customerPaid');
+                const changeAmountEl = document.getElementById('changeAmount');
+                const errorEl = document.getElementById('customerPaidError');
+                let totalAmount = 0;
+                if (totalAmountEl) {
+                  totalAmount = parseVND(totalAmountEl.textContent);
+                }
+                function validatePaid(value) {
+                  if (!value || value.trim() === '') return 'Vui lòng nhập số tiền khách đưa.';
+                  const num = parseFloat(value);
+                  if (isNaN(num) || num <= 0) return 'Số tiền không hợp lệ.';
+                  if (num < totalAmount) return 'Số tiền khách đưa phải lớn hơn hoặc bằng tổng tiền.';
+                  return '';
+                }
+                function updateChange() {
+                  const value = customerPaidInput.value.trim();
+                  const errorMsg = validatePaid(value);
+                  if (errorMsg) {
+                    errorEl.textContent = errorMsg;
+                    errorEl.style.display = 'block';
+                    changeAmountEl.textContent = '0';
+                    return false;
+                  } else {
+                    errorEl.textContent = '';
+                    errorEl.style.display = 'none';
+                    const paid = parseFloat(value);
+                    const change = paid - totalAmount;
+                    changeAmountEl.textContent = formatVND(change);
+                    return true;
+                  }
+                }
+                customerPaidInput.addEventListener('input', updateChange);
+                document.getElementById('payment-form').addEventListener('submit', function (e) {
+                  if (!updateChange()) {
+                    e.preventDefault();
+                    customerPaidInput.focus();
+                    return false;
+                  }
+                  setTimeout(function () {
+                    alert('Thanh toán thành công!');
+                    closePaymentModal();
+                  }, 100);
+                });
+            </script>
+        </div>
+    </div>
+    <!-- Nếu showPaymentModal=true nhưng orderDetail=null, hiện thông báo lỗi -->
+    <div
+            th:if="${showPaymentModal} and ${orderDetail == null}"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
+    >
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-xl w-full relative border border-[#b5c99a] flex flex-col items-center">
+            <button
+                    type="button"
+                    onclick="closePaymentModal()"
+                    class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-xl"
+            >×
+            </button>
+            <h3 class="text-2xl font-bold mb-4 text-center text-[#3e2723]">
+                Không có thông tin hóa đơn để thanh toán!
+            </h3>
+            <button
+                    type="button"
+                    onclick="closePaymentModal()"
+                    class="bg-gray-400 hover:bg-gray-500 text-white px-6 py-2 rounded-lg font-semibold shadow mt-4"
+            >Đóng
+            </button>
+        </div>
+    </div>
+    <script>
+        function closePaymentModal() {
+          window.location.href = '/sale';
+        }
+    </script>
+</div>

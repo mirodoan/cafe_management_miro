@@ -1,0 +1,302 @@
+
+/* -- Thêm các biến màu mới -- */
+:root {
+    /* ... các biến màu cũ ... */
+    --color-profile-header-start: #FFECB3; /* Vàng nhạt hơn */
+    --color-profile-header-end: #FFD54F;   /* Vàng cam dịu hơn */
+    --color-button-edit: #1976D2; /* Xanh dương cho nút Edit */
+    --color-button-edit-hover: #1565C0;
+    --color-button-cancel: #6c757d; /* Xám cho nút Cancel */
+    --color-button-cancel-hover: #5a6268;
+    --color-edit-icon: #D32F2F; /* Màu đỏ cho icon edit */
+    --color-edit-icon-hover: #C62828;
+    --color-field-background: #f8f9fa; /* Nền cho các ô thông tin */
+}
+
+/* Profile Card Styling - Specific for this fragment */
+.page-content {
+    flex-grow: 1;
+    padding: 30px;
+    background-color: var(--color-background-main); /* Đảm bảo nền khớp với main layout */
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 50px;
+}
+
+.profile-card {
+    background: var(--color-background-secondary);
+    border-radius: var(--border-radius-default);
+    box-shadow: var(--shadow-lg);
+    max-width: 750px;
+    margin: 0.2rem auto; /* Siết margin dọc tối đa */
+    padding: 0;
+    overflow: hidden;
+}
+.profile-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+}
+.profile-header {
+    padding: 0.8rem 1.5rem; /* Giảm padding */
+    background: linear-gradient(135deg, var(--color-profile-header-start), var(--color-profile-header-end));
+    color: var(--color-text-dark);
+    text-align: center;
+    position: relative;
+}
+.profile-header h3 {
+    color: #333;
+}
+.profile-header p {
+    color: #555;
+    opacity: 0.9;
+}
+.avatar-container {
+    position: relative;
+    width: 80px; /* Giảm mạnh kích thước avatar */
+    height: 80px;
+    margin: 0 auto 0.2rem; /* Giảm mạnh margin */
+}
+.avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 4px solid white;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+.avatar-container .edit-icon {
+    bottom: 2px;
+    right: 2px;
+}
+.edit-icon {
+    display: none; /* Mặc định ẩn */
+    position: absolute;
+    width: 28px; /* Kích thước icon */
+    height: 28px;
+    background-color: var(--color-edit-icon);
+    color: white;
+    border-radius: 50%;
+    border: 2px solid white;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: all 0.2s ease-in-out;
+}
+.edit-icon:hover {
+    background-color: var(--color-edit-icon-hover);
+    transform: scale(1.1);
+}
+.info-field {
+    position: relative;
+    text-align: left;
+}
+.info-field label {
+    font-size: 0.7rem;
+    margin-bottom: 0.1rem;
+}
+.info-field input {
+    width: 100%;
+    padding: 0.35rem 2.5rem 0.35rem 0.8rem; /* Giảm mạnh padding dọc */
+    border-radius: var(--border-radius-sm);
+    background-color: var(--color-field-background);
+    border: 1px solid #dee2e6;
+    font-size: 0.9rem;
+    color: var(--color-text-main);
+    transition: border-color 0.2s ease;
+    cursor: default;
+}
+.info-field.editing input {
+    border-color: var(--color-primary);
+    background-color: white;
+    cursor: text;
+}
+.info-field input:read-only {
+    background-color: var(--color-field-background);
+    border-color: #dee2e6;
+    cursor: default;
+}
+.password-field input {
+    -webkit-text-security: disc;
+}
+.password-field .toggle-password {
+    cursor: pointer;
+    color: var(--color-accent); /* Màu xanh da trời cho icon mắt */
+    padding-top: 20px;
+    font-size: 1rem;
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    transition: color 0.3s ease;
+}
+.password-field .toggle-password:hover {
+    color: var(--color-secondary); /* Màu hồng cam khi hover */
+}
+.grid-container {
+    padding: 0.8rem 1.5rem; /* Giảm padding */
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem 1.5rem; /* Giảm gap dọc */
+}
+.full-width {
+    grid-column: 1 / span 2;
+}
+
+/* Responsive adjustments for screens up to 768px wide (typical tablets and phones) */
+@media (max-width: 768px) {
+    .grid-container {
+        grid-template-columns: 1fr; /* Chuyển thành 1 cột trên màn hình nhỏ */
+    }
+    .full-width {
+        grid-column: 1 / span 1; /* Đảm bảo ô địa chỉ cũng chỉ chiếm 1 cột */
+    }
+    .profile-card {
+        padding: 20px; /* Giảm padding cho card trên màn hình nhỏ */
+    }
+    .page-content {
+        padding: 20px; /* Giảm padding cho vùng nội dung */
+        padding-top: 30px; /* Giảm padding top một chút */
+    }
+    .profile-card h2 {
+        font-size: 2rem; /* Giảm kích thước tiêu đề chính */
+        margin-bottom: 1.5rem;
+    }
+    .profile-header h3 {
+        font-size: 1.5rem; /* Giảm kích thước tên */
+    }
+    .profile-header p {
+        font-size: 0.9rem; /* Giảm kích thước mô tả */
+    }
+    .info-field {
+        padding: 10px 15px; /* Giảm padding cho các trường thông tin */
+        margin-bottom: 15px;
+    }
+    .info-field label {
+        font-size: 0.8rem; /* Giảm kích thước label */
+        top: 6px;
+        left: 15px;
+    }
+    .info-field input, .info-field .static-value {
+        font-size: 0.95rem; /* Giảm kích thước input text */
+        padding-top: 18px;
+    }
+    .password-field .toggle-password {
+        font-size: 0.9rem; /* Giảm kích thước icon mắt */
+        padding-top: 18px;
+        right: 15px;
+    }
+}
+
+.info-field input {
+    background-color: transparent;
+    border-color: transparent;
+    cursor: default;
+    padding-left: 0.5rem; /* Giảm padding */
+}
+
+.info-field.editing input {
+    background-color: white;
+    border-color: var(--color-secondary);
+    cursor: text;
+}
+
+.info-field.password-field {
+    position: relative;
+}
+.info-field.password-field input {
+    padding-right: 2.5rem;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(50%);
+    cursor: pointer;
+    color: #9e9e9e;
+}
+
+.profile-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.8rem;
+    padding: 0.8rem 1.5rem; /* Giảm padding */
+    border-top: 1px solid #eee;
+    margin-top: 0.5rem; /* Giảm margin */
+}
+
+.btn-edit, .btn-save, .btn-cancel {
+    padding: 0.5rem 1.1rem; /* Giảm padding nút */
+    font-size: 0.85rem; /* Giảm font-size nút */
+    border: none;
+    border-radius: var(--border-radius-default);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-edit {
+    background-color: var(--color-button-edit);
+    color: white;
+}
+.btn-edit:hover {
+    background-color: var(--color-button-edit-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-default);
+}
+
+.btn-save {
+    background-color: var(--color-success);
+    color: white;
+}
+.btn-save:hover {
+    background-color: #388E3C;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-default);
+}
+
+.btn-cancel {
+    background-color: transparent;
+    color: var(--color-button-cancel);
+    border: 2px solid #e0e0e0;
+}
+.btn-cancel:hover {
+    background-color: #f5f5f5;
+    border-color: #bdbdbd;
+}
+
+/* CSS cho thông báo */
+.alert-success, .alert-error {
+    margin: 0 1.5rem 0.8rem; /* Giảm margin/padding */
+    padding: 0.6rem 1rem;
+    border-radius: var(--border-radius-default);
+    font-weight: 500;
+}
+.alert-success {
+    background-color: #E8F5E9;
+    color: #2E7D32;
+    border: 1px solid #A5D6A7;
+}
+.alert-error {
+    background-color: #FFEBEE;
+    color: #C62828;
+    border: 1px solid #EF9A9A;
+}
+
+/* Wrapper cho input và icon */
+.input-wrapper {
+    position: relative;
+}
+
+/* Icon bên trong input-wrapper */
+.input-wrapper .edit-icon {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+}
+

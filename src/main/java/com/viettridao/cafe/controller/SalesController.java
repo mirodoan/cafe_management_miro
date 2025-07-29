@@ -2,7 +2,6 @@ package com.viettridao.cafe.controller;
 
 import com.viettridao.cafe.common.TableStatus;
 import com.viettridao.cafe.dto.request.sales.*;
-import com.viettridao.cafe.dto.response.sales.MenuItemResponse;
 import com.viettridao.cafe.dto.response.sales.OrderDetailRessponse;
 import com.viettridao.cafe.mapper.OrderDetailMapper;
 import com.viettridao.cafe.model.*;
@@ -52,6 +51,8 @@ public class SalesController {
     public String getSalesOverview(Model model) {
         // Chuẩn bị dữ liệu cơ bản cho view
         model.addAttribute("tables", tableRepository.findAll());
+
+        // Truyền sẵn các object form cho các chức năng chính
         model.addAttribute("reservation", new CreateReservationRequest());
         model.addAttribute("showReservationForm", false);
 
@@ -189,48 +190,19 @@ public class SalesController {
      */
     @GetMapping("/show-select-menu-form")
     public String showSelectMenuForm(@RequestParam(value = "tableId", required = false) Integer tableId, Model model) {
-        // Kiểm tra đầu vào
-        if (tableId == null) {
-            model.addAttribute("errorMessage", "Bạn chưa chọn bàn để thực hiện chức năng này!");
+        try {
+            CreateSelectMenuRequest selectMenuRequest = selectMenuService.prepareSelectMenuRequest(tableId);
+            model.addAttribute("selectMenuRequest", selectMenuRequest);
+            model.addAttribute("selectedTable", tableRepository.findById(tableId).orElse(null));
+            model.addAttribute("tables", tableRepository.findAll());
+            model.addAttribute("showSelectMenuForm", true);
+            model.addAttribute("menuItems", selectMenuService.getMenuItems());
+            return "sales/sales";
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("errorMessage", e.getMessage());
             model.addAttribute("tables", tableRepository.findAll());
             return "sales/sales";
         }
-        // Lấy thông tin bàn
-        TableEntity table = tableRepository.findById(tableId)
-                .orElse(null);
-        if (table == null) {
-            model.addAttribute("errorMessage", "Không tìm thấy bàn với ID: " + tableId);
-            model.addAttribute("tables", tableRepository.findAll());
-            return "sales/sales";
-        }
-        // Chuẩn bị request chọn món
-        CreateSelectMenuRequest selectMenuRequest = new CreateSelectMenuRequest();
-        selectMenuRequest.setTableId(tableId);
-        selectMenuRequest.setItems(new ArrayList<>());
-
-        // Nếu bàn đã có reservation thì lấy thông tin khách hàng hiện tại
-        if (table.getStatus().name().equals("RESERVED") || table.getStatus().name().equals("OCCUPIED")) {
-            try {
-                ReservationEntity reservation = reservationService.findCurrentReservationByTableId(tableId);
-                if (reservation != null) {
-                    selectMenuRequest.setCustomerName(reservation.getCustomerName());
-                    selectMenuRequest.setCustomerPhone(reservation.getCustomerPhone());
-                }
-            } catch (Exception e) {
-                // Không có reservation hoặc lỗi → để trống để người dùng nhập thủ công
-            }
-        }
-
-        // Lấy danh sách món hiện có
-        List<MenuItemResponse> menuItems = selectMenuService.getMenuItems();
-
-        // Đẩy dữ liệu ra view
-        model.addAttribute("tables", tableRepository.findAll());
-        model.addAttribute("selectMenuRequest", selectMenuRequest);
-        model.addAttribute("selectedTable", table);
-        model.addAttribute("showSelectMenuForm", true);
-        model.addAttribute("menuItems", menuItems);
-        return "sales/sales";
     }
 
     /**
@@ -242,76 +214,41 @@ public class SalesController {
             BindingResult bindingResult,
             Model model) {
 
-        TableEntity table = null;
+        if (bindingResult.hasErrors()) {
+            // Trả về form với lỗi validate dữ liệu hình thức
+            prepareSelectMenuFormModel(model, request);
+            return "sales/sales";
+        }
 
         try {
-            // Validate bàn
-            if (request.getTableId() == null) {
-                bindingResult.reject("error.tableId", "Không xác định được bàn để chọn món.");
-            } else {
-                table = tableRepository.findById(request.getTableId()).orElse(null);
-                if (table == null) {
-                    bindingResult.reject("error.tableId", "Không tìm thấy bàn với ID: " + request.getTableId());
-                }
-            }
-            // Nếu bàn AVAILABLE thì validate thông tin khách hàng
-            if (table != null && table.getStatus().name().equals("AVAILABLE")) {
-                if (request.getCustomerName() == null || request.getCustomerName().trim().isEmpty()) {
-                    bindingResult.rejectValue("customerName", "error.customerName", "Tên khách hàng không được để trống khi tạo mới order");
-                }
-                if (request.getCustomerPhone() == null || request.getCustomerPhone().trim().isEmpty()) {
-                    bindingResult.rejectValue("customerPhone", "error.customerPhone", "Số điện thoại không được để trống khi tạo mới order");
-                }
-            }
-            // Kiểm tra món đã chọn
-            if (request.getItems() == null || request.getItems().isEmpty()) {
-                bindingResult.reject("error.items", "Vui lòng chọn ít nhất một món");
-            } else {
-                List<CreateSelectMenuRequest.MenuOrderItem> validItems = request.getItems().stream()
-                        .filter(item -> item.getMenuItemId() != null && item.getQuantity() != null && item.getQuantity() > 0)
-                        .toList();
-                if (validItems.isEmpty()) {
-                    bindingResult.reject("error.items", "Vui lòng chọn ít nhất một món và nhập số lượng");
-                } else {
-                    request.setItems(new ArrayList<>(validItems));
-                }
-            }
-            // Nếu có lỗi thì trả về form
-            if (bindingResult.hasErrors()) {
-                model.addAttribute("tables", tableRepository.findAll());
-                model.addAttribute("selectMenuRequest", request);
-                model.addAttribute("selectedTable", table);
-                model.addAttribute("showSelectMenuForm", true);
-                model.addAttribute("org.springframework.validation.BindingResult.selectMenuRequest", bindingResult);
-                model.addAttribute("menuItems", selectMenuService.getMenuItems());
-                return "sales/sales";
-            }
-
-            // Dùng hàm helper để lấy employeeId
             Integer employeeId = getCurrentEmployeeId();
-
-            // Gọi service xử lý nghiệp vụ tạo order
             OrderDetailRessponse orderDetail = selectMenuService.createOrderForAvailableTable(request, employeeId);
-
-            // Trả về view khi thành công
             model.addAttribute("tables", tableRepository.findAll());
             model.addAttribute("successMessage", "Chọn món thành công!");
             model.addAttribute("orderDetail", orderDetail);
             model.addAttribute("showSelectMenuForm", false);
             return "sales/sales";
         } catch (IllegalArgumentException e) {
-            bindingResult.reject("error.system", e.getMessage());
+            // Lỗi nghiệp vụ: gắn vào model để hiển thị trên form
+            model.addAttribute("errorMessage", e.getMessage());
+            prepareSelectMenuFormModel(model, request);
+            return "sales/sales";
         } catch (RuntimeException e) {
-            bindingResult.reject("error.system", "Đã xảy ra lỗi hệ thống: " + e.getMessage());
+            model.addAttribute("errorMessage", "Đã xảy ra lỗi hệ thống: " + e.getMessage());
+            prepareSelectMenuFormModel(model, request);
+            return "sales/sales";
         }
-        // Gắn dữ liệu và trả về form nếu có lỗi
+    }
+
+    /**
+     * Helper method để gắn lại các attribute cần thiết cho form
+     */
+    private void prepareSelectMenuFormModel(Model model, CreateSelectMenuRequest request) {
         model.addAttribute("tables", tableRepository.findAll());
         model.addAttribute("selectMenuRequest", request);
-        model.addAttribute("selectedTable", table);
+        model.addAttribute("selectedTable", request.getTableId() != null ? tableRepository.findById(request.getTableId()).orElse(null) : null);
         model.addAttribute("showSelectMenuForm", true);
-        model.addAttribute("org.springframework.validation.BindingResult.selectMenuRequest", bindingResult);
         model.addAttribute("menuItems", selectMenuService.getMenuItems());
-        return "sales/sales";
     }
 
     /**

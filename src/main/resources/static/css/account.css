@@ -300,3 +300,14 @@
     transform: translateY(-50%);
 }
 
+.disabled-button {
+  pointer-events: none !important;
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+  background-color: #6b7280 !important; /* Gray background */
+}
+
+.disabled-button:hover {
+  background-color: #6b7280 !important;
+  transform: none !important;
+}

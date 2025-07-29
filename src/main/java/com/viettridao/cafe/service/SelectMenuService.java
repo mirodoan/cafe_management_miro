@@ -28,4 +28,6 @@ public interface SelectMenuService {
      * @return Danh sách menu item response
      */
     List<MenuItemResponse> getMenuItems();
+
+    public CreateSelectMenuRequest prepareSelectMenuRequest(Integer tableId);
 }

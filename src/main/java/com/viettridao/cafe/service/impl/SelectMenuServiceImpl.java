@@ -9,22 +9,24 @@ import com.viettridao.cafe.mapper.MenuItemMapper;
 import com.viettridao.cafe.mapper.OrderDetailMapper;
 import com.viettridao.cafe.model.*;
 import com.viettridao.cafe.repository.*;
+import com.viettridao.cafe.service.ReservationService;
 import com.viettridao.cafe.service.SelectMenuService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * SelectMenuServiceImpl
- * Triển khai logic chọn món và tạo order cho bàn (SelectMenu).
- * Xử lý nghiệp vụ đặt món, tạo hóa đơn, reservation, cập nhật chi tiết hóa đơn.
+ * Xử lý chọn món và tạo order cho bàn.
  */
 @Service
 @RequiredArgsConstructor
 public class SelectMenuServiceImpl implements SelectMenuService {
+
     private final TableRepository tableRepository;
     private final ReservationRepository reservationRepository;
     private final InvoiceRepository invoiceRepository;
@@ -32,90 +34,64 @@ public class SelectMenuServiceImpl implements SelectMenuService {
     private final MenuItemRepository menuItemRepository;
     private final EmployeeRepository employeeRepository;
     private final OrderDetailMapper orderDetailMapper;
+    private final ReservationService reservationService;
 
     /**
      * Tạo order mới cho bàn: kiểm tra trạng thái bàn, tạo hóa đơn/reservation/chi tiết hóa đơn, cập nhật trạng thái bàn.
      *
-     * @param request    thông tin chọn món.
-     * @param employeeId id nhân viên thực hiện.
+     * @param request    Thông tin chọn món.
+     * @param employeeId ID nhân viên thực hiện.
      * @return OrderDetailRessponse kết quả order.
      */
     @Override
     @Transactional
-    public OrderDetailRessponse createOrderForAvailableTable(
-            CreateSelectMenuRequest request, Integer employeeId) {
-        // 1. Kiểm tra trạng thái bàn
+    public OrderDetailRessponse createOrderForAvailableTable(CreateSelectMenuRequest request, Integer employeeId) {
+        // Lọc những item hợp lệ (menuItemId != null và quantity > 0)
+        List<CreateSelectMenuRequest.MenuOrderItem> validItems = request.getItems().stream()
+                .filter(item -> item.getMenuItemId() != null && item.getQuantity() != null && item.getQuantity() > 0)
+                .toList();
+        if (validItems.isEmpty()) {
+            throw new IllegalArgumentException("Vui lòng chọn ít nhất một món và nhập số lượng.");
+        }
+        request.setItems(validItems);
+
+        validateSelectMenuRequest(request);
+
+        // Lấy bàn và kiểm tra trạng thái bàn
         TableEntity table = tableRepository.findById(request.getTableId())
                 .orElseThrow(() -> new IllegalArgumentException("Bàn không tồn tại!"));
 
-        // 2. Lấy thông tin nhân viên từ DB
+        // Lấy thông tin nhân viên
         EmployeeEntity employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new IllegalArgumentException("Nhân viên không tồn tại!"));
 
-        InvoiceEntity invoice = null;
-        ReservationEntity reservation = null;
+        InvoiceEntity invoice;
+        ReservationEntity reservation;
 
-        if (table.getStatus() == TableStatus.AVAILABLE) {
-            invoice = new InvoiceEntity();
-            invoice.setStatus(InvoiceStatus.PENDING_PAYMENT);
-            invoice.setCreatedAt(LocalDateTime.now());
-            invoiceRepository.save(invoice);
-
-            ReservationKey reservationKey = new ReservationKey();
-            reservationKey.setIdTable(table.getId());
-            reservationKey.setIdEmployee(employee.getId());
-            reservationKey.setIdInvoice(invoice.getId());
-
-            reservation = new ReservationEntity();
-            reservation.setId(reservationKey);
-            reservation.setTable(table);
-            reservation.setEmployee(employee);
-            reservation.setInvoice(invoice);
-            reservation.setCustomerName(request.getCustomerName());
-            reservation.setCustomerPhone(request.getCustomerPhone());
-            reservation.setReservationDate(LocalDateTime.now());
-            reservation.setIsDeleted(false);
-            reservationRepository.save(reservation);
-
-            for (CreateSelectMenuRequest.MenuOrderItem item : request.getItems()) {
-                MenuItemEntity menuItem = menuItemRepository.findById(item.getMenuItemId())
-                        .orElseThrow(() -> new IllegalArgumentException("Món ăn không tồn tại!"));
-                InvoiceKey invoiceKey = new InvoiceKey();
-                invoiceKey.setIdInvoice(invoice.getId());
-                invoiceKey.setIdMenuItem(menuItem.getId());
-
-                InvoiceDetailEntity detail = new InvoiceDetailEntity();
-                detail.setId(invoiceKey);
-                detail.setInvoice(invoice);
-                detail.setMenuItem(menuItem);
-                detail.setQuantity(item.getQuantity());
-                detail.setPrice(menuItem.getCurrentPrice());
-                detail.setIsDeleted(false);
-                invoiceDetailRepository.save(detail);
+        switch (table.getStatus()) {
+            case AVAILABLE -> {
+                validateCustomerInfo(request);
+                invoice = createNewInvoice();
+                reservation = createNewReservation(table, employee, invoice, request);
+                addInvoiceDetails(invoice, request.getItems());
+                table.setStatus(TableStatus.OCCUPIED);
+                tableRepository.save(table);
             }
-
-            table.setStatus(TableStatus.OCCUPIED);
-            tableRepository.save(table);
-        } else if (table.getStatus() == TableStatus.RESERVED) {
-            reservation = reservationRepository.findAll().stream()
-                    .filter(r -> r.getTable().getId().equals(table.getId()) && !Boolean.TRUE.equals(r.getIsDeleted()))
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalStateException("Không tìm thấy reservation cho bàn đã đặt!"));
-            invoice = reservation.getInvoice();
-            invoice.setStatus(InvoiceStatus.PENDING_PAYMENT);
-            invoiceRepository.save(invoice);
-            table.setStatus(TableStatus.OCCUPIED);
-            tableRepository.save(table);
-            updateOrAddInvoiceDetails(invoice, request);
-        } else if (table.getStatus() == TableStatus.OCCUPIED) {
-            reservation = reservationRepository.findAll().stream()
-                    .filter(r -> r.getTable().getId().equals(table.getId()) && !Boolean.TRUE.equals(r.getIsDeleted()))
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalStateException("Không tìm thấy reservation cho bàn đang sử dụng!"));
-            invoice = reservation.getInvoice();
-            updateOrAddInvoiceDetails(invoice, request);
-        } else {
-            throw new IllegalStateException("Trạng thái bàn không hợp lệ!");
+            case RESERVED -> {
+                reservation = getActiveReservation(table.getId(), "Không tìm thấy reservation cho bàn đã đặt!");
+                invoice = reservation.getInvoice();
+                invoice.setStatus(InvoiceStatus.PENDING_PAYMENT);
+                invoiceRepository.save(invoice);
+                table.setStatus(TableStatus.OCCUPIED);
+                tableRepository.save(table);
+                addOrUpdateInvoiceDetails(invoice, request.getItems());
+            }
+            case OCCUPIED -> {
+                reservation = getActiveReservation(table.getId(), "Không tìm thấy reservation cho bàn đang sử dụng!");
+                invoice = reservation.getInvoice();
+                addOrUpdateInvoiceDetails(invoice, request.getItems());
+            }
+            default -> throw new IllegalStateException("Trạng thái bàn không hợp lệ!");
         }
 
         updateInvoiceTotalAmount(invoice);
@@ -126,25 +102,124 @@ public class SelectMenuServiceImpl implements SelectMenuService {
     }
 
     /**
-     * Thêm mới hoặc cập nhật số lượng món trong chi tiết hóa đơn
+     * Kiểm tra dữ liệu đầu vào cho chọn menu request
      */
-    private void updateOrAddInvoiceDetails(InvoiceEntity invoice, CreateSelectMenuRequest request) {
-        for (CreateSelectMenuRequest.MenuOrderItem item : request.getItems()) {
+    private void validateSelectMenuRequest(CreateSelectMenuRequest request) {
+        if (request.getTableId() == null) {
+            throw new IllegalArgumentException("Vui lòng chọn bàn.");
+        }
+        if (request.getItems() == null || request.getItems().isEmpty()) {
+            throw new IllegalArgumentException("Vui lòng chọn ít nhất một món.");
+        }
+    }
+
+    /**
+     * Kiểm tra thông tin khách hàng khi tạo mới order
+     */
+    private void validateCustomerInfo(CreateSelectMenuRequest request) {
+        if (request.getCustomerName() == null || request.getCustomerName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Tên khách hàng không được để trống khi tạo mới order.");
+        }
+        if (request.getCustomerPhone() == null || request.getCustomerPhone().trim().isEmpty()) {
+            throw new IllegalArgumentException("Số điện thoại khách hàng không được để trống khi tạo mới order.");
+        }
+        // Có thể bổ sung validate format SĐT nếu cần
+    }
+
+    /**
+     * Tạo mới hóa đơn
+     */
+    private InvoiceEntity createNewInvoice() {
+        InvoiceEntity invoice = new InvoiceEntity();
+        invoice.setStatus(InvoiceStatus.PENDING_PAYMENT);
+        invoice.setCreatedAt(LocalDateTime.now());
+        invoice.setIsDeleted(false);
+        invoiceRepository.save(invoice);
+        return invoice;
+    }
+
+    /**
+     * Tạo mới reservation
+     */
+    private ReservationEntity createNewReservation(TableEntity table, EmployeeEntity employee, InvoiceEntity invoice, CreateSelectMenuRequest request) {
+        ReservationKey reservationKey = new ReservationKey();
+        reservationKey.setIdTable(table.getId());
+        reservationKey.setIdEmployee(employee.getId());
+        reservationKey.setIdInvoice(invoice.getId());
+
+        ReservationEntity reservation = new ReservationEntity();
+        reservation.setId(reservationKey);
+        reservation.setTable(table);
+        reservation.setEmployee(employee);
+        reservation.setInvoice(invoice);
+        reservation.setCustomerName(request.getCustomerName());
+        reservation.setCustomerPhone(request.getCustomerPhone());
+        reservation.setReservationDate(LocalDateTime.now());
+        reservation.setIsDeleted(false);
+
+        reservationRepository.save(reservation);
+        return reservation;
+    }
+
+    /**
+     * Lấy reservation đang hoạt động cho bàn
+     */
+    private ReservationEntity getActiveReservation(Integer tableId, String notFoundMsg) {
+        return reservationRepository
+                .findTopByTable_IdAndIsDeletedFalseOrderByReservationDateDesc(tableId)
+                .orElseThrow(() -> new IllegalStateException(notFoundMsg));
+    }
+
+    /**
+     * Thêm mới chi tiết hóa đơn
+     */
+    private void addInvoiceDetails(InvoiceEntity invoice, List<CreateSelectMenuRequest.MenuOrderItem> items) {
+        for (CreateSelectMenuRequest.MenuOrderItem item : items) {
             MenuItemEntity menuItem = menuItemRepository.findById(item.getMenuItemId())
                     .orElseThrow(() -> new IllegalArgumentException("Món ăn không tồn tại!"));
+            if (Boolean.TRUE.equals(menuItem.getIsDeleted())) {
+                throw new IllegalArgumentException("Món ăn đã ngừng kinh doanh.");
+            }
+
             InvoiceKey invoiceKey = new InvoiceKey();
             invoiceKey.setIdInvoice(invoice.getId());
             invoiceKey.setIdMenuItem(menuItem.getId());
 
-            // Tìm chi tiết hóa đơn theo khóa chính (ID). Nếu không tìm thấy thì trả về null
+            InvoiceDetailEntity detail = new InvoiceDetailEntity();
+            detail.setId(invoiceKey);
+            detail.setInvoice(invoice);
+            detail.setMenuItem(menuItem);
+            detail.setQuantity(item.getQuantity());
+            detail.setPrice(menuItem.getCurrentPrice());
+            detail.setIsDeleted(false);
+
+            invoiceDetailRepository.save(detail);
+        }
+    }
+
+    /**
+     * Thêm mới hoặc cập nhật số lượng món trong chi tiết hóa đơn
+     */
+    private void addOrUpdateInvoiceDetails(InvoiceEntity invoice, List<CreateSelectMenuRequest.MenuOrderItem> items) {
+        for (CreateSelectMenuRequest.MenuOrderItem item : items) {
+            MenuItemEntity menuItem = menuItemRepository.findById(item.getMenuItemId())
+                    .orElseThrow(() -> new IllegalArgumentException("Món ăn không tồn tại!"));
+            if (Boolean.TRUE.equals(menuItem.getIsDeleted())) {
+                throw new IllegalArgumentException("Món ăn đã ngừng kinh doanh.");
+            }
+
+            InvoiceKey invoiceKey = new InvoiceKey();
+            invoiceKey.setIdInvoice(invoice.getId());
+            invoiceKey.setIdMenuItem(menuItem.getId());
+
             InvoiceDetailEntity detail = invoiceDetailRepository.findById(invoiceKey).orElse(null);
 
-            // Nếu chi tiết hóa đơn đã tồn tại và chưa bị xóa
             if (detail != null && !Boolean.TRUE.equals(detail.getIsDeleted())) {
-                // Tăng số lượng chi tiết hóa đơn lên bằng số lượng hiện tại + số lượng mới của món
+                // Tăng số lượng lên bằng hiện tại + số mới
                 detail.setQuantity(detail.getQuantity() + item.getQuantity());
                 invoiceDetailRepository.save(detail);
             } else {
+                // Nếu chưa có thì thêm mới
                 InvoiceDetailEntity newDetail = new InvoiceDetailEntity();
                 newDetail.setId(invoiceKey);
                 newDetail.setInvoice(invoice);
@@ -183,4 +258,27 @@ public class SelectMenuServiceImpl implements SelectMenuService {
         return MenuItemMapper.toMenuItemResponseList(menuEntities);
     }
 
+    /**
+     * Chuẩn bị request chọn menu cho form
+     */
+    @Override
+    public CreateSelectMenuRequest prepareSelectMenuRequest(Integer tableId) {
+        if (tableId == null) {
+            throw new IllegalArgumentException("Bạn chưa chọn bàn để thực hiện chức năng này!");
+        }
+        TableEntity table = tableRepository.findById(tableId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bàn với ID: " + tableId));
+        CreateSelectMenuRequest selectMenuRequest = new CreateSelectMenuRequest();
+        selectMenuRequest.setTableId(tableId);
+        selectMenuRequest.setItems(new ArrayList<>());
+
+        if (table.getStatus() == TableStatus.RESERVED || table.getStatus() == TableStatus.OCCUPIED) {
+            ReservationEntity reservation = reservationService.findCurrentReservationByTableId(tableId);
+            if (reservation != null) {
+                selectMenuRequest.setCustomerName(reservation.getCustomerName());
+                selectMenuRequest.setCustomerPhone(reservation.getCustomerPhone());
+            }
+        }
+        return selectMenuRequest;
+    }
 }

@@ -1,39 +1,39 @@
 <!DOCTYPE html>
 <html
-  lang="vi"
-  xmlns:th="http://www.thymeleaf.org"
-  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+        lang="vi"
+        xmlns:th="http://www.thymeleaf.org"
+        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
 >
-  <head>
-    <meta charset="UTF-8" />
+<head>
+    <meta charset="UTF-8"/>
     <title layout:title-pattern="$CONTENT_TITLE - Cafe Management">
-      Cafe Management
+        Cafe Management
     </title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script
-      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
-      defer
+            src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+            defer
     ></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script th:src="@{/js/alert-utils.js}"></script>
 
     <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
     />
-    <link th:href="@{/css/main.css}" rel="stylesheet" />
-  </head>
-  <body
-    style="
+    <link th:href="@{/css/main.css}" rel="stylesheet"/>
+</head>
+<body
+        style="
       background: var(--color-background-main);
       color: var(--color-text-main);
       font-family: var(--font-family-main);
     "
-    class="layout-root"
-  >
-    <header
-      style="
+        class="layout-root"
+>
+<header
+        style="
         background: linear-gradient(
           to right,
           var(--color-primary),
@@ -41,10 +41,10 @@
         );
         color: white;
       "
-      class="shadow-lg"
-    >
-      <div
-        style="
+        class="shadow-lg"
+>
+    <div
+            style="
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -52,10 +52,10 @@
           padding: 0 2rem 0 0;
           min-height: 64px;
         "
-      >
+    >
         <div
-          class="header-logo"
-          style="
+                class="header-logo"
+                style="
             display: flex;
             align-items: center;
             gap: 0.75rem;
@@ -63,192 +63,192 @@
             padding-left: 2rem;
           "
         >
-          <i
-            class="fas fa-mug-hot"
-            style="font-size: 2.5rem; color: var(--color-secondary)"
-          ></i>
-          <span style="font-size: 2rem; font-weight: bold; letter-spacing: 1px">
+            <i
+                    class="fas fa-mug-hot"
+                    style="font-size: 2.5rem; color: var(--color-secondary)"
+            ></i>
+            <span style="font-size: 2rem; font-weight: bold; letter-spacing: 1px">
             <span style="color: var(--color-secondary)">Cafe</span>
             <span style="color: #fff">Hub</span>
           </span>
         </div>
         <div class="flex items-center gap-4">
-          <div class="hidden sm:block text-sm text-right">
-            <div class="font-semibold" th:text="${user.username}">
-              Tên đăng nhập
-            </div>
-            <div
-              class="text-gray-300 text-xs"
-              th:text="'Chức vụ: ' + ${user.permission}"
-            >
-              Chức vụ
-            </div>
-          </div>
-          <img
-            th:src="${user.imageUrl}"
-            alt="avatar"
-            class="w-8 h-8 rounded-full border"
-          />
-
-          <form th:action="@{/logout}" method="post">
-            <button
-              type="submit"
-              class="px-3 py-1 text-sm text-white bg-red-500 rounded shadow hover:bg-red-600"
-            >
-              Đăng xuất
-            </button>
-          </form>
-        </div>
-      </div>
-    </header>
-
-    <div
-      class="layout-page"
-      style="display: flex; flex-direction: column; min-height: 100vh"
-    >
-      <div class="layout-main" style="flex: 1; display: flex">
-        <aside class="sidebar w-80 p-4">
-          <div class="flex flex-col space-y-2 h-full">
-            <a
-              th:href="@{/home}"
-              th:classappend="${currentPath == '/home'} ? 'active' : ''"
-              class="sidebar-link"
-              ><i class="fas fa-home"></i> Trang chủ</a
-            >
-            <a
-              th:href="@{/account}"
-              th:classappend="${currentPath == '/account'} ? 'active' : ''"
-              class="sidebar-link"
-              ><i class="fas fa-user-circle"></i> Trang cá nhân</a
-            >
-            <a
-              th:href="@{/sale}"
-              th:classappend="${currentPath == '/sale'} ? 'active' : ''"
-              class="sidebar-link"
-              ><i class="fas fa-shopping-cart"></i> Quản lý bán hàng</a
-            >
-            <div th:if="${user.permission == 'ADMIN'}">
-              <a
-                th:href="@{/employee}"
-                th:classappend="${#strings.startsWith(currentPath, '/employee')} ? 'active' : ''"
-                class="sidebar-link"
-                ><i class="fas fa-users"></i> Quản lý nhân viên</a
-              >
-              <a
-                th:href="@{/equipment}"
-                th:classappend="${currentPath == '/equipment'} ? 'active' : ''"
-                class="sidebar-link"
-                ><i class="fas fa-desktop"></i> Quản lý trang thiết bị</a
-              >
-
-              <!-- Dropdown cho Quản lý kho hàng -->
-              <div
-                x-data="{ openWarehouse: false }"
-                x-init="openWarehouse = '[[${#strings.startsWith(currentPath, '/warehouse')}]]' === 'true'"
-                class="space-y-1"
-              >
-                <button
-                  @click="openWarehouse = !openWarehouse"
-                  th:classappend="${#strings.startsWith(currentPath, '/warehouse')} ? 'active' : ''"
-                  class="sidebar-link w-full text-left flex justify-between items-center"
-                  :class="{ 'bg-opacity-20': openWarehouse }"
-                >
-                  <span><i class="fas fa-warehouse"></i> Quản lý kho hàng</span>
-                  <span
-                    x-text="openWarehouse ? '▲' : '▼'"
-                    class="text-sm"
-                  ></span>
-                </button>
-                <div x-show="openWarehouse" x-transition class="pl-6 space-y-1">
-                  <a
-                    th:href="@{/warehouse/product}"
-                    th:classappend="${currentPath == '/warehouse/product'} ? 'bg-blue-100 text-blue-800 font-semibold' : 'text-gray-700'"
-                    class="block py-2 px-4 text-sm rounded hover:bg-gray-100 hover:bg-opacity-20 transition-colors duration-200"
-                  >
-                    📦 Hàng hóa
-                  </a>
-                  <a
-                    th:href="@{/warehouse/transaction}"
-                    th:classappend="${currentPath == '/warehouse/transaction'} ? 'bg-green-100 text-green-800 font-semibold' : 'text-gray-700'"
-                    class="block py-2 px-4 text-sm rounded hover:bg-gray-100 hover:bg-opacity-20 transition-colors duration-200"
-                  >
-                    📊 Nhập xuất
-                  </a>
+            <div class="hidden sm:block text-sm text-right">
+                <div class="font-semibold" th:text="${user.username}">
+                    Tên đăng nhập
                 </div>
-              </div>
-
-              <a
-                th:href="@{/menu}"
-                th:classappend="${currentPath == '/menu'} ? 'active' : ''"
-                class="sidebar-link"
-                ><i class="fas fa-book-open"></i> Quản lý thực đơn</a
-              >
-
-              <a
-                th:href="@{/promotion}"
-                th:classappend="${currentPath == '/promotion'} ? 'active' : ''"
-                class="sidebar-link"
-                ><i class="fas fa-bullhorn"></i> Quản lý Marketing</a
-              >
-              <a
-                      th:href="@{/budget}"
-                      th:classappend="${#strings.startsWith(currentPath, '/budget')} ? 'active' : ''"
-                      class="sidebar-link"
-              >
-                <i class="fas fa-money-bill-alt"></i> Quản lý ngân sách
-              </a>
-              <!-- <a
-                th:href="@{/data}"
-                th:classappend="${currentPath == '/data'} ? 'active' : ''"
-                class="sidebar-link"
-                ><i class="fas fa-database"></i> Quản lý Dữ liệu</a
-              > -->
-              <a
-                th:href="@{/report}"
-                th:classappend="${currentPath == '/report'} ? 'active' : ''"
-                class="sidebar-link"
-                ><i class="fas fa-chart-pie"></i> Thống kê, báo cáo</a
-              >
-              <hr class="sidebar-divider" />
-              <a
-                th:href="@{/about}"
-                th:classappend="${currentPath == '/about'} ? 'active' : ''"
-                class="sidebar-link"
-                ><i class="fas fa-info-circle"></i> Giới thiệu</a
-              >
+                <div
+                        class="text-gray-300 text-xs"
+                        th:text="'Chức vụ: ' + ${user.permission}"
+                >
+                    Chức vụ
+                </div>
             </div>
-          </div>
+            <img
+                    th:src="${user.imageUrl}"
+                    alt="avatar"
+                    class="w-8 h-8 rounded-full border"
+            />
+
+            <form th:action="@{/logout}" method="post">
+                <button
+                        type="submit"
+                        class="px-3 py-1 text-sm text-white bg-red-500 rounded shadow hover:bg-red-600"
+                >
+                    Đăng xuất
+                </button>
+            </form>
+        </div>
+    </div>
+</header>
+
+<div
+        class="layout-page"
+        style="display: flex; flex-direction: column; min-height: 100vh"
+>
+    <div class="layout-main" style="flex: 1; display: flex">
+        <aside class="sidebar w-80 p-4">
+            <div class="flex flex-col space-y-2 h-full">
+                <a
+                        th:href="@{/home}"
+                        th:classappend="${currentPath == '/home'} ? 'active' : ''"
+                        class="sidebar-link"
+                ><i class="fas fa-home"></i> Trang chủ</a
+                >
+                <a
+                        th:href="@{/account}"
+                        th:classappend="${currentPath == '/account'} ? 'active' : ''"
+                        class="sidebar-link"
+                ><i class="fas fa-user-circle"></i> Trang cá nhân</a
+                >
+                <a
+                        th:href="@{/sale}"
+                        th:classappend="${currentPath == '/sale'} ? 'active' : ''"
+                        class="sidebar-link"
+                ><i class="fas fa-shopping-cart"></i> Quản lý bán hàng</a
+                >
+                <div th:if="${user.permission == 'ADMIN'}">
+                    <a
+                            th:href="@{/employee}"
+                            th:classappend="${#strings.startsWith(currentPath, '/employee')} ? 'active' : ''"
+                            class="sidebar-link"
+                    ><i class="fas fa-users"></i> Quản lý nhân viên</a
+                    >
+                    <a
+                            th:href="@{/equipment}"
+                            th:classappend="${currentPath == '/equipment'} ? 'active' : ''"
+                            class="sidebar-link"
+                    ><i class="fas fa-desktop"></i> Quản lý trang thiết bị</a
+                    >
+
+                    <!-- Dropdown cho Quản lý kho hàng -->
+                    <div
+                            x-data="{ openWarehouse: false }"
+                            x-init="openWarehouse = '[[${#strings.startsWith(currentPath, '/warehouse')}]]' === 'true'"
+                            class="space-y-1"
+                    >
+                        <button
+                                @click="openWarehouse = !openWarehouse"
+                                th:classappend="${#strings.startsWith(currentPath, '/warehouse')} ? 'active' : ''"
+                                class="sidebar-link w-full text-left flex justify-between items-center"
+                                :class="{ 'bg-opacity-20': openWarehouse }"
+                        >
+                            <span><i class="fas fa-warehouse"></i> Quản lý kho hàng</span>
+                            <span
+                                    x-text="openWarehouse ? '▲' : '▼'"
+                                    class="text-sm"
+                            ></span>
+                        </button>
+                        <div x-show="openWarehouse" x-transition class="pl-6 space-y-1">
+                            <a
+                                    th:href="@{/warehouse/product}"
+                                    th:classappend="${currentPath == '/warehouse/product'} ? 'bg-blue-100 text-blue-800 font-semibold' : 'text-gray-700'"
+                                    class="block py-2 px-4 text-sm rounded hover:bg-gray-100 hover:bg-opacity-20 transition-colors duration-200"
+                            >
+                                📦 Hàng hóa
+                            </a>
+                            <a
+                                    th:href="@{/warehouse/transaction}"
+                                    th:classappend="${currentPath == '/warehouse/transaction'} ? 'bg-green-100 text-green-800 font-semibold' : 'text-gray-700'"
+                                    class="block py-2 px-4 text-sm rounded hover:bg-gray-100 hover:bg-opacity-20 transition-colors duration-200"
+                            >
+                                📊 Nhập xuất
+                            </a>
+                        </div>
+                    </div>
+
+                    <a
+                            th:href="@{/menu}"
+                            th:classappend="${currentPath == '/menu'} ? 'active' : ''"
+                            class="sidebar-link"
+                    ><i class="fas fa-book-open"></i> Quản lý thực đơn</a
+                    >
+
+                    <a
+                            th:href="@{/promotion}"
+                            th:classappend="${currentPath == '/promotion'} ? 'active' : ''"
+                            class="sidebar-link"
+                    ><i class="fas fa-bullhorn"></i> Quản lý Marketing</a
+                    >
+                    <a
+                            th:href="@{/budget}"
+                            th:classappend="${#strings.startsWith(currentPath, '/budget')} ? 'active' : ''"
+                            class="sidebar-link"
+                    >
+                        <i class="fas fa-money-bill-alt"></i> Quản lý ngân sách
+                    </a>
+                    <!-- <a
+                      th:href="@{/data}"
+                      th:classappend="${currentPath == '/data'} ? 'active' : ''"
+                      class="sidebar-link"
+                      ><i class="fas fa-database"></i> Quản lý Dữ liệu</a
+                    > -->
+                    <a
+                            th:href="@{/report}"
+                            th:classappend="${currentPath == '/report'} ? 'active' : ''"
+                            class="sidebar-link"
+                    ><i class="fas fa-chart-pie"></i> Thống kê, báo cáo</a
+                    >
+                    <hr class="sidebar-divider"/>
+                    <a
+                            th:href="@{/about}"
+                            th:classappend="${currentPath == '/about'} ? 'active' : ''"
+                            class="sidebar-link"
+                    ><i class="fas fa-info-circle"></i> Giới thiệu</a
+                    >
+                </div>
+            </div>
         </aside>
 
         <main
-          class="main-content flex-1 p-10"
-          style="background: var(--color-background-main)"
-          layout:fragment="content"
+                class="main-content flex-1 p-10"
+                style="background: var(--color-background-main)"
+                layout:fragment="content"
         >
-          <!--            <div class="text-center mt-20">-->
-          <div class="max-w-5xl mx-auto w-full">
-            <h2
-              class="text-5xl font-bold"
-              style="
+            <!--            <div class="text-center mt-20">-->
+            <div class="max-w-5xl mx-auto w-full">
+                <h2
+                        class="text-5xl font-bold"
+                        style="
                 color: var(--color-primary);
                 text-shadow: 1px 1px 2px rgba(var(--color-primary-rgb), 0.15);
               "
-              th:text="'Xin chào, ' + ${user.username}"
-            ></h2>
-            <p class="mt-4 text-lg" style="color: var(--color-text-main)">
-              Chúc bạn một ngày làm việc hiệu quả và tràn đầy năng lượng ☕✨
-            </p>
-          </div>
+                        th:text="'Xin chào, ' + ${user.username}"
+                ></h2>
+                <p class="mt-4 text-lg" style="color: var(--color-text-main)">
+                    Chúc bạn một ngày làm việc hiệu quả và tràn đầy năng lượng ☕✨
+                </p>
+            </div>
         </main>
-      </div>
-      <div class="main-footer">
-        <a href="#" class="main-footer-link"
-          >© 2025 MirodoIT. All rights reserved.</a
-        >
-      </div>
     </div>
+    <div class="main-footer">
+        <a href="#" class="main-footer-link"
+        >© 2025 MirodoIT. All rights reserved.</a
+        >
+    </div>
+</div>
 
-    <div th:replace="~{/alert :: alerts}"></div>
-    <script th:src="@{/js/global.js}"></script>
-  </body>
+<div th:replace="~{/alert :: alerts}"></div>
+<script th:src="@{/js/global.js}"></script>
+</body>
 </html>

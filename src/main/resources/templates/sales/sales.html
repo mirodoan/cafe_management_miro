@@ -39,7 +39,7 @@
                             <div
                                     th:each="table : ${tables}"
                                     class="rounded-lg shadow-md hover:shadow-lg transition p-4 cursor-pointer"
-                                    th:classappend="${table.status.name() == 'AVABILALE' ? 'bg-green-100' : (table.status.name() == 'OCCUPIED' ? 'bg-red-100' : (table.status.name() == 'RESERVED' ? 'bg-yellow-100' : 'bg-gray-100'))}"
+                                    th:classappend="${table.status.name() == 'AVAILABLE' ? 'bg-green-100' : (table.status.name() == 'OCCUPIED' ? 'bg-red-100' : (table.status.name() == 'RESERVED' ? 'bg-yellow-100' : 'bg-gray-100'))}"
                                     data-table
                                     th:attr="data-status=${table.status.name()}, data-table-id=${table.id}"
                             >
@@ -106,6 +106,13 @@
                                     id="select-menu-form"
                                     style="display: inline"
                             >
+                                <!-- CSRF token: Bảo vệ chống tấn công Cross-Site Request Forgery -->
+                                <input
+                                        type="hidden"
+                                        th:name="${_csrf.parameterName}"
+                                        th:value="${_csrf.token}"
+                                />
+
                                 <input
                                         type="hidden"
                                         name="tableId"
@@ -130,28 +137,28 @@
                 </div>
 
                 <!-- Modal Merge Table Fragment -->
-                <div th:replace="sales/merge_table :: merge-table-modal"></div>
+                <div th:replace="~{sales/merge_table :: merge-table-modal}"></div>
 
                 <!-- Modal Split Table Fragment -->
-                <div th:replace="sales/split_table :: split-table-modal"></div>
+                <div th:replace="~{sales/split_table :: split-table-modal}"></div>
 
                 <!-- Modal Move Table Fragment -->
-                <div th:replace="sales/move_table :: move-table-modal"></div>
+                <div th:replace="~{sales/move_table :: move-table-modal}"></div>
 
                 <!-- Modal Cancel Reservation Fragment -->
-                <div th:replace="sales/cancel_reservation :: cancel-reservation-modal"></div>
+                <div th:replace="~{sales/cancel_reservation :: cancel-reservation-modal}"></div>
 
                 <!-- Modal Reservation Fragment -->
-                <div th:replace="sales/reservation :: reservation-modal"></div>
+                <div th:replace="~{sales/reservation :: reservation-modal}"></div>
 
                 <!-- Modal Select Menu Fragment -->
-                <div th:replace="sales/select_menu :: select-menu-modal"></div>
+                <div th:replace="~{sales/select_menu :: select-menu-modal}"></div>
 
                 <!-- Modal View Table Fragment -->
-                <div th:replace="sales/view_details :: view-detail-modal"></div>
+                <div th:replace="~{sales/view_details :: view-detail-modal}"></div>
 
                 <!-- Modal Payment Fragment -->
-                <div th:replace="sales/payment :: payment-modal"></div>
+                <div th:replace="~{sales/payment :: payment-modal}"></div>
             </div>
         </main>
     </div>

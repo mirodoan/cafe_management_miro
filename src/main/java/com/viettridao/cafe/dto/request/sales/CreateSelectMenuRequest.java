@@ -18,7 +18,7 @@ public class CreateSelectMenuRequest {
     private String customerName; // Tên khách hàng
 
     @NotBlank(message = "Số điện thoại không được để trống")
-    @Pattern(regexp = "^0\\d{9,10}$", message = "Số điện thoại phải từ 10 đến 11 chữ số")
+    @Pattern(regexp = "^0\\d{9,10}$", message = "Số điện thoại phải bắt đầu từ 0 và có từ 10 đến 11 chữ số")
     private String customerPhone; // Số điện thoại khách hàng
 
     @NotNull(message = "Danh sách món không được để trống")

@@ -4,7 +4,9 @@ import com.viettridao.cafe.common.TableStatus;
 import com.viettridao.cafe.dto.request.sales.*;
 import com.viettridao.cafe.dto.response.sales.OrderDetailRessponse;
 import com.viettridao.cafe.mapper.OrderDetailMapper;
-import com.viettridao.cafe.model.*;
+import com.viettridao.cafe.model.AccountEntity;
+import com.viettridao.cafe.model.ReservationEntity;
+import com.viettridao.cafe.model.TableEntity;
 import com.viettridao.cafe.repository.AccountRepository;
 import com.viettridao.cafe.repository.InvoiceDetailRepository;
 import com.viettridao.cafe.repository.TableRepository;
@@ -20,8 +22,9 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.ArrayList;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -52,17 +55,23 @@ public class SalesController {
         // Chuẩn bị dữ liệu cơ bản cho view
         model.addAttribute("tables", tableRepository.findAll());
 
-        // Truyền sẵn các object form cho các chức năng chính
-        model.addAttribute("reservation", new CreateReservationRequest());
-        model.addAttribute("showReservationForm", false);
-
-        // Đảm bảo các object này luôn tồn tại để tránh lỗi template
-        if (!model.containsAttribute("selectMenuRequest")) {
-            model.addAttribute("selectMenuRequest", new CreateSelectMenuRequest());
-        }
+        // Truyền sẵn object form cho các chức năng KHÔNG phụ thuộc bàn cụ thể
         if (!model.containsAttribute("reservation")) {
             model.addAttribute("reservation", new CreateReservationRequest());
         }
+        if (!model.containsAttribute("selectMenuRequest")) {
+            model.addAttribute("selectMenuRequest", new CreateSelectMenuRequest());
+        }
+
+        // Các biến điều khiển hiển thị modal, mặc định ẩn hết khi mới vào trang
+        model.addAttribute("showReservationForm", false);
+        model.addAttribute("showSelectMenuForm", false);
+        model.addAttribute("showMoveModal", false);
+        model.addAttribute("showSplitModal", false);
+        model.addAttribute("showMergeModal", false);
+        model.addAttribute("showOrderDetailModal", false);
+        model.addAttribute("showPaymentModal", false);
+        model.addAttribute("showCancelReservationForm", false);
 
         return "sales/sales";
     }
@@ -72,31 +81,15 @@ public class SalesController {
      */
     @GetMapping("/view-detail")
     public String getViewDetail(@RequestParam Integer tableId, Model model) {
-        // Lấy thông tin bàn theo ID
-        TableEntity table = tableRepository.findById(tableId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bàn với ID: " + tableId));
-        // Tìm reservation hiện tại của bàn
-        ReservationEntity reservation = reservationService.findCurrentReservationByTableId(tableId);
-
-        // Nếu không có đặt bàn cho bàn này thì báo lỗi
-        if (reservation == null) {
-            model.addAttribute("tables", tableRepository.findAll());
+        try {
+            OrderDetailRessponse orderDetail = reservationService.getOrderDetailByTableId(tableId);
+            model.addAttribute("orderDetail", orderDetail);
+            model.addAttribute("showOrderDetailModal", true);
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("orderDetailError", e.getMessage());
             model.addAttribute("showOrderDetailModal", false);
-            model.addAttribute("orderDetailError", "Không có thông tin đặt bàn/order cho bàn này!");
-            return "sales/sales";
         }
-
-        // Lấy hóa đơn và chi tiết hóa đơn của bàn
-        InvoiceEntity invoice = reservation.getInvoice();
-        List<InvoiceDetailEntity> invoiceDetails = invoiceDetailRepository.findAllByInvoice_IdAndIsDeletedFalse(invoice.getId());
-
-        // Chuyển đổi sang DTO để trả về view
-        OrderDetailRessponse orderDetail = orderDetailMapper.toOrderDetailResponse(table, invoice, reservation, invoiceDetails);
-
-        // Đẩy dữ liệu ra view
         model.addAttribute("tables", tableRepository.findAll());
-        model.addAttribute("orderDetail", orderDetail);
-        model.addAttribute("showOrderDetailModal", true);
         return "sales/sales";
     }
 
@@ -105,41 +98,14 @@ public class SalesController {
      */
     @GetMapping("/show-payment-modal")
     public String showPaymentModal(@RequestParam Integer tableId, Model model) {
-        // Lấy thông tin bàn theo ID
-        TableEntity table = tableRepository.findById(tableId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bàn với ID: " + tableId));
-        // Kiểm tra trạng thái bàn có OCCUPIED không
-        if (table.getStatus() != TableStatus.OCCUPIED) {
-            model.addAttribute("tables", tableRepository.findAll());
-            model.addAttribute("errorMessage", "Chỉ có thể thanh toán bàn đang sử dụng (OCCUPIED)!");
-            return "sales/sales";
+        try {
+            OrderDetailRessponse orderDetail = reservationService.getPaymentInfoForTable(tableId);
+            model.addAttribute("orderDetail", orderDetail);
+            model.addAttribute("showPaymentModal", true);
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("errorMessage", e.getMessage());
         }
-
-        // Tìm reservation hiện tại của bàn
-        ReservationEntity reservation = reservationService.findCurrentReservationByTableId(tableId);
-        if (reservation == null) {
-            model.addAttribute("tables", tableRepository.findAll());
-            model.addAttribute("errorMessage", "Không có thông tin đặt bàn để thanh toán!");
-            return "sales/sales";
-        }
-
-        // Lấy hóa đơn hiện tại của reservation
-        InvoiceEntity invoice = reservation.getInvoice();
-        if (invoice == null) {
-            model.addAttribute("tables", tableRepository.findAll());
-            model.addAttribute("errorMessage", "Không có hóa đơn để thanh toán!");
-            return "sales/sales";
-        }
-        // Lấy danh sách chi tiết hóa đơn chưa xóa mềm
-        List<InvoiceDetailEntity> invoiceDetails = invoiceDetailRepository.findAllByInvoice_IdAndIsDeletedFalse(invoice.getId());
-
-        // Chuyển sang DTO để trả về view
-        OrderDetailRessponse orderDetail = orderDetailMapper.toOrderDetailResponse(table, invoice, reservation, invoiceDetails);
-
-        // Đẩy dữ liệu ra view
         model.addAttribute("tables", tableRepository.findAll());
-        model.addAttribute("orderDetail", orderDetail);
-        model.addAttribute("showPaymentModal", true);
         return "sales/sales";
     }
 
@@ -149,30 +115,7 @@ public class SalesController {
     @PostMapping("/pay-invoice")
     public String payInvoice(@RequestParam Integer tableId, Model model, RedirectAttributes redirectAttributes) {
         try {
-            // Lấy thông tin bàn theo ID
-            TableEntity table = tableRepository.findById(tableId)
-                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bàn với ID: " + tableId));
-            // Tìm reservation hiện tại của bàn
-            ReservationEntity reservation = reservationService.findCurrentReservationByTableId(tableId);
-            if (reservation == null) {
-                model.addAttribute("tables", tableRepository.findAll());
-                model.addAttribute("errorMessage", "Không có thông tin đặt bàn để thanh toán!");
-                return "sales/sales";
-            }
-            // Lấy hóa đơn hiện tại
-            InvoiceEntity invoice = reservation.getInvoice();
-            if (invoice == null) {
-                model.addAttribute("tables", tableRepository.findAll());
-                model.addAttribute("errorMessage", "Không có hóa đơn để thanh toán!");
-                return "sales/sales";
-            }
-            // Đổi trạng thái hóa đơn, đặt bàn và bàn khi thanh toán
-            invoice.setStatus(com.viettridao.cafe.common.InvoiceStatus.PAID);
-            reservation.setIsDeleted(true);
-            table.setStatus(TableStatus.AVAILABLE);
-            reservationService.saveReservationAndRelated(reservation, invoice, table);
-
-            // Trả về thông báo thành công
+            reservationService.payInvoiceForTable(tableId);
             redirectAttributes.addFlashAttribute("successMessage", "Thanh toán thành công!");
             return "redirect:/sale";
         } catch (IllegalArgumentException e) {
@@ -180,7 +123,6 @@ public class SalesController {
         } catch (RuntimeException e) {
             model.addAttribute("errorMessage", "Đã xảy ra lỗi hệ thống: " + e.getMessage());
         }
-        // Hiển thị lại danh sách bàn nếu lỗi
         model.addAttribute("tables", tableRepository.findAll());
         return "sales/sales";
     }
@@ -255,13 +197,20 @@ public class SalesController {
      * Hiển thị form đặt bàn (Reservation)
      */
     @GetMapping("/show-reservation-form")
-    public String showReservationForm(@RequestParam Integer tableId, Model model) {
-        // Chuẩn bị request đặt bàn cho view
+    public String showReservationForm(@RequestParam Integer tableId, Model model, RedirectAttributes redirectAttributes) {
+        // 1. Kiểm tra xem bàn có tồn tại và còn khả dụng không
+        Optional<TableEntity> tableOpt = tableRepository.findById(tableId);
+        if (tableOpt.isEmpty() || tableOpt.get().getStatus() != TableStatus.AVAILABLE) {
+            // 2. Nếu bàn không khả dụng, trả về thông báo lỗi và quay lại trang danh sách bàn
+            redirectAttributes.addFlashAttribute("errorMessage", "Bàn không tồn tại hoặc đã được đặt/chưa sẵn sàng!");
+            return "redirect:/sale";
+        }
+        // 3. Nếu bàn hợp lệ, khởi tạo request đặt bàn với tableId đã chọn
         CreateReservationRequest reservation = new CreateReservationRequest();
         reservation.setTableId(tableId);
-        model.addAttribute("tables", tableRepository.findAll());
-        model.addAttribute("reservation", reservation);
-        model.addAttribute("showReservationForm", true);
+        reservation.setTableName(tableOpt.get().getTableName());
+        // 4. Đẩy dữ liệu cần thiết ra view để hiển thị form
+        prepareReservationForm(model, reservation, true);
         return "sales/sales";
     }
 
@@ -269,59 +218,60 @@ public class SalesController {
      * Xử lý tạo reservation (đặt bàn)
      */
     @PostMapping("/reservations")
-    public String createReservation(@Valid @ModelAttribute("reservation") CreateReservationRequest request,
-                                    BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
-        try {
-            // Nếu có lỗi validation thì trả lại form
-            if (bindingResult.hasErrors()) {
-                model.addAttribute("tables", tableRepository.findAll());
-                model.addAttribute("reservation", request);
-                model.addAttribute("showReservationForm", true);
-                return "sales/sales";
+    public String createReservation(
+            @Valid @ModelAttribute("reservation") CreateReservationRequest request,
+            BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
+        // 1. Nếu có lỗi validate dữ liệu đầu vào, trả lại form với thông tin và lỗi
+        if (bindingResult.hasErrors()) {
+            // Lấy lại tên bàn
+            if (request.getTableId() != null) {
+                Optional<TableEntity> tableOpt = tableRepository.findById(request.getTableId());
+                tableOpt.ifPresent(table -> request.setTableName(table.getTableName()));
             }
-
-            // Dùng hàm helper để lấy employeeId
+            prepareReservationForm(model, request, true);
+            return "sales/sales";
+        }
+        try {
+            // 2. Lấy employeeId của nhân viên đang đăng nhập
             Integer employeeId = getCurrentEmployeeId();
-
-            // Gọi service tạo reservation
+            // 3. Gọi service để tạo mới reservation (đặt bàn)
             reservationService.createReservation(request, employeeId);
-
-            // Trả về khi thành công
-            redirectAttributes.addFlashAttribute("success", "Đặt bàn thành công!");
+            // 4. Nếu thành công, trả về thông báo và reload lại trang sale
+            redirectAttributes.addFlashAttribute("successMessage", "Đặt bàn thành công!");
             return "redirect:/sale";
         } catch (IllegalArgumentException e) {
-            bindingResult.rejectValue("customerName", "error.customerName", e.getMessage());
-        } catch (RuntimeException e) {
-            bindingResult.reject("error.system", "Đã xảy ra lỗi hệ thống: " + e.getMessage());
+            // 5. Nếu có lỗi nghiệp vụ (bàn không còn khả dụng, ...), hiển thị lỗi lên form
+            bindingResult.reject("reservation", e.getMessage());
+        } catch (Exception e) {
+            // 6. Nếu có lỗi hệ thống, cũng hiển thị lỗi lên form
+            bindingResult.reject("reservation", "Lỗi hệ thống: " + e.getMessage());
         }
-        // Nếu lỗi trả về lại form
-        model.addAttribute("tables", tableRepository.findAll());
-        model.addAttribute("reservation", request);
-        model.addAttribute("showReservationForm", true);
+        // 7. Nếu có lỗi, trả lại form với dữ liệu vừa nhập và lỗi tương ứng
+        prepareReservationForm(model, request, true);
         return "sales/sales";
     }
 
     /**
-     * Hiển thị form hủy bàn (Cancel Reservation)
+     * Helper: Chuẩn bị dữ liệu cho form đặt bàn
+     */
+    private void prepareReservationForm(Model model, CreateReservationRequest reservation, boolean showForm) {
+        // Lấy ngày hiện tại
+        model.addAttribute("today", LocalDate.now());
+        // Lấy lại danh sách bàn cho view
+        model.addAttribute("tables", tableRepository.findAll());
+        // Gán lại object form reservation
+        model.addAttribute("reservation", reservation);
+        // Gán biến điều khiển hiển thị modal đặt bàn
+        model.addAttribute("showReservationForm", showForm);
+    }
+
+    /**
+     * Xử lý hủy bàn (Cancel Reservation)
      */
     @GetMapping("/show-cancel-reservation-form")
     public String showCancelReservationForm(@RequestParam Integer tableId, Model model) {
-        // Lấy thông tin bàn và reservation
-        TableEntity table = tableRepository.findById(tableId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bàn với ID: " + tableId));
+        TableEntity table = tableRepository.findById(tableId).orElse(null);
         ReservationEntity reservation = reservationService.findCurrentReservationByTableId(tableId);
-        // Kiểm tra reservation hợp lệ để hủy
-        if (reservation == null || Boolean.TRUE.equals(reservation.getIsDeleted())) {
-            model.addAttribute("tables", tableRepository.findAll());
-            model.addAttribute("errorMessage", "Không tìm thấy thông tin đặt bàn để hủy!");
-            return "sales/sales";
-        }
-        if (!"RESERVED".equals(reservation.getTable().getStatus().name())) {
-            model.addAttribute("tables", tableRepository.findAll());
-            model.addAttribute("errorMessage", "Chỉ có thể hủy bàn ở trạng thái ĐÃ ĐẶT (RESERVED)!");
-            return "sales/sales";
-        }
-        // Đẩy dữ liệu ra view form hủy bàn
         model.addAttribute("tables", tableRepository.findAll());
         model.addAttribute("selectedTable", table);
         model.addAttribute("reservation", reservation);
@@ -329,47 +279,22 @@ public class SalesController {
         return "sales/sales";
     }
 
-    /**
-     * Xử lý hủy bàn (Cancel Reservation)
-     */
     @PostMapping("/cancel-reservation")
     public String cancelReservation(@RequestParam Integer tableId, Model model) {
-        // Lấy thông tin reservation hiện tại
-        ReservationEntity reservation = reservationService.findCurrentReservationByTableId(tableId);
-        // Kiểm tra reservation hợp lệ để hủy
-        if (reservation == null || Boolean.TRUE.equals(reservation.getIsDeleted())) {
+        try {
+            reservationService.cancelReservation(tableId);
             model.addAttribute("tables", tableRepository.findAll());
-            model.addAttribute("errorMessage", "Không tìm thấy thông tin đặt bàn để hủy!");
-            model.addAttribute("hideCancelModal", true);
-            return "sales/sales";
-        }
-        if (!"RESERVED".equals(reservation.getTable().getStatus().name())) {
+            model.addAttribute("successMessage", "Hủy bàn thành công!");
+            model.addAttribute("showCancelReservationForm", false);
+        } catch (IllegalArgumentException e) {
+            TableEntity table = tableRepository.findById(tableId).orElse(null);
+            ReservationEntity reservation = reservationService.findCurrentReservationByTableId(tableId);
             model.addAttribute("tables", tableRepository.findAll());
-            model.addAttribute("errorMessage", "Chỉ có thể hủy bàn ở trạng thái ĐÃ ĐẶT!");
-            model.addAttribute("hideCancelModal", true);
-            return "sales/sales";
+            model.addAttribute("selectedTable", table);
+            model.addAttribute("reservation", reservation);
+            model.addAttribute("errorMessage", e.getMessage());
+            model.addAttribute("showCancelReservationForm", true); // Giữ modal mở lại
         }
-        // Xóa mềm reservation, invoice và invoice detail nếu có
-        reservation.setIsDeleted(true);
-        InvoiceEntity invoice = reservation.getInvoice();
-        if (invoice != null) {
-            invoice.setIsDeleted(true);
-            if (invoice.getId() != null) {
-                List<InvoiceDetailEntity> invoiceDetails = invoiceDetailRepository.findAllByInvoice_IdAndIsDeletedFalse(invoice.getId());
-                for (InvoiceDetailEntity detail : invoiceDetails) {
-                    detail.setIsDeleted(true);
-                }
-                invoiceDetailRepository.saveAll(invoiceDetails);
-            }
-        }
-        // Đổi trạng thái bàn về AVAILABLE
-        TableEntity table = reservation.getTable();
-        table.setStatus(TableStatus.AVAILABLE);
-        reservationService.saveReservationAndRelated(reservation, invoice, table);
-        // Trả về thông báo thành công
-        model.addAttribute("tables", tableRepository.findAll());
-        model.addAttribute("successMessage", "Hủy bàn thành công!");
-        model.addAttribute("hideCancelModal", true);
         return "sales/sales";
     }
 
@@ -379,40 +304,20 @@ public class SalesController {
     @GetMapping("/show-move-table-form")
     public String showMoveTableForm(@RequestParam Integer selectedTableId, Model model) {
         try {
-            // Lấy thông tin bàn nguồn
-            Optional<TableEntity> sourceTableOpt = tableRepository.findById(selectedTableId);
-            if (sourceTableOpt.isEmpty()) {
-                model.addAttribute("errorMessage", "Không tìm thấy bàn nguồn với ID: " + selectedTableId);
-                return "sales/sales";
-            }
-            TableEntity sourceTable = sourceTableOpt.get();
-            // Kiểm tra bàn nguồn phải OCCUPIED
-            if (sourceTable.getStatus() != TableStatus.OCCUPIED) {
-                model.addAttribute("errorMessage", "Chỉ có thể chuyển từ bàn đang sử dụng (OCCUPIED). Bàn hiện tại: " + sourceTable.getStatus());
-                return "sales/sales";
-            }
-            // Tìm reservation bàn nguồn
-            ReservationEntity sourceReservation = reservationService.findCurrentReservationByTableId(selectedTableId);
-            if (sourceReservation == null) {
-                model.addAttribute("errorMessage", "Không tìm thấy thông tin đặt bàn cho bàn nguồn");
-                return "sales/sales";
-            }
-            // Lấy danh sách bàn trống để chuyển đến
-            List<TableEntity> allTables = tableRepository.findAll();
-            List<TableEntity> availableTables = allTables.stream().filter(table -> table.getStatus() == TableStatus.AVAILABLE).toList();
-            if (availableTables.isEmpty()) {
-                model.addAttribute("errorMessage", "Không có bàn trống nào để chuyển đến");
-                return "sales/sales";
-            }
-            // Đẩy thông tin ra form chuyển bàn
+            Map<String, Object> formData = reservationService.prepareMoveTableForm(selectedTableId);
             model.addAttribute("showMoveModal", true);
             model.addAttribute("selectedTableId", selectedTableId);
-            model.addAttribute("tables", allTables);
-            model.addAttribute("sourceTable", sourceTable);
-            model.addAttribute("availableTables", availableTables);
+            model.addAttribute("tables", formData.get("tables"));
+            model.addAttribute("sourceTable", formData.get("sourceTable"));
+            model.addAttribute("availableTables", formData.get("availableTables"));
             model.addAttribute("selectMenuRequest", new CreateSelectMenuRequest());
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("errorMessage", e.getMessage());
+            model.addAttribute("tables", tableRepository.findAll());
+            return "sales/sales";
         } catch (Exception e) {
             model.addAttribute("errorMessage", "Lỗi khi thiết lập form chuyển bàn: " + e.getMessage());
+            model.addAttribute("tables", tableRepository.findAll());
             return "sales/sales";
         }
         return "sales/sales";
@@ -428,33 +333,13 @@ public class SalesController {
             Model model,
             RedirectAttributes redirectAttributes) {
         try {
-            // Kiểm tra bàn nguồn và bàn đích
-            if (sourceTableId == null) {
-                model.addAttribute("errorMessage", "Không tìm thấy bàn nguồn");
-                model.addAttribute("tables", tableRepository.findAll());
-                model.addAttribute("showMoveModal", true);
-                model.addAttribute("selectedTableId", sourceTableId);
-                model.addAttribute("reservation", new CreateReservationRequest());
-                model.addAttribute("selectMenuRequest", new CreateSelectMenuRequest());
-                return "sales/sales";
-            }
-            if (targetTableId == null) {
-                model.addAttribute("errorMessage", "Vui lòng chọn bàn đích");
-                model.addAttribute("tables", tableRepository.findAll());
-                model.addAttribute("showMoveModal", true);
-                model.addAttribute("selectedTableId", sourceTableId);
-                model.addAttribute("reservation", new CreateReservationRequest());
-                model.addAttribute("selectMenuRequest", new CreateSelectMenuRequest());
-                return "sales/sales";
-            }
-            // Chuẩn bị request chuyển bàn và gọi service thực hiện
+            if (sourceTableId == null) throw new IllegalArgumentException("Không tìm thấy bàn nguồn");
+            if (targetTableId == null) throw new IllegalArgumentException("Vui lòng chọn bàn đích");
             MoveTableRequest request = new MoveTableRequest();
             request.setSourceTableId(sourceTableId);
             request.setTargetTableId(targetTableId);
             Integer employeeId = getCurrentEmployeeId();
             reservationService.moveTable(request, employeeId);
-
-            // Trả về thông báo thành công
             redirectAttributes.addFlashAttribute("successMessage", "Chuyển bàn thành công!");
             return "redirect:/sale";
         } catch (IllegalArgumentException e) {
@@ -462,12 +347,19 @@ public class SalesController {
         } catch (RuntimeException e) {
             model.addAttribute("errorMessage", "Đã xảy ra lỗi hệ thống: " + e.getMessage());
         }
-        // Nếu lỗi trả về lại form
-        model.addAttribute("tables", tableRepository.findAll());
-        model.addAttribute("showMoveModal", true);
-        model.addAttribute("selectedTableId", sourceTableId);
-        model.addAttribute("reservation", new CreateReservationRequest());
-        model.addAttribute("selectMenuRequest", new CreateSelectMenuRequest());
+        // Lấy lại dữ liệu cho form nếu lỗi
+        try {
+            Map<String, Object> formData = reservationService.prepareMoveTableForm(sourceTableId);
+            model.addAttribute("showMoveModal", true);
+            model.addAttribute("selectedTableId", sourceTableId);
+            model.addAttribute("tables", formData.get("tables"));
+            model.addAttribute("sourceTable", formData.get("sourceTable"));
+            model.addAttribute("availableTables", formData.get("availableTables"));
+            model.addAttribute("reservation", new CreateReservationRequest());
+            model.addAttribute("selectMenuRequest", new CreateSelectMenuRequest());
+        } catch (Exception ex) {
+            model.addAttribute("tables", tableRepository.findAll());
+        }
         return "sales/sales";
     }
 
@@ -497,26 +389,12 @@ public class SalesController {
                               BindingResult bindingResult,
                               Model model,
                               RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            return prepareMergeTableForm(model, request, bindingResult);
+        }
         try {
-            // Nếu lỗi validation thì trả lại form
-            if (bindingResult.hasErrors()) {
-                List<TableEntity> occupiedTables = tableRepository.findAll().stream()
-                        .filter(table -> table.getStatus() == TableStatus.OCCUPIED)
-                        .toList();
-                model.addAttribute("tables", tableRepository.findAll());
-                model.addAttribute("mergeTableRequest", request);
-                model.addAttribute("showMergeModal", true);
-                model.addAttribute("occupiedTables", occupiedTables);
-                model.addAttribute("org.springframework.validation.BindingResult.mergeTableRequest", bindingResult);
-                return "sales/sales";
-            }
-
-            // Dùng hàm helper để lấy employeeId
             Integer employeeId = getCurrentEmployeeId();
-
-            // Gọi service gộp bàn
             reservationService.mergeTables(request, employeeId);
-            // Trả về thông báo thành công
             redirectAttributes.addFlashAttribute("successMessage", "Gộp bàn thành công!");
             return "redirect:/sale";
         } catch (IllegalArgumentException e) {
@@ -524,11 +402,13 @@ public class SalesController {
         } catch (RuntimeException e) {
             model.addAttribute("errorMessage", "Đã xảy ra lỗi hệ thống: " + e.getMessage());
         }
-        // Nếu lỗi trả về lại form
+        return prepareMergeTableForm(model, request, bindingResult);
+    }
+
+    private String prepareMergeTableForm(Model model, MergeTableRequest request, BindingResult bindingResult) {
         List<TableEntity> occupiedTables = tableRepository.findAll().stream()
                 .filter(table -> table.getStatus() == TableStatus.OCCUPIED)
                 .toList();
-        model.addAttribute("tables", tableRepository.findAll());
         model.addAttribute("mergeTableRequest", request);
         model.addAttribute("showMergeModal", true);
         model.addAttribute("occupiedTables", occupiedTables);
@@ -542,69 +422,12 @@ public class SalesController {
     @GetMapping("/show-split-table-form")
     public String showSplitTableForm(@RequestParam Integer selectedTableId, Model model) {
         try {
-            // Lấy thông tin bàn nguồn
-            Optional<TableEntity> sourceTableOpt = tableRepository.findById(selectedTableId);
-            if (sourceTableOpt.isEmpty()) {
-                model.addAttribute("errorMessage", "Không tìm thấy bàn nguồn với ID: " + selectedTableId);
-                return "sales/sales";
-            }
-            TableEntity sourceTable = sourceTableOpt.get();
-            // Kiểm tra bàn nguồn phải OCCUPIED
-            if (sourceTable.getStatus() != TableStatus.OCCUPIED) {
-                model.addAttribute("errorMessage", "Chỉ có thể tách từ bàn đang sử dụng (OCCUPIED). Bàn hiện tại: " + sourceTable.getStatus());
-                return "sales/sales";
-            }
-            // Tìm reservation bàn nguồn
-            ReservationEntity sourceReservation = reservationService.findCurrentReservationByTableId(selectedTableId);
-            if (sourceReservation == null) {
-                model.addAttribute("errorMessage", "Không tìm thấy thông tin đặt bàn cho bàn nguồn");
-                return "sales/sales";
-            }
-            // Kiểm tra invoice của bàn nguồn
-            if (sourceReservation.getInvoice() == null) {
-                model.addAttribute("errorMessage", "Không tìm thấy hóa đơn cho bàn nguồn");
-                return "sales/sales";
-            }
-            // Lấy danh sách món trong hóa đơn
-            List<InvoiceDetailEntity> invoiceDetails = invoiceDetailRepository.findAllByInvoice_IdAndIsDeletedFalse(sourceReservation.getInvoice().getId());
-            if (invoiceDetails.isEmpty()) {
-                model.addAttribute("errorMessage", "Bàn nguồn không có món nào để tách");
-                return "sales/sales";
-            }
-            // Lấy danh sách bàn khả dụng để tách đến
-            List<TableEntity> allTables = tableRepository.findAll();
-            List<TableEntity> availableTables = allTables.stream()
-                    .filter(table -> table.getStatus() == TableStatus.AVAILABLE)
-                    .toList();
-            List<TableEntity> occupiedTables = allTables.stream().filter(table -> table.getStatus() == TableStatus.OCCUPIED && !table.getId().equals(selectedTableId)).toList();
-            if (availableTables.isEmpty() && occupiedTables.isEmpty()) {
-                model.addAttribute("errorMessage", "Không có bàn nào khả dụng để tách đến");
-                return "sales/sales";
-            }
-            // Chuẩn bị request tách bàn
-            SplitTableRequest splitRequest = new SplitTableRequest();
-            splitRequest.setSourceTableId(selectedTableId);
-            List<SplitTableRequest.SplitItemRequest> items = new ArrayList<>();
-            for (InvoiceDetailEntity detail : invoiceDetails) {
-                SplitTableRequest.SplitItemRequest item = new SplitTableRequest.SplitItemRequest();
-                item.setMenuItemId(detail.getMenuItem().getId());
-                item.setQuantity(0);
-                items.add(item);
-            }
-            splitRequest.setItems(items);
-
-            // Đẩy dữ liệu ra form tách bàn
+            // Gọi service để lấy dữ liệu cho form, trả về Map<String, Object>
+            Map<String, Object> formData = reservationService.prepareSplitTableForm(selectedTableId);
+            model.addAllAttributes(formData);
             model.addAttribute("showSplitModal", true);
-            model.addAttribute("sourceTable", sourceTable);
-            model.addAttribute("availableTables", availableTables);
-            model.addAttribute("occupiedTables", occupiedTables);
-            model.addAttribute("sourceInvoiceDetails", invoiceDetails);
-            model.addAttribute("selectedTableId", selectedTableId);
-            model.addAttribute("splitTableRequest", splitRequest);
-
-        } catch (Exception e) {
-            model.addAttribute("errorMessage", "Lỗi khi thiết lập form tách bàn: " + e.getMessage());
-            return "sales/sales";
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("errorMessage", e.getMessage());
         }
         return "sales/sales";
     }
@@ -617,41 +440,37 @@ public class SalesController {
                              BindingResult bindingResult,
                              Model model,
                              RedirectAttributes redirectAttributes) {
-
+        if (bindingResult.hasErrors()) {
+            return setupSplitModalOnError(request, model, bindingResult, "Lỗi validation dữ liệu đầu vào");
+        }
         try {
-            // Validate dữ liệu đầu vào
-            if (bindingResult.hasErrors()) {
-                return setupSplitModalOnError(request, model, bindingResult, "Lỗi validation dữ liệu đầu vào");
-            }
-            if (request.getItems() == null || request.getItems().isEmpty()) {
-                return setupSplitModalOnError(request, model, bindingResult, "Vui lòng chọn ít nhất một món để tách");
-            }
-            // Lọc ra các món hợp lệ để tách
-            List<SplitTableRequest.SplitItemRequest> validItems = request.getItems().stream()
-                    .filter(item -> item.getMenuItemId() != null && item.getQuantity() != null && item.getQuantity() > 0)
-                    .toList();
-
-            if (validItems.isEmpty()) {
-                return setupSplitModalOnError(request, model, bindingResult, "Vui lòng nhập số lượng hợp lệ cho các món được chọn");
-            }
-            request.setItems(new ArrayList<>(validItems));
             Integer employeeId = getCurrentEmployeeId();
-
-            // Gọi service xử lý tách bàn
             reservationService.splitTable(request, employeeId);
-
-            // Thành công trả về thông báo
-            redirectAttributes.addFlashAttribute("successMessage", "Tách bàn thành công! Đã chuyển " + validItems.size() + " món từ bàn nguồn sang bàn đích.");
+            redirectAttributes.addFlashAttribute("successMessage", "Tách bàn thành công!");
             return "redirect:/sale";
-
         } catch (IllegalArgumentException e) {
-            // Nếu lỗi nghiệp vụ thì thiết lập lại modal tách bàn
             return setupSplitModalOnError(request, model, bindingResult, e.getMessage());
-
         } catch (RuntimeException e) {
-            // Nếu lỗi hệ thống thì thiết lập lại modal tách bàn
             return setupSplitModalOnError(request, model, bindingResult, "Đã xảy ra lỗi hệ thống: " + e.getMessage());
         }
+    }
+
+    /**
+     * Helper: Setup lại modal tách bàn khi có lỗi (giữ lại input của user)
+     */
+    private String setupSplitModalOnError(SplitTableRequest request, Model model,
+                                          BindingResult bindingResult, String errorMessage) {
+        try {
+            Map<String, Object> formData = reservationService.prepareSplitTableForm(request.getSourceTableId());
+            model.addAllAttributes(formData);
+            model.addAttribute("showSplitModal", true);
+            model.addAttribute("splitTableRequest", request); // giữ lại input người dùng
+            model.addAttribute("errorMessage", errorMessage);
+            model.addAttribute("org.springframework.validation.BindingResult.splitTableRequest", bindingResult);
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", "Lỗi hệ thống khi hiển thị form: " + e.getMessage());
+        }
+        return "sales/sales";
     }
 
     /**
@@ -668,41 +487,4 @@ public class SalesController {
         }
         return account.getEmployee().getId();
     }
-
-    /**
-     * Helper: Thiết lập lại modal tách bàn khi có lỗi (setup lại dữ liệu cho view)
-     */
-    private String setupSplitModalOnError(SplitTableRequest request, Model model,
-                                          BindingResult bindingResult, String errorMessage) {
-        try {
-            // Lấy danh sách bàn khả dụng để setup lại modal
-            List<TableEntity> allTables = tableRepository.findAll();
-            List<TableEntity> availableTables = allTables.stream().filter(table -> table.getStatus() == TableStatus.AVAILABLE).toList();
-            List<TableEntity> occupiedTables = allTables.stream().filter(table -> table.getStatus() == TableStatus.OCCUPIED && !table.getId().equals(request.getSourceTableId())).toList();
-            TableEntity sourceTable = tableRepository.findById(request.getSourceTableId()).orElse(null);
-            ReservationEntity sourceReservation = reservationService.findCurrentReservationByTableId(request.getSourceTableId());
-            List<com.viettridao.cafe.model.InvoiceDetailEntity> invoiceDetails = new ArrayList<>();
-            if (sourceReservation != null && sourceReservation.getInvoice() != null) {
-                invoiceDetails = invoiceDetailRepository.findAllByInvoice_IdAndIsDeletedFalse(sourceReservation.getInvoice().getId());
-            }
-            model.addAttribute("tables", allTables);
-            model.addAttribute("splitTableRequest", request);
-            model.addAttribute("showSplitModal", true);
-            model.addAttribute("sourceTable", sourceTable);
-            model.addAttribute("availableTables", availableTables);
-            model.addAttribute("occupiedTables", occupiedTables);
-            model.addAttribute("sourceInvoiceDetails", invoiceDetails);
-            model.addAttribute("selectedTableId", request.getSourceTableId());
-            model.addAttribute("errorMessage", errorMessage);
-            model.addAttribute("org.springframework.validation.BindingResult.splitTableRequest", bindingResult);
-
-            return "sales/sales";
-
-        } catch (Exception e) {
-            model.addAttribute("tables", tableRepository.findAll());
-            model.addAttribute("errorMessage", "Lỗi hệ thống khi hiển thị form: " + e.getMessage());
-            return "sales/sales";
-        }
-    }
-
 }

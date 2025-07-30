@@ -4,9 +4,12 @@ import com.viettridao.cafe.dto.request.sales.CreateReservationRequest;
 import com.viettridao.cafe.dto.request.sales.MergeTableRequest;
 import com.viettridao.cafe.dto.request.sales.MoveTableRequest;
 import com.viettridao.cafe.dto.request.sales.SplitTableRequest;
+import com.viettridao.cafe.dto.response.sales.OrderDetailRessponse;
 import com.viettridao.cafe.model.InvoiceEntity;
 import com.viettridao.cafe.model.ReservationEntity;
 import com.viettridao.cafe.model.TableEntity;
+
+import java.util.Map;
 
 /**
  * ReservationService
@@ -14,6 +17,33 @@ import com.viettridao.cafe.model.TableEntity;
  * Đặt bàn mới, gộp bàn, tách bàn, chuyển bàn, lấy reservation theo bàn, và xử lý liên quan khi hủy bàn.
  */
 public interface ReservationService {
+    /**
+     * Lấy chi tiết order (DTO) của một bàn theo tableId
+     *
+     * @param tableId ID bàn
+     * @return OrderDetailRessponse
+     * @throws IllegalArgumentException nếu không tìm thấy bàn hoặc không có reservation
+     */
+    OrderDetailRessponse getOrderDetailByTableId(Integer tableId);
+
+    /**
+     * Lấy thông tin chi tiết thanh toán cho 1 bàn (dùng cho modal thanh toán)
+     *
+     * @param tableId ID bàn
+     * @return OrderDetailRessponse
+     * @throws IllegalArgumentException nếu không hợp lệ
+     */
+    OrderDetailRessponse getPaymentInfoForTable(Integer tableId);
+
+
+    /**
+     * Thực hiện xác nhận thanh toán cho bàn
+     *
+     * @param tableId ID bàn
+     * @throws IllegalArgumentException nếu không hợp lệ
+     */
+    void payInvoiceForTable(Integer tableId);
+
     /**
      * Gộp nhiều bàn OCCUPIED vào một bàn đích (cộng dồn hóa đơn, cập nhật trạng thái, xóa mềm các bàn nguồn)
      *
@@ -31,6 +61,14 @@ public interface ReservationService {
      * @return Thực thể ReservationEntity vừa được tạo.
      */
     ReservationEntity createReservation(CreateReservationRequest request, Integer employeeId);
+
+    /**
+     * Xử lý nghiệp vụ hủy bàn: xóa mềm reservation, invoice và chuyển bàn về AVAILABLE.
+     *
+     * @param tableId ID bàn cần hủy đặt
+     * @throws IllegalArgumentException nếu không hợp lệ (không tìm thấy reservation, không đúng trạng thái)
+     */
+    void cancelReservation(Integer tableId);
 
     /**
      * Lưu đồng bộ reservation, invoice, table khi hủy bàn (xóa mềm)
@@ -59,6 +97,15 @@ public interface ReservationService {
     void splitTable(SplitTableRequest request, Integer employeeId);
 
     /**
+     * Chuẩn bị dữ liệu cho form tách bàn: kiểm tra nghiệp vụ và trả về các thông tin cần thiết để hiển thị form tách bàn.
+     *
+     * @param sourceTableId ID của bàn nguồn muốn tách món
+     * @return Map chứa dữ liệu cho form tách bàn (bao gồm: sourceTable, availableTables, occupiedTables, sourceInvoiceDetails, selectedTableId, splitTableRequest, ...)
+     * @throws IllegalArgumentException nếu có lỗi nghiệp vụ (bàn không tồn tại, không hợp lệ, không có món để tách, ...)
+     */
+    Map<String, Object> prepareSplitTableForm(Integer sourceTableId);
+
+    /**
      * Chuyển bàn: chuyển toàn bộ reservation, invoice, invoice detail từ bàn nguồn sang bàn đích
      *
      * @param request    MoveTableRequest chứa id bàn nguồn và bàn đích
@@ -66,4 +113,13 @@ public interface ReservationService {
      * @throws IllegalArgumentException nếu validate nghiệp vụ không hợp lệ
      */
     void moveTable(MoveTableRequest request, Integer employeeId);
+
+    /**
+     * Chuẩn bị dữ liệu cho form chuyển bàn: kiểm tra và trả về các thông tin cần thiết.
+     *
+     * @param sourceTableId ID bàn nguồn
+     * @return Map chứa dữ liệu cho form (sourceTable, availableTables, tất cả tables,...)
+     * @throws IllegalArgumentException nếu gặp lỗi nghiệp vụ
+     */
+    Map<String, Object> prepareMoveTableForm(Integer sourceTableId);
 }

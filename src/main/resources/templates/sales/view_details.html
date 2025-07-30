@@ -54,7 +54,7 @@
                     <tr class="bg-gray-200">
                         <th class="px-4 py-2 text-left">Tên món</th>
                         <th class="px-4 py-2 text-center">Số lượng</th>
-                        <th class="px-4 py-2 text-center">Đơn giá (VND)</th>
+                        <th class="px-4 py-2 text-center">Đơn giá</th>
                         <th class="px-4 py-2 text-center">Thành tiền</th>
                     </tr>
                     </thead>
@@ -81,7 +81,7 @@
 
             <!-- Hiển thị tổng tiền của tất cả món đã gọi -->
             <div class="flex justify-end mb-4">
-                <span class="font-bold text-lg text-[#3e2723]">Tổng tiền:</span>
+                <span class="font-bold text-lg text-[#3e2723]">Tổng tiền (VND):</span>
                 <span
                         class="ml-2 font-bold text-lg text-[#3e2723]"
                         th:text="${#numbers.formatDecimal(orderDetail.totalAmount ?: 0, 2, 'COMMA', 0, 'POINT').replaceAll('([.,]00)$','').replaceAll('([.,][1-9]0)$','$1'.replace('0',''))}">

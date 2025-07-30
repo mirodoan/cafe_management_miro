@@ -9,18 +9,6 @@ import java.time.LocalDate;
 
 /**
  * IncomeMapper
- *
- * Version 1.0
- *
- * Date: 19-07-2025
- *
- * Copyright
- *
- * Modification Logs:
- * DATE         AUTHOR      DESCRIPTION
- * -------------------------------------------------------
- * 19-07-2025   mirodoan    Create
- *
  * Mapper chuyển đổi giữa InvoiceEntity và BudgetResponse (khoản thu).
  * - Chuyển ngày tạo (LocalDateTime) thành LocalDate.
  * - Ánh xạ tổng tiền hóa đơn sang income.

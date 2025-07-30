@@ -14,6 +14,7 @@ import com.itextpdf.layout.*;
 import com.itextpdf.layout.element.*;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
+
 import java.io.ByteArrayOutputStream;
 import java.text.DecimalFormat;
 import java.time.format.DateTimeFormatter;
@@ -22,18 +23,6 @@ import java.util.List;
 
 /**
  * PdfExportServiceImpl
- *
- * Version 1.0
- *
- * Date: 18-07-2025
- *
- * Copyright
- *
- * Modification Logs:
- * DATE         AUTHOR      DESCRIPTION
- * -------------------------------------------------------
- * 18-07-2025   mirodoan    Create
- *
  * Triển khai Service xuất PDF cho các loại báo cáo/quản lý hóa đơn, chi tiêu, nhân viên, nhập/xuất kho, doanh thu.
  */
 @Service

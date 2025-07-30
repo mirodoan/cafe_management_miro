@@ -17,18 +17,6 @@ import com.viettridao.cafe.repository.ImportRepository;
 
 /**
  * WarehouseTransactionServiceImpl
- *
- * Version 1.0
- *
- * Date: 18-07-2025
- *
- * Copyright
- *
- * Modification Logs:
- * DATE         AUTHOR      DESCRIPTION
- * -------------------------------------------------------
- * 18-07-2025   mirodoan    Create
- *
  * Service cho quản lý giao dịch nhập xuất trong kho.
  * Chịu trách nhiệm xử lý logic nghiệp vụ liên quan đến giao dịch nhập xuất trong kho hàng.
  */

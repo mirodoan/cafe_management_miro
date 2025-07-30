@@ -8,18 +8,6 @@ import com.viettridao.cafe.model.MenuItemEntity;
 
 /**
  * MenuItemMapper
- *
- * Version 1.0
- *
- * Date: 19-07-2025
- *
- * Copyright
- *
- * Modification Logs:
- * DATE         AUTHOR      DESCRIPTION
- * -------------------------------------------------------
- * 19-07-2025   mirodoan    Create
- *
  * Mapper cho Sales - chuyển đổi MenuItemEntity sang MenuItemResponse cho nghiệp vụ bán hàng/chọn món.
  * Chỉ mapping các trường cơ bản: id, itemName, price.
  */

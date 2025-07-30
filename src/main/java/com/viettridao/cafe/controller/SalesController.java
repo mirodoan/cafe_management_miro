@@ -2,13 +2,10 @@ package com.viettridao.cafe.controller;
 
 import com.viettridao.cafe.common.TableStatus;
 import com.viettridao.cafe.dto.request.sales.*;
-import com.viettridao.cafe.dto.response.sales.OrderDetailRessponse;
-import com.viettridao.cafe.mapper.OrderDetailMapper;
 import com.viettridao.cafe.model.AccountEntity;
 import com.viettridao.cafe.model.ReservationEntity;
 import com.viettridao.cafe.model.TableEntity;
 import com.viettridao.cafe.repository.AccountRepository;
-import com.viettridao.cafe.repository.InvoiceDetailRepository;
 import com.viettridao.cafe.repository.TableRepository;
 import com.viettridao.cafe.service.ReservationService;
 import com.viettridao.cafe.service.SelectMenuService;
@@ -37,301 +34,293 @@ import java.util.Optional;
 @RequestMapping("/sale")
 public class SalesController {
 
-    // Repository quản lý thông tin bàn và trạng thái
     private final TableRepository tableRepository;
-    // Service xử lý logic đặt bàn, gộp bàn, tách bàn, chuyển bàn
     private final ReservationService reservationService;
-    // Repository quản lý thông tin tài khoản và nhân viên
     private final AccountRepository accountRepository;
-    // Service xử lý logic chọn thực đơn và tạo order
     private final SelectMenuService selectMenuService;
-    // Repository quản lý chi tiết hóa đơn (invoice details)
-    private final InvoiceDetailRepository invoiceDetailRepository;
-    // Mapper chuyển đổi entity sang DTO response
-    private final OrderDetailMapper orderDetailMapper;
 
+    /**
+     * Hiển thị trang tổng quan bán hàng.
+     *
+     * @param model Model để truyền dữ liệu cho view
+     * @return Tên view sales/sales
+     */
     @GetMapping("")
     public String getSalesOverview(Model model) {
-        // Chuẩn bị dữ liệu cơ bản cho view
-        model.addAttribute("tables", tableRepository.findAll());
-
-        // Truyền sẵn object form cho các chức năng KHÔNG phụ thuộc bàn cụ thể
-        if (!model.containsAttribute("reservation")) {
-            model.addAttribute("reservation", new CreateReservationRequest());
-        }
-        if (!model.containsAttribute("selectMenuRequest")) {
-            model.addAttribute("selectMenuRequest", new CreateSelectMenuRequest());
-        }
-
-        // Các biến điều khiển hiển thị modal, mặc định ẩn hết khi mới vào trang
-        model.addAttribute("showReservationForm", false);
-        model.addAttribute("showSelectMenuForm", false);
-        model.addAttribute("showMoveModal", false);
-        model.addAttribute("showSplitModal", false);
-        model.addAttribute("showMergeModal", false);
-        model.addAttribute("showOrderDetailModal", false);
-        model.addAttribute("showPaymentModal", false);
-        model.addAttribute("showCancelReservationForm", false);
-
+        // Chuẩn bị dữ liệu hiển thị mặc định cho view
+        prepareDefaultViewData(model);
         return "sales/sales";
     }
 
     /**
-     * Xem chi tiết order của bàn (Order Details Modal)
+     * Xem chi tiết order của 1 bàn.
+     *
+     * @param tableId Id của bàn cần xem
+     * @param model   Model để truyền dữ liệu cho view
+     * @return Tên view sales/sales
      */
     @GetMapping("/view-detail")
     public String getViewDetail(@RequestParam Integer tableId, Model model) {
+        // Lấy thông tin chi tiết order của bàn, nếu lỗi thì set thông báo lỗi
         try {
-            OrderDetailRessponse orderDetail = reservationService.getOrderDetailByTableId(tableId);
-            model.addAttribute("orderDetail", orderDetail);
+            model.addAttribute("orderDetail", reservationService.getOrderDetailByTableId(tableId));
             model.addAttribute("showOrderDetailModal", true);
         } catch (IllegalArgumentException e) {
             model.addAttribute("orderDetailError", e.getMessage());
-            model.addAttribute("showOrderDetailModal", false);
         }
-        model.addAttribute("tables", tableRepository.findAll());
+        // Hiển thị danh sách bàn ở sidebar
+        prepareTableList(model);
         return "sales/sales";
     }
 
     /**
-     * Hiển thị form thanh toán (Payment Modal)
+     * Hiện modal thanh toán cho bàn đã chọn.
+     *
+     * @param tableId Id bàn cần thanh toán
+     * @param model   Model để truyền dữ liệu cho view
+     * @return Tên view sales/sales
      */
     @GetMapping("/show-payment-modal")
     public String showPaymentModal(@RequestParam Integer tableId, Model model) {
+        // Lấy dữ liệu hóa đơn cho modal thanh toán, nếu lỗi thì set thông báo lỗi
         try {
-            OrderDetailRessponse orderDetail = reservationService.getPaymentInfoForTable(tableId);
-            model.addAttribute("orderDetail", orderDetail);
+            model.addAttribute("orderDetail", reservationService.getPaymentInfoForTable(tableId));
             model.addAttribute("showPaymentModal", true);
         } catch (IllegalArgumentException e) {
-            model.addAttribute("errorMessage", e.getMessage());
+            model.addAttribute("error", e.getMessage());
         }
-        model.addAttribute("tables", tableRepository.findAll());
+        prepareTableList(model);
         return "sales/sales";
     }
 
     /**
-     * Xác nhận thanh toán (Pay Invoice)
+     * Xử lý thanh toán hóa đơn cho bàn.
+     *
+     * @param tableId            Id bàn cần thanh toán
+     * @param model              Model để truyền dữ liệu cho view nếu có lỗi
+     * @param redirectAttributes Redirect để truyền thông báo thành công
+     * @return Redirect về /sale hoặc trả về view nếu lỗi
      */
     @PostMapping("/pay-invoice")
     public String payInvoice(@RequestParam Integer tableId, Model model, RedirectAttributes redirectAttributes) {
+        // Xử lý thanh toán hóa đơn, nếu thành công thì redirect về danh sách bàn
         try {
             reservationService.payInvoiceForTable(tableId);
-            redirectAttributes.addFlashAttribute("successMessage", "Thanh toán thành công!");
+            redirectAttributes.addFlashAttribute("success", "Thanh toán thành công!");
             return "redirect:/sale";
         } catch (IllegalArgumentException e) {
-            model.addAttribute("errorMessage", e.getMessage());
+            model.addAttribute("error", e.getMessage());
+            prepareTableList(model);
+            return "sales/sales";
         } catch (RuntimeException e) {
-            model.addAttribute("errorMessage", "Đã xảy ra lỗi hệ thống: " + e.getMessage());
+            model.addAttribute("error", e.getMessage());
+            prepareTableList(model);
+            return "sales/sales";
         }
-        model.addAttribute("tables", tableRepository.findAll());
+    }
+
+    /**
+     * Hiện form chọn món cho bàn.
+     *
+     * @param tableId Id bàn cần chọn món (có thể null)
+     * @param model   Model để truyền dữ liệu cho view
+     * @return Tên view sales/sales
+     */
+    @GetMapping("/show-select-menu-form")
+    public String showSelectMenuForm(@RequestParam(value = "tableId", required = false) Integer tableId, Model model) {
+        // Chuẩn bị dữ liệu cho form chọn món, nếu lỗi thì set thông báo lỗi
+        try {
+            prepareSelectMenuFormModel(model, selectMenuService.prepareSelectMenuRequest(tableId));
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("error", e.getMessage());
+            prepareTableList(model);
+        }
         return "sales/sales";
     }
 
     /**
-     * Hiển thị form chọn thực đơn (Select Menu)
-     */
-    @GetMapping("/show-select-menu-form")
-    public String showSelectMenuForm(@RequestParam(value = "tableId", required = false) Integer tableId, Model model) {
-        try {
-            CreateSelectMenuRequest selectMenuRequest = selectMenuService.prepareSelectMenuRequest(tableId);
-            model.addAttribute("selectMenuRequest", selectMenuRequest);
-            model.addAttribute("selectedTable", tableRepository.findById(tableId).orElse(null));
-            model.addAttribute("tables", tableRepository.findAll());
-            model.addAttribute("showSelectMenuForm", true);
-            model.addAttribute("menuItems", selectMenuService.getMenuItems());
-            return "sales/sales";
-        } catch (IllegalArgumentException e) {
-            model.addAttribute("errorMessage", e.getMessage());
-            model.addAttribute("tables", tableRepository.findAll());
-            return "sales/sales";
-        }
-    }
-
-    /**
-     * Xử lý chọn thực đơn trên sales
+     * Xử lý khi chọn món trên trang bán hàng.
+     *
+     * @param request       Request chứa thông tin món chọn
+     * @param bindingResult BindingResult để kiểm tra lỗi form
+     * @param model         Model để truyền dữ liệu cho view
+     * @return Tên view sales/sales
      */
     @PostMapping("/select-menu-on-sales")
     public String selectMenuOnSales(
             @Valid @ModelAttribute("selectMenuRequest") CreateSelectMenuRequest request,
             BindingResult bindingResult,
             Model model) {
-
+        // Kiểm tra lỗi validate dữ liệu nhập vào
         if (bindingResult.hasErrors()) {
-            // Trả về form với lỗi validate dữ liệu hình thức
             prepareSelectMenuFormModel(model, request);
             return "sales/sales";
         }
-
         try {
+            // Tạo order mới cho bàn và thông báo thành công
             Integer employeeId = getCurrentEmployeeId();
-            OrderDetailRessponse orderDetail = selectMenuService.createOrderForAvailableTable(request, employeeId);
-            model.addAttribute("tables", tableRepository.findAll());
-            model.addAttribute("successMessage", "Chọn món thành công!");
-            model.addAttribute("orderDetail", orderDetail);
+            model.addAttribute("orderDetail", selectMenuService.createOrderForAvailableTable(request, employeeId));
+            model.addAttribute("success", "Chọn món thành công!");
             model.addAttribute("showSelectMenuForm", false);
-            return "sales/sales";
         } catch (IllegalArgumentException e) {
-            // Lỗi nghiệp vụ: gắn vào model để hiển thị trên form
-            model.addAttribute("errorMessage", e.getMessage());
+            model.addAttribute("error", e.getMessage());
             prepareSelectMenuFormModel(model, request);
-            return "sales/sales";
         } catch (RuntimeException e) {
-            model.addAttribute("errorMessage", "Đã xảy ra lỗi hệ thống: " + e.getMessage());
+            model.addAttribute("error", e.getMessage());
             prepareSelectMenuFormModel(model, request);
-            return "sales/sales";
         }
+        prepareTableList(model);
+        return "sales/sales";
     }
 
     /**
-     * Helper method để gắn lại các attribute cần thiết cho form
-     */
-    private void prepareSelectMenuFormModel(Model model, CreateSelectMenuRequest request) {
-        model.addAttribute("tables", tableRepository.findAll());
-        model.addAttribute("selectMenuRequest", request);
-        model.addAttribute("selectedTable", request.getTableId() != null ? tableRepository.findById(request.getTableId()).orElse(null) : null);
-        model.addAttribute("showSelectMenuForm", true);
-        model.addAttribute("menuItems", selectMenuService.getMenuItems());
-    }
-
-    /**
-     * Hiển thị form đặt bàn (Reservation)
+     * Hiện form đặt bàn cho bàn còn trống.
+     *
+     * @param tableId            Id bàn cần đặt
+     * @param model              Model để truyền dữ liệu cho view
+     * @param redirectAttributes Redirect để chuyển thông báo lỗi nếu có
+     * @return Tên view sales/sales hoặc redirect về /sale nếu lỗi
      */
     @GetMapping("/show-reservation-form")
     public String showReservationForm(@RequestParam Integer tableId, Model model, RedirectAttributes redirectAttributes) {
-        // 1. Kiểm tra xem bàn có tồn tại và còn khả dụng không
         Optional<TableEntity> tableOpt = tableRepository.findById(tableId);
+        // Kiểm tra trạng thái bàn trước khi cho đặt
         if (tableOpt.isEmpty() || tableOpt.get().getStatus() != TableStatus.AVAILABLE) {
-            // 2. Nếu bàn không khả dụng, trả về thông báo lỗi và quay lại trang danh sách bàn
-            redirectAttributes.addFlashAttribute("errorMessage", "Bàn không tồn tại hoặc đã được đặt/chưa sẵn sàng!");
+            redirectAttributes.addFlashAttribute("error", "Bàn không tồn tại hoặc đã được đặt/chưa sẵn sàng!");
             return "redirect:/sale";
         }
-        // 3. Nếu bàn hợp lệ, khởi tạo request đặt bàn với tableId đã chọn
+        // Chuẩn bị dữ liệu cho form đặt bàn
         CreateReservationRequest reservation = new CreateReservationRequest();
         reservation.setTableId(tableId);
         reservation.setTableName(tableOpt.get().getTableName());
-        // 4. Đẩy dữ liệu cần thiết ra view để hiển thị form
         prepareReservationForm(model, reservation, true);
         return "sales/sales";
     }
 
     /**
-     * Xử lý tạo reservation (đặt bàn)
+     * Xử lý tạo mới đặt bàn.
+     *
+     * @param request            Thông tin đặt bàn từ form
+     * @param bindingResult      Kết quả validate form
+     * @param model              Model để truyền dữ liệu cho view
+     * @param redirectAttributes Redirect để chuyển thông báo thành công
+     * @return Tên view sales/sales hoặc redirect về /sale nếu thành công
      */
     @PostMapping("/reservations")
-    public String createReservation(
-            @Valid @ModelAttribute("reservation") CreateReservationRequest request,
-            BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
-        // 1. Nếu có lỗi validate dữ liệu đầu vào, trả lại form với thông tin và lỗi
+    public String createReservation(@Valid @ModelAttribute("reservation") CreateReservationRequest request,
+                                    BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
+        // Kiểm tra lỗi validate form đặt bàn
         if (bindingResult.hasErrors()) {
-            // Lấy lại tên bàn
             if (request.getTableId() != null) {
-                Optional<TableEntity> tableOpt = tableRepository.findById(request.getTableId());
-                tableOpt.ifPresent(table -> request.setTableName(table.getTableName()));
+                tableRepository.findById(request.getTableId())
+                        .ifPresent(table -> request.setTableName(table.getTableName()));
             }
             prepareReservationForm(model, request, true);
             return "sales/sales";
         }
         try {
-            // 2. Lấy employeeId của nhân viên đang đăng nhập
+            // Tạo mới thông tin đặt bàn và thông báo thành công
             Integer employeeId = getCurrentEmployeeId();
-            // 3. Gọi service để tạo mới reservation (đặt bàn)
             reservationService.createReservation(request, employeeId);
-            // 4. Nếu thành công, trả về thông báo và reload lại trang sale
-            redirectAttributes.addFlashAttribute("successMessage", "Đặt bàn thành công!");
+            redirectAttributes.addFlashAttribute("success", "Đặt bàn thành công!");
             return "redirect:/sale";
         } catch (IllegalArgumentException e) {
-            // 5. Nếu có lỗi nghiệp vụ (bàn không còn khả dụng, ...), hiển thị lỗi lên form
             bindingResult.reject("reservation", e.getMessage());
-        } catch (Exception e) {
-            // 6. Nếu có lỗi hệ thống, cũng hiển thị lỗi lên form
-            bindingResult.reject("reservation", "Lỗi hệ thống: " + e.getMessage());
+            prepareReservationForm(model, request, true);
+            return "sales/sales";
+        } catch (RuntimeException e) {
+            bindingResult.reject("reservation", e.getMessage());
+            prepareReservationForm(model, request, true);
+            return "sales/sales";
         }
-        // 7. Nếu có lỗi, trả lại form với dữ liệu vừa nhập và lỗi tương ứng
-        prepareReservationForm(model, request, true);
-        return "sales/sales";
     }
 
     /**
-     * Helper: Chuẩn bị dữ liệu cho form đặt bàn
-     */
-    private void prepareReservationForm(Model model, CreateReservationRequest reservation, boolean showForm) {
-        // Lấy ngày hiện tại
-        model.addAttribute("today", LocalDate.now());
-        // Lấy lại danh sách bàn cho view
-        model.addAttribute("tables", tableRepository.findAll());
-        // Gán lại object form reservation
-        model.addAttribute("reservation", reservation);
-        // Gán biến điều khiển hiển thị modal đặt bàn
-        model.addAttribute("showReservationForm", showForm);
-    }
-
-    /**
-     * Xử lý hủy bàn (Cancel Reservation)
+     * Hiện form hủy đặt bàn.
+     *
+     * @param tableId Id bàn cần hủy đặt
+     * @param model   Model để truyền dữ liệu cho view
+     * @return Tên view sales/sales
      */
     @GetMapping("/show-cancel-reservation-form")
     public String showCancelReservationForm(@RequestParam Integer tableId, Model model) {
+        // Lấy thông tin bàn và reservation hiện tại
         TableEntity table = tableRepository.findById(tableId).orElse(null);
         ReservationEntity reservation = reservationService.findCurrentReservationByTableId(tableId);
-        model.addAttribute("tables", tableRepository.findAll());
+        prepareTableList(model);
         model.addAttribute("selectedTable", table);
         model.addAttribute("reservation", reservation);
         model.addAttribute("showCancelReservationForm", true);
         return "sales/sales";
     }
 
+    /**
+     * Xử lý hủy đặt bàn.
+     *
+     * @param tableId Id bàn cần hủy
+     * @param model   Model để truyền dữ liệu cho view
+     * @return Tên view sales/sales
+     */
     @PostMapping("/cancel-reservation")
     public String cancelReservation(@RequestParam Integer tableId, Model model) {
+        // Hủy đặt bàn, nếu lỗi thì hiển thị lại form hủy bàn và thông báo lỗi
         try {
             reservationService.cancelReservation(tableId);
-            model.addAttribute("tables", tableRepository.findAll());
-            model.addAttribute("successMessage", "Hủy bàn thành công!");
+            model.addAttribute("success", "Hủy bàn thành công!");
             model.addAttribute("showCancelReservationForm", false);
         } catch (IllegalArgumentException e) {
             TableEntity table = tableRepository.findById(tableId).orElse(null);
             ReservationEntity reservation = reservationService.findCurrentReservationByTableId(tableId);
-            model.addAttribute("tables", tableRepository.findAll());
             model.addAttribute("selectedTable", table);
             model.addAttribute("reservation", reservation);
-            model.addAttribute("errorMessage", e.getMessage());
-            model.addAttribute("showCancelReservationForm", true); // Giữ modal mở lại
+            model.addAttribute("error", e.getMessage());
+            model.addAttribute("showCancelReservationForm", true);
         }
+        prepareTableList(model);
         return "sales/sales";
     }
 
     /**
-     * Hiển thị form chuyển bàn (Move Table)
+     * Hiện form chuyển bàn.
+     *
+     * @param selectedTableId Id bàn nguồn cần chuyển
+     * @param model           Model để truyền dữ liệu cho view
+     * @return Tên view sales/sales
      */
     @GetMapping("/show-move-table-form")
     public String showMoveTableForm(@RequestParam Integer selectedTableId, Model model) {
+        // Chuẩn bị dữ liệu cho form chuyển bàn, nếu lỗi thì set thông báo lỗi
         try {
             Map<String, Object> formData = reservationService.prepareMoveTableForm(selectedTableId);
+            model.addAllAttributes(formData);
             model.addAttribute("showMoveModal", true);
             model.addAttribute("selectedTableId", selectedTableId);
-            model.addAttribute("tables", formData.get("tables"));
-            model.addAttribute("sourceTable", formData.get("sourceTable"));
-            model.addAttribute("availableTables", formData.get("availableTables"));
             model.addAttribute("selectMenuRequest", new CreateSelectMenuRequest());
         } catch (IllegalArgumentException e) {
-            model.addAttribute("errorMessage", e.getMessage());
-            model.addAttribute("tables", tableRepository.findAll());
-            return "sales/sales";
-        } catch (Exception e) {
-            model.addAttribute("errorMessage", "Lỗi khi thiết lập form chuyển bàn: " + e.getMessage());
-            model.addAttribute("tables", tableRepository.findAll());
-            return "sales/sales";
+            model.addAttribute("error", e.getMessage());
+            prepareTableList(model);
+        } catch (RuntimeException e) {
+            model.addAttribute("error", e.getMessage());
+            prepareTableList(model);
         }
         return "sales/sales";
     }
 
     /**
-     * Xử lý chuyển bàn (Move Table)
+     * Xử lý chuyển bàn.
+     *
+     * @param sourceTableId      Id bàn nguồn
+     * @param targetTableId      Id bàn đích
+     * @param model              Model để truyền dữ liệu cho view
+     * @param redirectAttributes Redirect để chuyển thông báo thành công
+     * @return Tên view sales/sales hoặc redirect về /sale nếu thành công
      */
     @PostMapping("/move-table")
-    public String moveTable(
-            @RequestParam(required = false) Integer sourceTableId,
-            @RequestParam(required = false) Integer targetTableId,
-            Model model,
-            RedirectAttributes redirectAttributes) {
+    public String moveTable(@RequestParam(required = false) Integer sourceTableId,
+                            @RequestParam(required = false) Integer targetTableId,
+                            Model model,
+                            RedirectAttributes redirectAttributes) {
+        // Kiểm tra đầu vào và thực hiện chuyển bàn, nếu lỗi thì load lại form chuyển bàn
         try {
             if (sourceTableId == null) throw new IllegalArgumentException("Không tìm thấy bàn nguồn");
             if (targetTableId == null) throw new IllegalArgumentException("Vui lòng chọn bàn đích");
@@ -340,72 +329,97 @@ public class SalesController {
             request.setTargetTableId(targetTableId);
             Integer employeeId = getCurrentEmployeeId();
             reservationService.moveTable(request, employeeId);
-            redirectAttributes.addFlashAttribute("successMessage", "Chuyển bàn thành công!");
+            redirectAttributes.addFlashAttribute("success", "Chuyển bàn thành công!");
             return "redirect:/sale";
         } catch (IllegalArgumentException e) {
-            model.addAttribute("errorMessage", e.getMessage());
+            model.addAttribute("error", e.getMessage());
+            try {
+                Map<String, Object> formData = reservationService.prepareMoveTableForm(sourceTableId);
+                model.addAllAttributes(formData);
+                model.addAttribute("showMoveModal", true);
+                model.addAttribute("selectedTableId", sourceTableId);
+                model.addAttribute("selectMenuRequest", new CreateSelectMenuRequest());
+            } catch (Exception ex) {
+                prepareTableList(model);
+            }
+            return "sales/sales";
         } catch (RuntimeException e) {
-            model.addAttribute("errorMessage", "Đã xảy ra lỗi hệ thống: " + e.getMessage());
+            model.addAttribute("error", e.getMessage());
+            try {
+                Map<String, Object> formData = reservationService.prepareMoveTableForm(sourceTableId);
+                model.addAllAttributes(formData);
+                model.addAttribute("showMoveModal", true);
+                model.addAttribute("selectedTableId", sourceTableId);
+                model.addAttribute("selectMenuRequest", new CreateSelectMenuRequest());
+            } catch (Exception ex) {
+                prepareTableList(model);
+            }
+            return "sales/sales";
         }
-        // Lấy lại dữ liệu cho form nếu lỗi
-        try {
-            Map<String, Object> formData = reservationService.prepareMoveTableForm(sourceTableId);
-            model.addAttribute("showMoveModal", true);
-            model.addAttribute("selectedTableId", sourceTableId);
-            model.addAttribute("tables", formData.get("tables"));
-            model.addAttribute("sourceTable", formData.get("sourceTable"));
-            model.addAttribute("availableTables", formData.get("availableTables"));
-            model.addAttribute("reservation", new CreateReservationRequest());
-            model.addAttribute("selectMenuRequest", new CreateSelectMenuRequest());
-        } catch (Exception ex) {
-            model.addAttribute("tables", tableRepository.findAll());
-        }
-        return "sales/sales";
     }
 
     /**
-     * Hiển thị form gộp bàn (Merge Table)
+     * Hiện form gộp bàn.
+     *
+     * @param selectedTableId Id bàn đang chọn để gộp
+     * @param model           Model để truyền dữ liệu cho view
+     * @return Tên view sales/sales
      */
     @GetMapping("/show-merge-table-form")
     public String showMergeTableForm(@RequestParam Integer selectedTableId, Model model) {
-        // Lấy danh sách bàn đang OCCUPIED để chọn gộp
+        // Lấy danh sách bàn đang sử dụng để gộp bàn
         List<TableEntity> occupiedTables = tableRepository.findAll().stream()
                 .filter(table -> table.getStatus() == TableStatus.OCCUPIED)
                 .toList();
-
-        // Đẩy dữ liệu ra view form gộp bàn
         model.addAttribute("showMergeModal", true);
         model.addAttribute("occupiedTables", occupiedTables);
         model.addAttribute("selectedTableId", selectedTableId);
-
         return "sales/sales";
     }
 
     /**
-     * Xử lý gộp bàn (Merge Tables)
+     * Xử lý gộp bàn.
+     *
+     * @param request            Request chứa thông tin gộp bàn
+     * @param bindingResult      Kết quả validate form
+     * @param model              Model để truyền dữ liệu cho view
+     * @param redirectAttributes Redirect để chuyển thông báo thành công
+     * @return Tên view sales/sales hoặc redirect về /sale nếu thành công
      */
     @PostMapping("/merge-tables")
     public String mergeTables(@Valid @ModelAttribute("mergeTableRequest") MergeTableRequest request,
                               BindingResult bindingResult,
                               Model model,
                               RedirectAttributes redirectAttributes) {
+        // Kiểm tra lỗi validate form gộp bàn
         if (bindingResult.hasErrors()) {
             return prepareMergeTableForm(model, request, bindingResult);
         }
         try {
+            // Gọi service thực hiện gộp bàn và thông báo thành công
             Integer employeeId = getCurrentEmployeeId();
             reservationService.mergeTables(request, employeeId);
-            redirectAttributes.addFlashAttribute("successMessage", "Gộp bàn thành công!");
+            redirectAttributes.addFlashAttribute("success", "Gộp bàn thành công!");
             return "redirect:/sale";
         } catch (IllegalArgumentException e) {
-            model.addAttribute("errorMessage", e.getMessage());
+            model.addAttribute("error", e.getMessage());
+            return prepareMergeTableForm(model, request, bindingResult);
         } catch (RuntimeException e) {
-            model.addAttribute("errorMessage", "Đã xảy ra lỗi hệ thống: " + e.getMessage());
+            model.addAttribute("error", e.getMessage());
+            return prepareMergeTableForm(model, request, bindingResult);
         }
-        return prepareMergeTableForm(model, request, bindingResult);
     }
 
+    /**
+     * Chuẩn bị lại dữ liệu cho form gộp bàn khi có lỗi.
+     *
+     * @param model         Model để truyền dữ liệu cho view
+     * @param request       Request chứa thông tin gộp bàn
+     * @param bindingResult Kết quả validate form
+     * @return Tên view sales/sales
+     */
     private String prepareMergeTableForm(Model model, MergeTableRequest request, BindingResult bindingResult) {
+        // Lấy lại danh sách bàn đang sử dụng và gán vào model
         List<TableEntity> occupiedTables = tableRepository.findAll().stream()
                 .filter(table -> table.getStatus() == TableStatus.OCCUPIED)
                 .toList();
@@ -417,74 +431,162 @@ public class SalesController {
     }
 
     /**
-     * Hiển thị form tách bàn (Split Table)
+     * Hiện form tách bàn.
+     *
+     * @param selectedTableId Id bàn cần tách
+     * @param model           Model để truyền dữ liệu cho view
+     * @return Tên view sales/sales
      */
     @GetMapping("/show-split-table-form")
     public String showSplitTableForm(@RequestParam Integer selectedTableId, Model model) {
+        // Chuẩn bị dữ liệu form tách bàn, nếu lỗi thì set thông báo lỗi
         try {
-            // Gọi service để lấy dữ liệu cho form, trả về Map<String, Object>
-            Map<String, Object> formData = reservationService.prepareSplitTableForm(selectedTableId);
-            model.addAllAttributes(formData);
+            model.addAllAttributes(reservationService.prepareSplitTableForm(selectedTableId));
             model.addAttribute("showSplitModal", true);
         } catch (IllegalArgumentException e) {
-            model.addAttribute("errorMessage", e.getMessage());
+            model.addAttribute("error", e.getMessage());
+        } catch (RuntimeException e) {
+            model.addAttribute("error", e.getMessage());
         }
         return "sales/sales";
     }
 
     /**
-     * Xử lý tách bàn (Split Table)
+     * Xử lý tách bàn.
+     *
+     * @param request            Request tách bàn
+     * @param bindingResult      Kết quả validate form
+     * @param model              Model để truyền dữ liệu cho view
+     * @param redirectAttributes Redirect để chuyển thông báo thành công
+     * @return Tên view sales/sales hoặc redirect về /sale nếu thành công
      */
     @PostMapping("/split-table")
     public String splitTable(@Valid @ModelAttribute SplitTableRequest request,
                              BindingResult bindingResult,
                              Model model,
                              RedirectAttributes redirectAttributes) {
+        // Kiểm tra lỗi validate form tách bàn
         if (bindingResult.hasErrors()) {
             return setupSplitModalOnError(request, model, bindingResult, "Lỗi validation dữ liệu đầu vào");
         }
         try {
+            // Gọi service thực hiện tách bàn và thông báo thành công
             Integer employeeId = getCurrentEmployeeId();
             reservationService.splitTable(request, employeeId);
-            redirectAttributes.addFlashAttribute("successMessage", "Tách bàn thành công!");
+            redirectAttributes.addFlashAttribute("success", "Tách bàn thành công!");
             return "redirect:/sale";
         } catch (IllegalArgumentException e) {
             return setupSplitModalOnError(request, model, bindingResult, e.getMessage());
         } catch (RuntimeException e) {
-            return setupSplitModalOnError(request, model, bindingResult, "Đã xảy ra lỗi hệ thống: " + e.getMessage());
+            return setupSplitModalOnError(request, model, bindingResult, e.getMessage());
         }
     }
 
     /**
-     * Helper: Setup lại modal tách bàn khi có lỗi (giữ lại input của user)
+     * Set lại dữ liệu hiển thị khi tách bàn bị lỗi.
+     *
+     * @param request       Request tách bàn
+     * @param model         Model để truyền dữ liệu cho view
+     * @param bindingResult Kết quả validate form
+     * @param errorMessage  Thông báo lỗi
+     * @return Tên view sales/sales
      */
     private String setupSplitModalOnError(SplitTableRequest request, Model model,
                                           BindingResult bindingResult, String errorMessage) {
+        // Gán lại dữ liệu và hiển thị thông báo lỗi lên form tách bàn
         try {
-            Map<String, Object> formData = reservationService.prepareSplitTableForm(request.getSourceTableId());
-            model.addAllAttributes(formData);
+            model.addAllAttributes(reservationService.prepareSplitTableForm(request.getSourceTableId()));
             model.addAttribute("showSplitModal", true);
-            model.addAttribute("splitTableRequest", request); // giữ lại input người dùng
-            model.addAttribute("errorMessage", errorMessage);
+            model.addAttribute("splitTableRequest", request);
+            model.addAttribute("error", errorMessage);
             model.addAttribute("org.springframework.validation.BindingResult.splitTableRequest", bindingResult);
         } catch (Exception e) {
-            model.addAttribute("errorMessage", "Lỗi hệ thống khi hiển thị form: " + e.getMessage());
+            model.addAttribute("error", "Lỗi hệ thống khi hiển thị form: " + e.getMessage());
         }
         return "sales/sales";
     }
 
     /**
-     * Helper: Lấy ID nhân viên hiện tại từ session đăng nhập
+     * Chuẩn bị dữ liệu cho form chọn món.
+     *
+     * @param model   Model để truyền dữ liệu cho view
+     * @param request Request chọn món
+     */
+    private void prepareSelectMenuFormModel(Model model, CreateSelectMenuRequest request) {
+        // Lấy danh sách bàn, menu và thông tin bàn chọn vào model
+        prepareTableList(model);
+        model.addAttribute("selectMenuRequest", request);
+        model.addAttribute("selectedTable", request.getTableId() != null
+                ? tableRepository.findById(request.getTableId()).orElse(null) : null);
+        model.addAttribute("showSelectMenuForm", true);
+        model.addAttribute("menuItems", selectMenuService.getMenuItems());
+    }
+
+    /**
+     * Chuẩn bị dữ liệu cho form đặt bàn.
+     *
+     * @param model       Model để truyền dữ liệu cho view
+     * @param reservation Request đặt bàn
+     * @param showForm    Có hiển thị form hay không
+     */
+    private void prepareReservationForm(Model model, CreateReservationRequest reservation, boolean showForm) {
+        // Gán lại các biến dùng cho form đặt bàn
+        model.addAttribute("today", LocalDate.now());
+        prepareTableList(model);
+        model.addAttribute("reservation", reservation);
+        model.addAttribute("showReservationForm", showForm);
+    }
+
+    /**
+     * Chuẩn bị dữ liệu mặc định cho view sales.
+     *
+     * @param model Model để truyền dữ liệu cho view
+     */
+    private void prepareDefaultViewData(Model model) {
+        // Gán các biến mặc định cho các modal và list bàn
+        prepareTableList(model);
+        if (!model.containsAttribute("reservation"))
+            model.addAttribute("reservation", new CreateReservationRequest());
+        if (!model.containsAttribute("selectMenuRequest"))
+            model.addAttribute("selectMenuRequest", new CreateSelectMenuRequest());
+        model.addAttribute("showReservationForm", false);
+        model.addAttribute("showSelectMenuForm", false);
+        model.addAttribute("showMoveModal", false);
+        model.addAttribute("showSplitModal", false);
+        model.addAttribute("showMergeModal", false);
+        model.addAttribute("showOrderDetailModal", false);
+        model.addAttribute("showPaymentModal", false);
+        model.addAttribute("showCancelReservationForm", false);
+    }
+
+    /**
+     * Lấy danh sách bàn và gán vào model.
+     *
+     * @param model Model để truyền dữ liệu cho view
+     */
+    private void prepareTableList(Model model) {
+        // Lấy toàn bộ danh sách bàn từ DB và gán vào model
+        model.addAttribute("tables", tableRepository.findAll());
+    }
+
+    /**
+     * Lấy employeeId từ user đăng nhập hiện tại.
+     *
+     * @return employeeId của nhân viên đang đăng nhập, hoặc ném IllegalArgumentException nếu không tìm thấy hoặc chưa liên kết nhân viên
+     * @throws IllegalArgumentException nếu không tìm thấy account hoặc account chưa gắn nhân viên
      */
     private Integer getCurrentEmployeeId() {
-        // Lấy username từ Security Context
+        // Lấy authentication từ SecurityContext để xác định user đang đăng nhập
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        // Lấy username từ authentication
         String username = authentication.getName();
+        // Tìm account theo username, nếu không có thì throw
         AccountEntity account = accountRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy thông tin tài khoản cho username: " + username));
-        if (account.getEmployee() == null) {
+        // Nếu account chưa gắn với nhân viên thì throw
+        if (account.getEmployee() == null)
             throw new IllegalArgumentException("Tài khoản '" + username + "' không liên kết với nhân viên nào!");
-        }
+        // Trả về id của nhân viên liên kết với account
         return account.getEmployee().getId();
     }
 }

@@ -5,12 +5,12 @@ import jakarta.persistence.Embeddable;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
-@Setter
-@Embeddable
 /**
  * Composite key cho MenuDetailEntity (product_id, menu_item_id)
  */
+@Getter
+@Setter
+@Embeddable
 public class MenuKey {
     @Column(name = "product_id")
     private Integer idProduct; // ID của sản phẩm liên kết với chi tiết menu

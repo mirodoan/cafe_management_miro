@@ -6,14 +6,11 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * Khóa chính cho thực thể InvoiceDetail.
+ * Khóa chính cho thực thể InvoiceDetail (invoice_id, menu_item_id)
  */
 @Getter
 @Setter
 @Embeddable
-/**
- * Composite key cho InvoiceDetailEntity (invoice_id, menu_item_id)
- */
 public class InvoiceKey {
     @Column(name = "invoice_id") // ID của hóa đơn
     private Integer idInvoice;

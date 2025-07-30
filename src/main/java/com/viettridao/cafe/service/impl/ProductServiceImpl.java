@@ -20,17 +20,6 @@ import java.util.List;
 
 /**
  * ProductServiceImpl
- * <p>
- * Version 1.0
- * <p>
- * Date: 18-07-2025
- * <p>
- * Copyright
- * <p>
- * Modification Logs:
- * DATE         AUTHOR      DESCRIPTION
- * -------------------------------------------------------
- * 18-07-2025   mirodoan    Create
  */
 @Service
 @RequiredArgsConstructor

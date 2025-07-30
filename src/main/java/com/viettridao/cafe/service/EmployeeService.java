@@ -7,17 +7,6 @@ import com.viettridao.cafe.model.EmployeeEntity;
 
 /**
  * EmployeeService
- *
- * Version 1.0
- *
- * Date: 18-07-2025
- *
- * Copyright
- *
- * Modification Logs:
- * DATE         AUTHOR      DESCRIPTION
- * -------------------------------------------------------
- * 18-07-2025   mirodoan    Create
  */
 public interface EmployeeService {
 
@@ -33,6 +22,7 @@ public interface EmployeeService {
 
     /**
      * Kiểm tra username đã tồn tại trong hệ thống chưa (dành cho tạo mới nhân viên).
+     *
      * @param username tên đăng nhập
      * @return true nếu đã tồn tại, false nếu chưa
      */

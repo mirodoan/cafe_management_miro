@@ -1,11 +1,11 @@
 package com.viettridao.cafe.controller;
 
-import java.security.Principal;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.time.LocalDate;
-import java.util.Locale;
-
+import com.viettridao.cafe.dto.request.expense.BudgetFilterRequest;
+import com.viettridao.cafe.dto.request.expense.ExpenseRequest;
+import com.viettridao.cafe.dto.response.expense.BudgetResponse;
+import com.viettridao.cafe.service.BudgetService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,27 +16,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.viettridao.cafe.dto.request.expense.BudgetFilterRequest;
-import com.viettridao.cafe.dto.request.expense.ExpenseRequest;
-import com.viettridao.cafe.dto.response.expense.BudgetResponse;
-import com.viettridao.cafe.service.BudgetService;
-
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+import java.security.Principal;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.time.LocalDate;
+import java.util.Locale;
 
 /**
  * BudgetController
- *
- * Version 1.0
- *
- * Date: 18-07-2025
- *
- * Copyright
- *
- * Modification Logs:
- * DATE         AUTHOR      DESCRIPTION
- * -------------------------------------------------------
- * 18-07-2025   mirodoan    Create
  */
 @Controller
 @RequestMapping("/budget")
@@ -47,6 +34,7 @@ public class BudgetController {
 
     /**
      * Định dạng số tiền thành chuỗi kiểu VN
+     *
      * @param value số tiền cần định dạng
      * @return chuỗi số tiền đã định dạng
      */
@@ -62,6 +50,7 @@ public class BudgetController {
 
     /**
      * Điều hướng sang trang ngân sách mặc định
+     *
      * @param model Model truyền sang view
      * @return redirect đến /budget/budget
      */
@@ -72,10 +61,11 @@ public class BudgetController {
 
     /**
      * Lấy danh sách ngân sách theo bộ lọc
-     * @param filter Dữ liệu bộ lọc
-     * @param model Model truyền sang view
+     *
+     * @param filter  Dữ liệu bộ lọc
+     * @param model   Model truyền sang view
      * @param success thông báo thành công
-     * @param error thông báo lỗi
+     * @param error   thông báo lỗi
      * @return view budget/budget
      */
     @GetMapping("/budget")
@@ -124,6 +114,7 @@ public class BudgetController {
 
     /**
      * Hiển thị form tạo chi tiêu
+     *
      * @param model Model truyền sang view
      * @return view budget/create_budget
      */
@@ -137,9 +128,10 @@ public class BudgetController {
 
     /**
      * Xử lý tạo mới chi tiêu
-     * @param request Dữ liệu chi tiêu
-     * @param result Kết quả validate
-     * @param redirect RedirectAttributes để truyền thông báo
+     *
+     * @param request   Dữ liệu chi tiêu
+     * @param result    Kết quả validate
+     * @param redirect  RedirectAttributes để truyền thông báo
      * @param principal thông tin user đăng nhập
      * @return redirect về trang create nếu lỗi, hoặc về ngân sách nếu thành công
      */

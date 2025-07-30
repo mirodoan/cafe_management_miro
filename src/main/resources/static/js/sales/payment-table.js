@@ -1,4 +1,4 @@
-// 9. Thanh toán
+// Thanh toán
 function initPaymentButton() {
   const paymentButton = document.getElementById('payment-button');
   if (!paymentButton) return;

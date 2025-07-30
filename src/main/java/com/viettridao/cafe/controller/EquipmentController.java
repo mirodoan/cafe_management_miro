@@ -16,17 +16,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  * EquipmentController
- *
- * Version 1.0
- *
- * Date: 18-07-2025
- *
- * Copyright
- *
- * Modification Logs:
- * DATE         AUTHOR      DESCRIPTION
- * -------------------------------------------------------
- * 18-07-2025   mirodoan    Create
  */
 @Controller
 @RequiredArgsConstructor

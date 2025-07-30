@@ -18,18 +18,6 @@ import java.util.List;
 
 /**
  * InvoiceItemServiceImpl
- *
- * Version 1.0
- *
- * Date: 18-07-2025
- *
- * Copyright
- *
- * Modification Logs:
- * DATE         AUTHOR      DESCRIPTION
- * -------------------------------------------------------
- * 18-07-2025   mirodoan    Create
- *
  * Triển khai Service cho nghiệp vụ thêm món vào hóa đơn.
  * Xử lý kiểm tra trạng thái bàn, hóa đơn, thêm món, cập nhật tổng tiền và trạng thái bàn.
  */

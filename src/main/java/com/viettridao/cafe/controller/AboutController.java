@@ -6,17 +6,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
  * AboutController
- *
- * Version 1.0
- *
- * Date: 18-07-2025
- *
- * Copyright
- *
- * Modification Logs:
- * DATE         AUTHOR      DESCRIPTION
- * -------------------------------------------------------
- * 18-07-2025   mirodoan    Create
  */
 @Controller
 @RequestMapping("/about")

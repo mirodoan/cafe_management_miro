@@ -9,18 +9,6 @@ import com.viettridao.cafe.model.ImportEntity;
 
 /**
  * WarehouseTransactionMapper
- *
- * Version 1.0
- *
- * Date: 19-07-2025
- *
- * Copyright
- *
- * Modification Logs:
- * DATE         AUTHOR      DESCRIPTION
- * -------------------------------------------------------
- * 19-07-2025   mirodoan    Create
- *
  * Mapper chuyển đổi giữa ImportEntity/ExportEntity và WarehouseTransactionResponse.
  */
 @Mapper(componentModel = "spring")

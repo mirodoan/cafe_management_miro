@@ -19,18 +19,6 @@ import com.viettridao.cafe.repository.ProductRepository;
 
 /**
  * ExportServiceImpl
- *
- * Version 1.0
- *
- * Date: 18-07-2025
- *
- * Copyright
- *
- * Modification Logs:
- * DATE         AUTHOR      DESCRIPTION
- * -------------------------------------------------------
- * 18-07-2025   mirodoan    Create
- *
  * Triển khai Service cho thực thể ExportEntity (Đơn xuất kho).
  * Xử lý nghiệp vụ liên quan tới xuất kho, cập nhật số lượng sản phẩm, kiểm tra tồn kho, và tính tổng tiền xuất.
  */
@@ -95,7 +83,7 @@ public class ExportServiceImpl implements ExportService {
     /**
      * Cập nhật thông tin đơn xuất kho.
      *
-     * @param id id đơn xuất kho cần cập nhật.
+     * @param id      id đơn xuất kho cần cập nhật.
      * @param request thông tin cập nhật đơn xuất kho.
      */
     @Override

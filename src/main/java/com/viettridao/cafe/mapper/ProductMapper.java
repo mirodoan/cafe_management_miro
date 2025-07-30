@@ -10,18 +10,6 @@ import java.util.List;
 
 /**
  * ProductMapper
- *
- * Version 1.0
- *
- * Date: 19-07-2025
- *
- * Copyright
- *
- * Modification Logs:
- * DATE         AUTHOR      DESCRIPTION
- * -------------------------------------------------------
- * 19-07-2025   mirodoan    Create
- *
  * Mapper cho thực thể Product và DTO ProductResponse.
  * Chuyển đổi dữ liệu giữa ProductEntity và ProductResponse.
  */

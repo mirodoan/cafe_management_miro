@@ -4,17 +4,6 @@ import com.viettridao.cafe.dto.response.warehouse_transaction.WarehouseTransacti
 
 /**
  * WarehouseTransactionService
- *
- * Version 1.0
- *
- * Date: 18-07-2025
- *
- * Copyright
- *
- * Modification Logs:
- * DATE         AUTHOR      DESCRIPTION
- * -------------------------------------------------------
- * 18-07-2025   mirodoan    Create
  */
 public interface WarehouseTransactionService {
     /**

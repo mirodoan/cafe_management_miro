@@ -1,44 +1,26 @@
 package com.viettridao.cafe.controller;
 
+import com.viettridao.cafe.dto.request.export.CreateExportRequest;
+import com.viettridao.cafe.dto.request.imports.CreateImportRequest;
+import com.viettridao.cafe.dto.response.warehouse_transaction.WarehouseTransactionPageResponse;
 import com.viettridao.cafe.model.EmployeeEntity;
 import com.viettridao.cafe.repository.EmployeeRepository;
+import com.viettridao.cafe.service.ExportService;
+import com.viettridao.cafe.service.ImportService;
+import com.viettridao.cafe.service.ProductService;
+import com.viettridao.cafe.service.WarehouseTransactionService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import com.viettridao.cafe.dto.request.export.CreateExportRequest;
-import com.viettridao.cafe.dto.request.imports.CreateImportRequest;
-import com.viettridao.cafe.dto.response.warehouse_transaction.WarehouseTransactionPageResponse;
-import com.viettridao.cafe.service.ExportService;
-import com.viettridao.cafe.service.ImportService;
-import com.viettridao.cafe.service.ProductService;
-import com.viettridao.cafe.service.WarehouseTransactionService;
-
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 
 /**
  * WarehouseTransactionController
- *
- * Version 1.0
- *
- * Date: 18-07-2025
- *
- * Copyright
- *
- * Modification Logs:
- * DATE         AUTHOR      DESCRIPTION
- * -------------------------------------------------------
- * 18-07-2025   mirodoan    Create
  */
 @Controller
 @RequiredArgsConstructor

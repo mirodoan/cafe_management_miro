@@ -5,12 +5,12 @@ import jakarta.persistence.Embeddable;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
-@Setter
-@Embeddable
 /**
  * Composite key cho ReservationEntity (table_id, employee_id, invoice_id)
  */
+@Getter
+@Setter
+@Embeddable
 public class ReservationKey {
     @Column(name = "table_id")
     private Integer idTable; // ID của bàn liên kết với đặt chỗ

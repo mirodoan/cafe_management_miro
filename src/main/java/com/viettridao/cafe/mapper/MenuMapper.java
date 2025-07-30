@@ -16,18 +16,6 @@ import com.viettridao.cafe.mapper.ProductMapper;
 
 /**
  * MenuMapper
- *
- * Version 1.0
- *
- * Date: 19-07-2025
- *
- * Copyright
- *
- * Modification Logs:
- * DATE         AUTHOR      DESCRIPTION
- * -------------------------------------------------------
- * 19-07-2025   mirodoan    Create
- *
  * Mapper cho thực thể MenuItem và MenuDetail cho Menu Management.
  * Chuyển đổi dữ liệu giữa Entity và DTO cho quản lý thực đơn.
  */
@@ -90,7 +78,7 @@ public class MenuMapper {
      * Cập nhật MenuItemEntity từ UpdateMenuItemRequest
      *
      * @param request request cập nhật thực đơn
-     * @param entity entity thực đơn cần cập nhật
+     * @param entity  entity thực đơn cần cập nhật
      */
     public void updateEntityFromRequest(UpdateMenuItemRequest request, MenuItemEntity entity) {
         if (request == null || entity == null)

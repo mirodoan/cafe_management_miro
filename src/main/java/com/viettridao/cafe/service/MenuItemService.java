@@ -10,17 +10,6 @@ import com.viettridao.cafe.model.MenuItemEntity;
 
 /**
  * MenuItemService
- *
- * Version 1.0
- *
- * Date: 18-07-2025
- *
- * Copyright
- *
- * Modification Logs:
- * DATE         AUTHOR      DESCRIPTION
- * -------------------------------------------------------
- * 18-07-2025   mirodoan    Create
  */
 public interface MenuItemService {
 
@@ -66,6 +55,7 @@ public interface MenuItemService {
 
     /**
      * Kiểm tra tên món đã tồn tại trong hệ thống chưa (dành cho tạo mới món).
+     *
      * @param itemName tên món
      * @return true nếu đã tồn tại, false nếu chưa
      */
@@ -73,7 +63,8 @@ public interface MenuItemService {
 
     /**
      * Kiểm tra tên món đã tồn tại trong hệ thống chưa (dành cho cập nhật món).
-     * @param itemName tên món
+     *
+     * @param itemName   tên món
      * @param menuItemId ID món cần loại trừ khỏi kiểm tra
      * @return true nếu đã tồn tại, false nếu chưa
      */

@@ -2,21 +2,11 @@ package com.viettridao.cafe.service;
 
 import com.viettridao.cafe.dto.request.invoice.InvoiceItemListRequest;
 import com.viettridao.cafe.dto.response.invoice.InvoiceItemResponse;
+
 import java.util.List;
 
 /**
  * InvoiceItemService
- *
- * Version 1.0
- *
- * Date: 18-07-2025
- *
- * Copyright
- *
- * Modification Logs:
- * DATE         AUTHOR      DESCRIPTION
- * -------------------------------------------------------
- * 18-07-2025   mirodoan    Create
  */
 public interface InvoiceItemService {
     /**

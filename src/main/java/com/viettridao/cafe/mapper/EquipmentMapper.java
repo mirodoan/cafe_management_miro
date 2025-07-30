@@ -11,18 +11,6 @@ import java.util.List;
 
 /**
  * EquipmentMapper
- *
- * Version 1.0
- *
- * Date: 19-07-2025
- *
- * Copyright
- *
- * Modification Logs:
- * DATE         AUTHOR      DESCRIPTION
- * -------------------------------------------------------
- * 19-07-2025   mirodoan    Create
- *
  * Mapper chuyển đổi giữa EquipmentEntity và các DTO (EquipmentResponse, BudgetResponse).
  * Hỗ trợ chuyển đổi bằng tay và qua thư viện ModelMapper.
  */
@@ -69,7 +57,7 @@ public class EquipmentMapper {
      * @param entities danh sách EquipmentEntity.
      * @return danh sách EquipmentResponse.
      */
-    public List<EquipmentResponse> toResponseList(List<EquipmentEntity> entities){
+    public List<EquipmentResponse> toResponseList(List<EquipmentEntity> entities) {
         return entities.stream().map(this::toResponse).toList();
     }
 

@@ -4,7 +4,6 @@ import com.viettridao.cafe.model.InvoiceEntity;
 
 /**
  * PdfExportService
- * <p>
  * Interface định nghĩa dịch vụ xuất hóa đơn ra file PDF cho hệ thống quán cafe.
  * - Dùng cho các chức năng in hoặc tải hóa đơn dưới dạng PDF.
  */

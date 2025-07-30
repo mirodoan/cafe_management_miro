@@ -16,18 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * ImportServiceImpl
- *
- * Version 1.0
- *
- * Date: 18-07-2025
- *
- * Copyright
- *
- * Modification Logs:
- * DATE         AUTHOR      DESCRIPTION
- * -------------------------------------------------------
- * 18-07-2025   mirodoan    Create
- *
  * Triển khai các phương thức xử lý logic liên quan đến đơn nhập hàng (Import).
  * Xử lý nhập kho, cập nhật số lượng sản phẩm, tính tổng tiền nhập, và soft delete.
  */
@@ -84,7 +72,7 @@ public class ImportServiceImpl implements ImportService {
     /**
      * Cập nhật thông tin đơn nhập hàng.
      *
-     * @param id id đơn nhập cần cập nhật.
+     * @param id      id đơn nhập cần cập nhật.
      * @param request thông tin cập nhật đơn nhập hàng.
      */
     @Override

@@ -16,7 +16,6 @@ import java.util.ArrayList;
 
 /**
  * RevenueController
- * <p>
  * Controller quản lý các chức năng hiển thị báo cáo doanh thu cho hệ thống quán cafe.
  * - Hiển thị trang báo cáo doanh thu theo khoảng thời gian lọc bởi người dùng.
  * - Gọi service để truy xuất dữ liệu doanh thu và truyền sang view.

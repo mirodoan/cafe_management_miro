@@ -4,21 +4,11 @@ import com.viettridao.cafe.dto.request.equipment.CreateEquipmentRequest;
 import com.viettridao.cafe.dto.request.equipment.UpdateEquipmentRequest;
 import com.viettridao.cafe.dto.response.equipment.EquipmentPageResponse;
 import com.viettridao.cafe.model.EquipmentEntity;
+
 import java.util.List;
 
 /**
  * EquipmentService
- *
- * Version 1.0
- *
- * Date: 18-07-2025
- *
- * Copyright
- *
- * Modification Logs:
- * DATE         AUTHOR      DESCRIPTION
- * -------------------------------------------------------
- * 18-07-2025   mirodoan    Create
  */
 public interface EquipmentService {
 

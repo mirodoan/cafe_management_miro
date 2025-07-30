@@ -1,4 +1,3 @@
-<!-- fragments/payment.html -->
 <!-- Modal/Form Thanh toán: chỉ hiển thị khi showPaymentModal=true và orderDetail!=null -->
 <div xmlns:th="http://www.thymeleaf.org" th:fragment="payment-modal">
     <div
@@ -41,7 +40,7 @@
                     <tr class="bg-gray-200">
                         <th class="px-4 py-2 text-left">Tên món</th>
                         <th class="px-4 py-2 text-center">Số lượng</th>
-                        <th class="px-4 py-2 text-center">Đơn giá (VND)</th>
+                        <th class="px-4 py-2 text-center">Đơn giá</th>
                         <th class="px-4 py-2 text-center">Thành tiền</th>
                     </tr>
                     </thead>
@@ -53,22 +52,20 @@
                         <td class="px-4 py-2" th:text="${item.menuItemName}"></td>
                         <td class="px-4 py-2 text-center" th:text="${item.quantity}"></td>
                         <td class="px-4 py-2 text-center"
-                            th:text="${#numbers.formatDecimal(item.price, 2, 'COMMA', 0, 'POINT').replaceAll('([.,]00)$','').replaceAll('([.,][1-9]0)$','$1'.replace('0',''))}">
-                        </td>
+                            th:text="${#numbers.formatDecimal(item.price, 0, 'COMMA', 0, 'POINT')}"></td>
                         <td class="px-4 py-2 text-center"
-                            th:text="${#numbers.formatDecimal(item.amount, 2, 'COMMA', 0, 'POINT').replaceAll('([.,]00)$','').replaceAll('([.,][1-9]0)$','$1'.replace('0',''))}">
-                        </td>
+                            th:text="${#numbers.formatDecimal(item.amount, 0, 'COMMA', 0, 'POINT')}"></td>
                     </tr>
                     </tbody>
                 </table>
             </div>
             <div class="flex justify-end mb-4">
-                <span class="font-bold text-lg text-[#3e2723]">Tổng tiền:</span>
+                <span class="font-bold text-lg text-[#3e2723]">Tổng tiền (VND):</span>
                 <span
                         id="totalAmountValue"
                         class="ml-2 font-bold text-lg text-[#3e2723]"
-                        th:text="${#numbers.formatDecimal(orderDetail.totalAmount ?: 0, 2, 'COMMA', 0, 'POINT').replaceAll('([.,]00)$','').replaceAll('([.,][1-9]0)$','$1'.replace('0',''))}">
-        </span>
+                        th:text="${#numbers.formatDecimal(orderDetail.totalAmount ?: 0, 0, 'COMMA', 0, 'POINT')}">
+                </span>
             </div>
             <form
                     id="payment-form"
@@ -82,18 +79,20 @@
                         th:value="${orderDetail.tableId}"
                 />
                 <div class="flex flex-col w-full max-w-xs mb-4">
-                    <label for="customerPaid" class="block text-base font-semibold text-[#3e2723] mb-1">Khách
-                        đưa:</label>
+                    <label for="customerPaid" class="block text-base font-semibold text-[#3e2723] mb-1">
+                        Khách đưa:
+                    </label>
                     <input
                             type="text"
                             id="customerPaid"
                             name="customerPaid"
+                            maxlength="11"
                             class="border border-gray-400 rounded px-3 py-2 text-right font-bold text-lg"
-                            placeholder="0.00"
+                            placeholder="0"
                             autocomplete="off"
                             oninput="validateInput(this)"
-                            onkeypress="return isValidKeyPress(event)"
                             onpaste="return handlePaste(event)"
+                            style="max-width: 220px;"
                     />
                     <span
                             id="customerPaidError"
@@ -102,8 +101,9 @@
                     ></span>
                 </div>
                 <div class="flex flex-col w-full max-w-xs mb-6">
-                    <label class="block text-base font-semibold text-[#3e2723] mb-1">Thối lại:</label>
-                    <span id="changeAmount" class="font-bold text-lg text-[#3e2723]">0</span>
+                    <label class="block text-base font-semibold text-[#3e2723] mb-1">Tiền thừa của khách:</label>
+                    <span id="changeAmount" class="font-bold text-lg text-[#3e2723]"
+                          style="display:block; max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">0</span>
                 </div>
                 <button
                         type="submit"
@@ -113,131 +113,98 @@
                 </button>
             </form>
             <script>
-                // Helper: parse VND string to float
-                function parseVND(str) {
-                  if (!str) return 0;
-                  return parseFloat(str.replace(/,/g, ''));
-                }
+                // Giới hạn số tiền khách đưa tối đa 9 số (tối đa 999,999,999 VND)
+                const MAX_PAID = 999999999;
+
+                // Định dạng số tiền thành chuỗi có dấu phẩy ngăn cách, ví dụ: 1,000,000
                 function formatVND(num) {
-                  return num.toLocaleString('vi-VN', {
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 2,
-                  });
+                    return num.toLocaleString('en-US');
                 }
-                function isValidKeyPress(event) {
-                  const charCode = event.which || event.keyCode;
-                  const char = String.fromCharCode(charCode);
-                  const inputValue = event.target.value;
-                  if ([8, 9, 27, 13, 46].includes(charCode)) return true;
-                  if ((charCode === 65 || charCode === 67 || charCode === 86 || charCode === 88) && event.ctrlKey) return true;
-                  if (charCode < 48 || charCode > 57) {
-                    if (char === '.') {
-                      if (inputValue.includes('.')) return false;
-                      return true;
-                    }
-                    return false;
-                  }
-                  if (inputValue.includes('.')) {
-                    const parts = inputValue.split('.');
-                    if (parts[1] && parts[1].length >= 2) return false;
-                  }
-                  return true;
+                // Chuyển chuỗi nhập liệu tiền thành số nguyên, loại bỏ dấu phẩy/chấm ngăn cách
+                function parseVND(str) {
+                    if (!str) return 0;
+                    return parseInt(str.replace(/[.,]/g, ''), 10) || 0;
                 }
 
+                // Validate và format lại dữ liệu khi người dùng nhập số tiền khách đưa
                 function validateInput(input) {
-                  let value = input.value;
-                  value = value.replace(/[^0-9.]/g, '');
-                  const dotCount = (value.match(/\./g) || []).length;
-                  if (dotCount > 1) {
-                    const firstDotIndex = value.indexOf('.');
-                    value = value.substring(0, firstDotIndex + 1) + value.substring(firstDotIndex + 1).replace(/\./g, '');
-                  }
-                  if (value.includes('.')) {
-                    const parts = value.split('.');
-                    if (parts[1] && parts[1].length > 2) {
-                      parts[1] = parts[1].substring(0, 2);
-                      value = parts[0] + '.' + parts[1];
-                    }
-                  }
-                  if (value.startsWith('.')) {
-                    value = '0' + value;
-                  }
-                  input.value = value;
-                  updateChange();
+                    // Chỉ lấy số, loại bỏ ký tự khác
+                    let value = input.value.replace(/[^0-9]/g, '');
+                    // Giới hạn tối đa 11 chữ số
+                    if (value.length > 11) value = value.substring(0, 11);
+                    let num = parseInt(value || '0', 10);
+                    // Không cho vượt quá MAX_PAID
+                    if (num > MAX_PAID) num = MAX_PAID;
+                    // Hiển thị lại giá trị với dấu phẩy ngăn cách
+                    input.value = num ? num.toLocaleString('en-US') : '';
+                    updateChange();
                 }
 
+                // Xử lý khi dán dữ liệu vào ô nhập số tiền khách đưa
                 function handlePaste(event) {
-                  event.preventDefault();
-                  const paste = (event.clipboardData || window.clipboardData).getData('text');
-                  let cleanPaste = paste.replace(/[^0-9.]/g, '');
-                  const dotCount = (cleanPaste.match(/\./g) || []).length;
-                  if (dotCount > 1) {
-                    const firstDotIndex = cleanPaste.indexOf('.');
-                    cleanPaste = cleanPaste.substring(0, firstDotIndex + 1) + cleanPaste.substring(firstDotIndex + 1).replace(/\./g, '');
-                  }
-                  if (cleanPaste.includes('.')) {
-                    const parts = cleanPaste.split('.');
-                    if (parts[1] && parts[1].length > 2) {
-                      parts[1] = parts[1].substring(0, 2);
-                      cleanPaste = parts[0] + '.' + parts[1];
-                    }
-                  }
-                  if (cleanPaste.startsWith('.')) {
-                    cleanPaste = '0' + cleanPaste;
-                  }
-                  event.target.value = cleanPaste;
-                  updateChange();
-                  return false;
+                    event.preventDefault();
+                    const paste = (event.clipboardData || window.clipboardData).getData('text');
+                    let cleanPaste = paste.replace(/[^0-9]/g, '');
+                    if (cleanPaste.length > 11) cleanPaste = cleanPaste.substring(0, 11);
+                    let num = parseInt(cleanPaste || '0', 10);
+                    if (num > MAX_PAID) num = MAX_PAID;
+                    event.target.value = num ? num.toLocaleString('en-US') : '';
+                    updateChange();
+                    return false;
                 }
 
+                // Lấy các phần tử giao diện liên quan
                 const totalAmountEl = document.getElementById('totalAmountValue');
                 const customerPaidInput = document.getElementById('customerPaid');
                 const changeAmountEl = document.getElementById('changeAmount');
                 const errorEl = document.getElementById('customerPaidError');
+                // Lưu tổng số tiền hóa đơn (tự động lấy từ giao diện)
                 let totalAmount = 0;
                 if (totalAmountEl) {
-                  totalAmount = parseVND(totalAmountEl.textContent);
+                    totalAmount = parseVND(totalAmountEl.textContent);
                 }
+                // Kiểm tra tính hợp lệ của số tiền khách đưa
                 function validatePaid(value) {
-                  if (!value || value.trim() === '') return 'Vui lòng nhập số tiền khách đưa.';
-                  const num = parseFloat(value);
-                  if (isNaN(num) || num <= 0) return 'Số tiền không hợp lệ.';
-                  if (num < totalAmount) return 'Số tiền khách đưa phải lớn hơn hoặc bằng tổng tiền.';
-                  return '';
+                    if (!value || value.trim() === '') return 'Vui lòng nhập số tiền khách đưa.';
+                    const num = parseVND(value);
+                    if (isNaN(num) || num <= 0) return 'Số tiền không hợp lệ.';
+                    if (num < totalAmount) return 'Số tiền khách đưa phải lớn hơn hoặc bằng tổng tiền.';
+                    if (num > MAX_PAID) return 'Tối đa chỉ nhận 99,999,999,999 VND.';
+                    return '';
                 }
+                // Cập nhật tiền thối lại và hiển thị thông báo lỗi nếu có
                 function updateChange() {
-                  const value = customerPaidInput.value.trim();
-                  const errorMsg = validatePaid(value);
-                  if (errorMsg) {
-                    errorEl.textContent = errorMsg;
-                    errorEl.style.display = 'block';
-                    changeAmountEl.textContent = '0';
-                    return false;
-                  } else {
-                    errorEl.textContent = '';
-                    errorEl.style.display = 'none';
-                    const paid = parseFloat(value);
-                    const change = paid - totalAmount;
-                    changeAmountEl.textContent = formatVND(change);
-                    return true;
-                  }
+                    const value = customerPaidInput.value.trim();
+                    const errorMsg = validatePaid(value);
+                    if (errorMsg) {
+                        errorEl.textContent = errorMsg;
+                        errorEl.style.display = 'block';
+                        changeAmountEl.textContent = '0';
+                        return false;
+                    } else {
+                        errorEl.textContent = '';
+                        errorEl.style.display = 'none';
+                        const paid = parseVND(value);
+                        const change = paid - totalAmount;
+                        changeAmountEl.textContent = formatVND(change);
+                        return true;
+                    }
                 }
+                // Gắn sự kiện để cập nhật tiền thừa khi nhập số tiền khách đưa
                 customerPaidInput.addEventListener('input', updateChange);
+                customerPaidInput.addEventListener('paste', handlePaste);
+                // Xử lý khi submit form thanh toán
                 document.getElementById('payment-form').addEventListener('submit', function (e) {
-                  if (!updateChange()) {
-                    e.preventDefault();
-                    customerPaidInput.focus();
-                    return false;
-                  }
-                  setTimeout(function () {
-                    alert('Thanh toán thành công!');
-                    closePaymentModal();
-                  }, 100);
+                    if (!updateChange()) {
+                        e.preventDefault();
+                        customerPaidInput.focus();
+                        return false;
+                    }
                 });
             </script>
         </div>
     </div>
-    <!-- Nếu showPaymentModal=true nhưng orderDetail=null, hiện thông báo lỗi -->
+    <!-- Nếu showPaymentModal=true nhưng orderDetail==null, hiện thông báo lỗi -->
     <div
             th:if="${showPaymentModal} and ${orderDetail == null}"
             class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
@@ -262,7 +229,7 @@
     </div>
     <script>
         function closePaymentModal() {
-          window.location.href = '/sale';
+            window.location.href = '/sale';
         }
     </script>
 </div>

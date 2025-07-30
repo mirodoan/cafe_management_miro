@@ -24,18 +24,6 @@ import java.util.Optional;
 
 /**
  * EmployeeServiceImpl
- *
- * Version 1.0
- *
- * Date: 18-07-2025
- *
- * Copyright
- *
- * Modification Logs:
- * DATE         AUTHOR      DESCRIPTION
- * -------------------------------------------------------
- * 18-07-2025   mirodoan    Create
- *
  * Triển khai Service cho thực thể EmployeeEntity.
  * Chịu trách nhiệm xử lý logic nghiệp vụ liên quan đến nhân viên (Employee).
  */
@@ -88,6 +76,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     /**
      * Kiểm tra username đã tồn tại trong hệ thống (dùng cho validate tạo mới nhân viên).
+     *
      * @param username tên đăng nhập cần kiểm tra
      * @return true nếu đã tồn tại, false nếu chưa
      */

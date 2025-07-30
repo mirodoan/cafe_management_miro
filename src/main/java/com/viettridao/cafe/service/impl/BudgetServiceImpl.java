@@ -32,18 +32,6 @@ import com.viettridao.cafe.model.InvoiceEntity;
 
 /**
  * BudgetServiceImpl
- *
- * Version 1.0
- *
- * Date: 18-07-2025
- *
- * Copyright
- *
- * Modification Logs:
- * DATE         AUTHOR      DESCRIPTION
- * -------------------------------------------------------
- * 18-07-2025   mirodoan    Create
- *
  * Triển khai Service cho thực thể Budget (Ngân sách).
  * Xử lý nghiệp vụ liên quan đến tổng hợp doanh thu, chi phí, thiết bị.
  */

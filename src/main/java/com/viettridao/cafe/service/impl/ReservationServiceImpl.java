@@ -1,7 +1,5 @@
 package com.viettridao.cafe.service.impl;
 
-// Các import thư viện, entity, repository, service cần thiết
-
 import com.viettridao.cafe.common.InvoiceStatus;
 import com.viettridao.cafe.common.TableStatus;
 import com.viettridao.cafe.dto.request.sales.CreateReservationRequest;
@@ -19,17 +17,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-/**
- * Triển khai các nghiệp vụ quản lý đặt bàn, gộp bàn, tách bàn, chuyển bàn cho hệ thống quản lý quán cafe.
- * Bao gồm các thao tác tạo mới đặt bàn, lưu trạng thái liên quan, tìm kiếm, gộp/tách/chuyển bàn và đồng bộ hóa đơn, reservation với trạng thái bàn.
- */
 @Service
 @RequiredArgsConstructor
 public class ReservationServiceImpl implements ReservationService {
 
-    // Khai báo các repository dùng để thao tác dữ liệu
     private final ReservationRepository reservationRepository;
     private final TableRepository tableRepository;
     private final InvoiceRepository invoiceRepository;
@@ -37,168 +34,201 @@ public class ReservationServiceImpl implements ReservationService {
     private final InvoiceDetailRepository invoiceDetailRepository;
     private final OrderDetailMapper orderDetailMapper;
 
+    // ======================= Private helper methods ===========================
+
     /**
-     * Tìm reservation hiện tại (chưa xóa mềm) theo tableId
+     * Lấy bàn theo ID và kiểm tra trạng thái nếu cần.
      *
-     * @param tableId id bàn
-     * @return ReservationEntity hoặc null nếu không có
+     * @param tableId
+     * @param requiredStatus Trạng thái bàn mong muốn (nullable)
+     * @return TableEntity
+     * @throws IllegalArgumentException nếu không tìm thấy bàn hoặc trạng thái không đúng
      */
-    @Override
-    public ReservationEntity findCurrentReservationByTableId(Integer tableId) {
-        // Tìm reservation chưa xóa mềm theo tableId
-        Optional<ReservationEntity> result = reservationRepository.findCurrentReservationByTableId(tableId);
-        return result.orElse(null);
+    private TableEntity requireTable(Integer tableId, TableStatus requiredStatus) {
+        TableEntity table = tableRepository.findById(tableId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bàn với ID: " + tableId));
+        if (requiredStatus != null && table.getStatus() != requiredStatus) {
+            throw new IllegalArgumentException("Bàn không ở trạng thái " + requiredStatus);
+        }
+        return table;
     }
 
     /**
-     * Lưu đồng bộ reservation, invoice, table khi hủy bàn (xóa mềm)
+     * Lấy reservation hiện tại theo tableId, ném lỗi nếu không có.
+     */
+    private ReservationEntity requireCurrentReservation(Integer tableId) {
+        return reservationRepository.findCurrentReservationByTableId(tableId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy reservation cho bàn " + tableId));
+    }
+
+    /**
+     * Lấy invoice từ reservation, ném lỗi nếu không có.
+     */
+    private InvoiceEntity requireInvoice(ReservationEntity reservation) {
+        InvoiceEntity invoice = reservation.getInvoice();
+        if (invoice == null)
+            throw new IllegalArgumentException("Không tìm thấy hóa đơn");
+        return invoice;
+    }
+
+    /**
+     * Lấy nhân viên theo Id, ném lỗi nếu không có.
+     */
+    private EmployeeEntity requireEmployee(Integer employeeId) {
+        return employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy nhân viên"));
+    }
+
+    /**
+     * Cập nhật trạng thái bàn và lưu lại.
+     */
+    private void updateTableStatus(TableEntity table, TableStatus status) {
+        table.setStatus(status);
+        tableRepository.save(table);
+    }
+
+    /**
+     * Cập nhật trạng thái hóa đơn và lưu lại.
+     */
+    private void updateInvoiceStatus(InvoiceEntity invoice, InvoiceStatus status) {
+        invoice.setStatus(status);
+        invoiceRepository.save(invoice);
+    }
+
+    /**
+     * Đánh dấu reservation là đã xóa mềm.
+     */
+    private void softDeleteReservation(ReservationEntity reservation) {
+        reservation.setIsDeleted(true);
+        reservationRepository.save(reservation);
+    }
+
+    /**
+     * Đánh dấu invoice là đã xóa mềm và cập nhật trạng thái.
+     */
+    private void softDeleteInvoice(InvoiceEntity invoice, InvoiceStatus status) {
+        invoice.setStatus(status);
+        invoice.setIsDeleted(true);
+        invoiceRepository.save(invoice);
+    }
+
+    /**
+     * Kiểm tra giờ đặt bàn hợp lệ (từ 8h đến trước 21h).
+     */
+    private boolean isValidReservationTime(LocalDateTime reservationDate) {
+        int hour = reservationDate.getHour();
+        return hour >= 8 && hour < 21;
+    }
+
+    // ======================= Service methods ===========================
+
+    /**
+     * Tìm reservation hiện tại theo tableId, trả về null nếu không có.
+     */
+    @Override
+    public ReservationEntity findCurrentReservationByTableId(Integer tableId) {
+        return reservationRepository.findCurrentReservationByTableId(tableId).orElse(null);
+    }
+
+    /**
+     * Lưu reservation, invoice và table liên quan nếu không null (transactional).
      */
     @Override
     @Transactional
     public void saveReservationAndRelated(ReservationEntity reservation,
                                           InvoiceEntity invoice, TableEntity table) {
-        // Kiểm tra reservation
-        if (reservation == null) {
-            throw new IllegalArgumentException("Reservation không được null!");
-        }
-
-        // Lưu trạng thái mới của reservation
+        if (reservation == null) throw new IllegalArgumentException("Reservation không được null!");
         reservationRepository.save(reservation);
-
-        // Nếu có invoice thì lưu lại
-        if (invoice != null) {
-            invoiceRepository.save(invoice);
-        }
-
-        // Nếu có table thì lưu lại
-        if (table != null) {
-            tableRepository.save(table);
-        }
+        if (invoice != null) invoiceRepository.save(invoice);
+        if (table != null) tableRepository.save(table);
     }
 
     /**
-     * Lấy chi tiết order (OrderDetailRessponse) của một bàn theo tableId.
-     *
-     * @param tableId ID bàn cần xem chi tiết
-     * @return Thông tin chi tiết order dưới dạng DTO
-     * @throws IllegalArgumentException nếu không tìm thấy bàn hoặc không có reservation
+     * Lấy chi tiết order của bàn theo tableId.
+     * Trả về null nếu không có reservation hoặc invoice hợp lệ.
      */
     @Override
     public OrderDetailRessponse getOrderDetailByTableId(Integer tableId) {
         TableEntity table = tableRepository.findById(tableId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bàn với ID: " + tableId));
 
-        ReservationEntity reservation = findCurrentReservationByTableId(tableId);
-        if (reservation == null) {
-            throw new IllegalArgumentException("Không có thông tin đặt bàn/order cho bàn này!");
-        }
+        ReservationEntity reservation = reservationRepository.findCurrentReservationByTableId(tableId)
+                .orElse(null);
+
+        // Nếu không có reservation hoặc đã xóa mềm thì coi như bàn trống
+        if (reservation == null || Boolean.TRUE.equals(reservation.getIsDeleted()))
+            return null;
 
         InvoiceEntity invoice = reservation.getInvoice();
-        List<InvoiceDetailEntity> invoiceDetails =
-                invoiceDetailRepository.findAllByInvoice_IdAndIsDeletedFalse(invoice.getId());
+        if (invoice == null || Boolean.TRUE.equals(invoice.getIsDeleted()))
+            return null;
+
+        // Chỉ lấy các món còn quantity > 0 và chưa xóa mềm
+        List<InvoiceDetailEntity> invoiceDetails = invoiceDetailRepository
+                .findAllByInvoice_IdAndIsDeletedFalse(invoice.getId())
+                .stream().filter(d -> d.getQuantity() > 0).toList();
+
+        // Nếu không còn món nào, trả về null hoặc empty, hoặc có thể soft-delete reservation/invoice tại đây luôn (phòng trường hợp logic trước đó bị lỗi)
+        if (invoiceDetails.isEmpty())
+            return null;
 
         return orderDetailMapper.toOrderDetailResponse(table, invoice, reservation, invoiceDetails);
     }
 
     /**
-     * Lấy thông tin chi tiết phục vụ modal thanh toán cho một bàn OCCUPIED.
-     *
-     * @param tableId ID bàn cần thanh toán
-     * @return Thông tin chi tiết order (OrderDetailRessponse) dùng cho modal thanh toán
-     * @throws IllegalArgumentException nếu bàn không OCCUPIED, không có reservation hoặc không có hóa đơn
+     * Lấy thông tin thanh toán cho bàn OCCUPIED.
      */
     @Override
     public OrderDetailRessponse getPaymentInfoForTable(Integer tableId) {
-        // Lấy thông tin bàn
-        TableEntity table = tableRepository.findById(tableId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bàn với ID: " + tableId));
-        if (table.getStatus() != TableStatus.OCCUPIED) {
-            throw new IllegalArgumentException("Chỉ có thể thanh toán bàn đang sử dụng (OCCUPIED)!");
-        }
-
-        // Tìm reservation hiện tại của bàn
-        ReservationEntity reservation = findCurrentReservationByTableId(tableId);
-        if (reservation == null) {
-            throw new IllegalArgumentException("Không có thông tin đặt bàn để thanh toán!");
-        }
-        // Lấy hóa đơn hiện tại
-        InvoiceEntity invoice = reservation.getInvoice();
-        if (invoice == null) {
-            throw new IllegalArgumentException("Không có hóa đơn để thanh toán!");
-        }
-        // Lấy chi tiết hóa đơn
-        List<InvoiceDetailEntity> invoiceDetails = invoiceDetailRepository.findAllByInvoice_IdAndIsDeletedFalse(invoice.getId());
-        // Map sang DTO
+        TableEntity table = requireTable(tableId, TableStatus.OCCUPIED);
+        ReservationEntity reservation = requireCurrentReservation(tableId);
+        InvoiceEntity invoice = requireInvoice(reservation);
+        List<InvoiceDetailEntity> invoiceDetails =
+                invoiceDetailRepository.findAllByInvoice_IdAndIsDeletedFalse(invoice.getId())
+                        .stream().filter(d -> d.getQuantity() > 0).toList();
         return orderDetailMapper.toOrderDetailResponse(table, invoice, reservation, invoiceDetails);
     }
 
     /**
-     * Thực hiện xác nhận thanh toán cho bàn: cập nhật trạng thái hóa đơn, xóa mềm reservation và chuyển bàn về AVAILABLE.
-     *
-     * @param tableId ID bàn cần thanh toán
-     * @throws IllegalArgumentException nếu không tìm thấy bàn, reservation hoặc hóa đơn
+     * Xử lý thanh toán hóa đơn cho bàn, cập nhật trạng thái liên quan (transactional).
      */
     @Override
     @Transactional
     public void payInvoiceForTable(Integer tableId) {
-        // Lấy thông tin bàn
-        TableEntity table = tableRepository.findById(tableId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bàn với ID: " + tableId));
-        // Tìm reservation hiện tại của bàn
-        ReservationEntity reservation = findCurrentReservationByTableId(tableId);
-        if (reservation == null) {
-            throw new IllegalArgumentException("Không có thông tin đặt bàn để thanh toán!");
-        }
-        // Lấy hóa đơn hiện tại
-        InvoiceEntity invoice = reservation.getInvoice();
-        if (invoice == null) {
-            throw new IllegalArgumentException("Không có hóa đơn để thanh toán!");
-        }
-        // Đổi trạng thái hóa đơn, đặt bàn, bàn khi thanh toán
-        invoice.setStatus(InvoiceStatus.PAID);
-        reservation.setIsDeleted(true);
-        table.setStatus(TableStatus.AVAILABLE);
+        TableEntity table = requireTable(tableId, null);
+        ReservationEntity reservation = requireCurrentReservation(tableId);
+        InvoiceEntity invoice = requireInvoice(reservation);
+        // Đánh dấu hóa đơn đã thanh toán, soft-delete reservation, trả bàn về AVAILABLE
+        updateInvoiceStatus(invoice, InvoiceStatus.PAID);
+        softDeleteReservation(reservation);
+        updateTableStatus(table, TableStatus.AVAILABLE);
         saveReservationAndRelated(reservation, invoice, table);
     }
 
     /**
-     * Tạo mới một đặt bàn.
-     *
-     * @param request    Đối tượng chứa thông tin cần thiết để tạo đặt bàn mới.
-     * @param employeeId ID của nhân viên thực hiện đặt bàn.
-     * @return Thực thể ReservationEntity vừa được tạo.
+     * Tạo mới reservation cho bàn (transactional), kiểm tra giờ đặt và trạng thái bàn.
      */
     @Override
     @Transactional
     public ReservationEntity createReservation(CreateReservationRequest request, Integer employeeId) {
-        // Kiểm tra giờ hiện tại (backend chặn user cố tình gửi request sau 21h)
         LocalTime now = LocalTime.now();
-        if (now.isAfter(LocalTime.of(21, 0)) || now.equals(LocalTime.of(21, 0))) {
+        if (now.isAfter(LocalTime.of(21, 0)) || now.equals(LocalTime.of(21, 0)))
             throw new IllegalArgumentException("Quán sắp đóng cửa, không nhận đặt bàn sau 21h. Vui lòng quay lại vào hôm sau!");
-        }
 
-        // Kiểm tra giờ đặt bàn hợp lệ (trong khung 8:00-21:00)
-        if (!isValidReservationTime(request.getReservationDateTime())) {
+        if (!isValidReservationTime(request.getReservationDateTime()))
             throw new IllegalArgumentException("Chỉ được đặt bàn từ 8:00 đến trước 21:00 trong ngày.");
-        }
 
-        // 1. Tìm bàn theo ID và kiểm tra trạng thái còn AVAILABLE không
-        TableEntity table = tableRepository.findById(request.getTableId())
-                .filter(t -> t.getStatus() == TableStatus.AVAILABLE)
-                .orElseThrow(() -> new IllegalArgumentException("Bàn không tồn tại hoặc không khả dụng."));
+        TableEntity table = requireTable(request.getTableId(), TableStatus.AVAILABLE);
+        EmployeeEntity employee = requireEmployee(employeeId);
 
-        // 2. Tìm nhân viên theo ID, đảm bảo nhân viên tồn tại
-        EmployeeEntity employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new IllegalArgumentException("Nhân viên không tồn tại."));
-
-        // 3. Tạo mới một hóa đơn (invoice), set trạng thái là RESERVED, lưu vào database
+        // Tạo mới invoice
         InvoiceEntity invoice = new InvoiceEntity();
         invoice.setStatus(InvoiceStatus.RESERVED);
         invoice.setCreatedAt(LocalDateTime.now());
         invoice.setIsDeleted(false);
         invoiceRepository.save(invoice);
 
-        // 4. Tạo mới ReservationEntity, thiết lập các trường liên quan
+        // Tạo mới reservation
         ReservationEntity reservation = new ReservationEntity();
         ReservationKey reservationKey = new ReservationKey();
         reservationKey.setIdTable(table.getId());
@@ -214,133 +244,82 @@ public class ReservationServiceImpl implements ReservationService {
         reservation.setInvoice(invoice);
         reservation.setIsDeleted(false);
 
-        // 5. Lưu thông tin reservation vào database
         reservationRepository.save(reservation);
-
-        // 6. Cập nhật trạng thái bàn thành RESERVED và lưu lại
-        table.setStatus(TableStatus.RESERVED);
-        tableRepository.save(table);
-
-        // 7. Trả về reservation vừa tạo
+        updateTableStatus(table, TableStatus.RESERVED);
         return reservation;
     }
 
     /**
-     * Kiểm tra thời gian đặt bàn có hợp lệ không (từ 8h đến trước 21h).
-     */
-    private boolean isValidReservationTime(LocalDateTime reservationDate) {
-        int hour = reservationDate.getHour();
-        return hour >= 8 && hour < 21;
-    }
-
-    /**
-     * Xử lý nghiệp vụ hủy bàn: xóa mềm reservation và invoice, chuyển bàn về AVAILABLE.
-     *
-     * @param tableId ID bàn cần hủy đặt
-     * @throws IllegalArgumentException nếu không hợp lệ (không tìm thấy reservation, không đúng trạng thái)
+     * Hủy đặt bàn: soft-delete reservation và invoice, cập nhật lại trạng thái bàn (transactional).
      */
     @Override
     @Transactional
     public void cancelReservation(Integer tableId) {
-        // Lấy thông tin reservation hiện tại
-        ReservationEntity reservation = findCurrentReservationByTableId(tableId);
-        if (reservation == null || Boolean.TRUE.equals(reservation.getIsDeleted())) {
+        ReservationEntity reservation = requireCurrentReservation(tableId);
+        if (Boolean.TRUE.equals(reservation.getIsDeleted()))
             throw new IllegalArgumentException("Không tìm thấy thông tin đặt bàn để hủy!");
-        }
-        if (reservation.getTable().getStatus() != TableStatus.RESERVED) {
+        if (reservation.getTable().getStatus() != TableStatus.RESERVED)
             throw new IllegalArgumentException("Chỉ có thể hủy bàn ở trạng thái ĐÃ ĐẶT!");
-        }
-        // Xóa mềm reservation và invoice (chưa có invoice detail)
-        reservation.setIsDeleted(true);
+
+        softDeleteReservation(reservation);
         InvoiceEntity invoice = reservation.getInvoice();
-        if (invoice != null) {
-            invoice.setIsDeleted(true);
-            invoiceRepository.save(invoice);
-        }
-        // Đổi trạng thái bàn về AVAILABLE
-        TableEntity table = reservation.getTable();
-        table.setStatus(TableStatus.AVAILABLE);
-        saveReservationAndRelated(reservation, invoice, table); // đã save reservation
+        if (invoice != null) softDeleteInvoice(invoice, InvoiceStatus.CANCELLED);
+        updateTableStatus(reservation.getTable(), TableStatus.AVAILABLE);
+        saveReservationAndRelated(reservation, invoice, reservation.getTable());
     }
 
     /**
-     * Gộp nhiều bàn OCCUPIED vào một bàn đích (cộng dồn hóa đơn, cập nhật trạng thái, xóa mềm các bàn nguồn)
+     * Gộp nhiều bàn đang sử dụng về 1 bàn đích, cộng dồn các món, soft-delete reservation/invoice nguồn (transactional).
      */
     @Override
     @Transactional
     public void mergeTables(MergeTableRequest request, Integer employeeId) {
-        // Lấy danh sách các bàn cần gộp và bàn đích
         List<Integer> tableIds = request.getTableIds();
         Integer targetTableId = request.getTargetTableId();
-        // Kiểm tra số lượng bàn cần gộp
         if (tableIds == null || tableIds.size() < 2)
             throw new IllegalArgumentException("Phải chọn ít nhất 2 bàn để gộp");
-        // Kiểm tra bàn đích có nằm trong danh sách chọn không
         if (!tableIds.contains(targetTableId))
             throw new IllegalArgumentException("Bàn gộp đến phải nằm trong danh sách bàn đã chọn");
 
-        // Lấy thông tin các bàn từ database
+        // Lấy danh sách bàn gộp và kiểm tra trạng thái
         List<TableEntity> tables = tableRepository.findAllById(tableIds);
         if (tables.size() != tableIds.size())
             throw new IllegalArgumentException("Có bàn không tồn tại");
-        // Kiểm tra trạng thái tất cả các bàn đều đang OCCUPIED
-        for (TableEntity t : tables) {
+        for (TableEntity t : tables)
             if (t.getStatus() != TableStatus.OCCUPIED)
                 throw new IllegalArgumentException("Chỉ được gộp các bàn đang sử dụng (OCCUPIED)");
-        }
 
-        // Tìm bàn đích trong danh sách
         TableEntity targetTable = tables.stream().filter(t -> t.getId().equals(targetTableId)).findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bàn gộp đến"));
+        ReservationEntity targetReservation = requireCurrentReservation(targetTableId);
+        InvoiceEntity targetInvoice = requireInvoice(targetReservation);
 
-        // Tìm reservation và invoice của bàn đích
-        ReservationEntity targetReservation = reservationRepository.findCurrentReservationByTableId(targetTableId)
-                .orElse(null);
-        if (targetReservation == null)
-            throw new IllegalArgumentException("Không tìm thấy reservation bàn gộp đến");
-        InvoiceEntity targetInvoice = targetReservation.getInvoice();
-        if (targetInvoice == null)
-            throw new IllegalArgumentException("Không tìm thấy hóa đơn bàn gộp đến");
+        // Map menuItemId -> InvoiceDetailEntity cho bàn đích
+        Map<Integer, InvoiceDetailEntity> targetDetailMap = invoiceDetailRepository
+                .findAllByInvoice_IdAndIsDeletedFalse(targetInvoice.getId())
+                .stream().collect(Collectors.toMap(d -> d.getMenuItem().getId(), d -> d));
 
-        // Tạo map để lưu các chi tiết hóa đơn của bàn đích theo menuItemId
-        Map<Integer, InvoiceDetailEntity> targetDetailMap = new HashMap<>();
-        List<InvoiceDetailEntity> targetDetails = invoiceDetailRepository
-                .findAllByInvoice_IdAndIsDeletedFalse(targetInvoice.getId());
-        for (InvoiceDetailEntity detail : targetDetails) {
-            targetDetailMap.put(detail.getMenuItem().getId(), detail);
-        }
-
-        // Duyệt qua các bàn nguồn để cộng dồn hóa đơn vào bàn đích
+        // Duyệt từng bàn nguồn, gộp các món sang bàn đích
         for (TableEntity srcTable : tables) {
-            // Bỏ vào bàn đích
-            if (srcTable.getId().equals(targetTableId))
-                continue;
-            // Tìm reservation và invoice của bàn nguồn
-            ReservationEntity srcReservation = reservationRepository.findCurrentReservationByTableId(srcTable.getId())
-                    .orElse(null);
-            if (srcReservation == null)
-                continue;
+            if (srcTable.getId().equals(targetTableId)) continue;
+            ReservationEntity srcReservation = reservationRepository.findCurrentReservationByTableId(srcTable.getId()).orElse(null);
+            if (srcReservation == null) continue;
             InvoiceEntity srcInvoice = srcReservation.getInvoice();
-            if (srcInvoice == null)
-                continue;
-            // Đánh dấu trạng thái hóa đơn nguồn là UNDER_REVIEW
-            srcInvoice.setStatus(InvoiceStatus.UNDER_REVIEW);
-            invoiceRepository.save(srcInvoice);
+            if (srcInvoice == null) continue;
 
-            // Lấy các chi tiết hóa đơn của bàn nguồn
+            updateInvoiceStatus(srcInvoice, InvoiceStatus.UNDER_REVIEW);
+
             List<InvoiceDetailEntity> srcDetails = invoiceDetailRepository
                     .findAllByInvoice_IdAndIsDeletedFalse(srcInvoice.getId());
             for (InvoiceDetailEntity srcDetail : srcDetails) {
                 Integer menuItemId = srcDetail.getMenuItem().getId();
                 InvoiceDetailEntity targetDetail = targetDetailMap.get(menuItemId);
-                // Nếu bàn đích đã có món này thì cộng dồn số lượng
                 if (targetDetail != null) {
                     targetDetail.setQuantity(targetDetail.getQuantity() + srcDetail.getQuantity());
                     invoiceDetailRepository.save(targetDetail);
                 } else {
-                    // Nếu chưa có thì tạo mới một chi tiết hóa đơn
                     InvoiceDetailEntity newDetail = new InvoiceDetailEntity();
-                    com.viettridao.cafe.model.InvoiceKey newKey = new com.viettridao.cafe.model.InvoiceKey();
+                    InvoiceKey newKey = new InvoiceKey();
                     newKey.setIdInvoice(targetInvoice.getId());
                     newKey.setIdMenuItem(menuItemId);
                     newDetail.setId(newKey);
@@ -352,113 +331,69 @@ public class ReservationServiceImpl implements ReservationService {
                     invoiceDetailRepository.save(newDetail);
                     targetDetailMap.put(menuItemId, newDetail);
                 }
-                // Đánh dấu chi tiết hóa đơn nguồn là đã xóa mềm
                 srcDetail.setIsDeleted(true);
                 invoiceDetailRepository.save(srcDetail);
             }
-            // Đánh dấu hóa đơn nguồn là đã hủy và xóa mềm
-            srcInvoice.setStatus(InvoiceStatus.CANCELLED);
-            srcInvoice.setIsDeleted(true);
-            invoiceRepository.save(srcInvoice);
-
-            // Đánh dấu reservation nguồn là đã xóa mềm
-            srcReservation.setIsDeleted(true);
-            reservationRepository.save(srcReservation);
-
-            // Đổi trạng thái bàn nguồn thành AVAILABLE
-            srcTable.setStatus(TableStatus.AVAILABLE);
-            tableRepository.save(srcTable);
+            // Soft-delete invoice và reservation nguồn, cập nhật lại trạng thái bàn
+            softDeleteInvoice(srcInvoice, InvoiceStatus.CANCELLED);
+            softDeleteReservation(srcReservation);
+            updateTableStatus(srcTable, TableStatus.AVAILABLE);
         }
-        // Bàn đích giữ trạng thái OCCUPIED, có thể tính lại tổng tiền hóa đơn nếu muốn
     }
 
     /**
-     * Tách bàn: chuyển một phần món từ bàn nguồn sang bàn đích
+     * Tách món từ bàn nguồn sang bàn đích (transactional).
+     * Bàn đích có thể là bàn mới (AVAILABLE) hoặc đã có khách (OCCUPIED).
      */
     @Override
     @Transactional
     public void splitTable(SplitTableRequest request, Integer employeeId) {
-        // Lấy id bàn nguồn và bàn đích từ request
         Integer sourceTableId = request.getSourceTableId();
         Integer targetTableId = request.getTargetTableId();
-
-        // Nếu bàn nguồn và bàn đích trùng nhau thì báo lỗi
-        if (sourceTableId.equals(targetTableId)) {
+        if (sourceTableId.equals(targetTableId))
             throw new IllegalArgumentException("Bàn nguồn và bàn đích không được trùng nhau");
-        }
 
-        // Lấy thông tin bàn nguồn và bàn đích từ database
-        Optional<TableEntity> sourceTableOpt = tableRepository.findById(sourceTableId);
-        Optional<TableEntity> targetTableOpt = tableRepository.findById(targetTableId);
-
-        if (sourceTableOpt.isEmpty()) {
-            throw new IllegalArgumentException("Không tìm thấy bàn nguồn");
-        }
-        if (targetTableOpt.isEmpty()) {
-            throw new IllegalArgumentException("Không tìm thấy bàn đích");
-        }
-
-        TableEntity sourceTable = sourceTableOpt.get();
-        TableEntity targetTable = targetTableOpt.get();
-
-        // Kiểm tra trạng thái bàn nguồn và bàn đích
-        if (sourceTable.getStatus() != TableStatus.OCCUPIED) {
-            throw new IllegalArgumentException("Chỉ có thể tách từ bàn đang sử dụng (OCCUPIED)");
-        }
-        if (targetTable.getStatus() != TableStatus.AVAILABLE && targetTable.getStatus() != TableStatus.OCCUPIED) {
+        TableEntity sourceTable = requireTable(sourceTableId, TableStatus.OCCUPIED);
+        TableEntity targetTable = requireTable(targetTableId, null);
+        if (targetTable.getStatus() != TableStatus.AVAILABLE && targetTable.getStatus() != TableStatus.OCCUPIED)
             throw new IllegalArgumentException("Bàn đích phải là bàn trống (AVAILABLE) hoặc đang sử dụng (OCCUPIED)");
-        }
 
-        // Lấy reservation và invoice của bàn nguồn
-        ReservationEntity sourceReservation = reservationRepository.findCurrentReservationByTableId(sourceTableId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy reservation của bàn nguồn"));
-        InvoiceEntity sourceInvoice = sourceReservation.getInvoice();
-        if (sourceInvoice == null) {
-            throw new IllegalArgumentException("Không tìm thấy hóa đơn của bàn nguồn");
-        }
+        ReservationEntity sourceReservation = requireCurrentReservation(sourceTableId);
+        InvoiceEntity sourceInvoice = requireInvoice(sourceReservation);
 
-        // Đánh dấu hóa đơn nguồn là UNDER_REVIEW
-        sourceInvoice.setStatus(InvoiceStatus.UNDER_REVIEW);
-        invoiceRepository.save(sourceInvoice);
+        updateInvoiceStatus(sourceInvoice, InvoiceStatus.UNDER_REVIEW);
 
-        // Lấy các chi tiết hóa đơn của bàn nguồn
-        List<InvoiceDetailEntity> sourceDetails = invoiceDetailRepository
-                .findAllByInvoice_IdAndIsDeletedFalse(sourceInvoice.getId());
-        Map<Integer, InvoiceDetailEntity> sourceDetailMap = new HashMap<>();
-        for (InvoiceDetailEntity detail : sourceDetails) {
-            sourceDetailMap.put(detail.getMenuItem().getId(), detail);
-        }
+        // Map các món còn lại ở bàn nguồn
+        Map<Integer, InvoiceDetailEntity> sourceDetailMap = invoiceDetailRepository
+                .findAllByInvoice_IdAndIsDeletedFalse(sourceInvoice.getId())
+                .stream().collect(Collectors.toMap(d -> d.getMenuItem().getId(), d -> d));
 
-        // Kiểm tra số lượng món cần tách có hợp lệ không
+        // Validate số lượng món tách
         for (SplitTableRequest.SplitItemRequest item : request.getItems()) {
             Integer menuItemId = item.getMenuItemId();
             Integer splitQuantity = item.getQuantity();
-
+            if (splitQuantity == null || splitQuantity <= 0) continue;
             InvoiceDetailEntity sourceDetail = sourceDetailMap.get(menuItemId);
-            if (sourceDetail == null) {
+            if (sourceDetail == null)
                 throw new IllegalArgumentException("Món với ID " + menuItemId + " không có trong bàn nguồn");
-            }
-            if (sourceDetail.getQuantity() < splitQuantity) {
+            if (sourceDetail.getQuantity() < splitQuantity)
                 throw new IllegalArgumentException("Số lượng tách món " + menuItemId + " vượt quá số lượng hiện có");
-            }
         }
 
-        // Khai báo các biến cho hóa đơn và reservation bàn đích
         InvoiceEntity targetInvoice;
         ReservationEntity targetReservation;
         Map<Integer, InvoiceDetailEntity> targetDetailMap = new HashMap<>();
 
-        // Nếu bàn đích đang trống thì tạo mới hóa đơn và reservation cho bàn đích
+        // Nếu bàn đích là AVAILABLE, tạo mới invoice & reservation cho bàn đích
         if (targetTable.getStatus() == TableStatus.AVAILABLE) {
-            EmployeeEntity employee = employeeRepository.findById(employeeId)
-                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy nhân viên"));
+            EmployeeEntity employee = requireEmployee(employeeId);
 
             targetInvoice = new InvoiceEntity();
             targetInvoice.setTotalAmount(0.0);
             targetInvoice.setCreatedAt(LocalDateTime.now());
             targetInvoice.setStatus(InvoiceStatus.PENDING_PAYMENT);
             targetInvoice.setIsDeleted(false);
-            targetInvoice = invoiceRepository.save(targetInvoice);
+            invoiceRepository.save(targetInvoice);
 
             targetReservation = new ReservationEntity();
             ReservationKey reservationKey = new ReservationKey();
@@ -476,42 +411,32 @@ public class ReservationServiceImpl implements ReservationService {
             targetReservation.setIsDeleted(false);
             reservationRepository.save(targetReservation);
 
-            targetTable.setStatus(TableStatus.OCCUPIED);
-            tableRepository.save(targetTable);
+            updateTableStatus(targetTable, TableStatus.OCCUPIED);
 
         } else {
-            // Nếu bàn đích đã có reservation thì lấy hóa đơn và các chi tiết hóa đơn của bàn đích
-            targetReservation = reservationRepository.findCurrentReservationByTableId(targetTableId)
-                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy reservation của bàn đích"));
-            targetInvoice = targetReservation.getInvoice();
-            if (targetInvoice == null) {
-                throw new IllegalArgumentException("Không tìm thấy hóa đơn của bàn đích");
-            }
-
-            List<InvoiceDetailEntity> targetDetails = invoiceDetailRepository
-                    .findAllByInvoice_IdAndIsDeletedFalse(targetInvoice.getId());
-            for (InvoiceDetailEntity detail : targetDetails) {
-                targetDetailMap.put(detail.getMenuItem().getId(), detail);
-            }
+            // Nếu bàn đích đã có khách, lấy reservation/invoice hiện tại
+            targetReservation = requireCurrentReservation(targetTableId);
+            targetInvoice = requireInvoice(targetReservation);
+            targetDetailMap = invoiceDetailRepository
+                    .findAllByInvoice_IdAndIsDeletedFalse(targetInvoice.getId())
+                    .stream().collect(Collectors.toMap(d -> d.getMenuItem().getId(), d -> d));
         }
 
-        // Thực hiện chuyển món từ bàn nguồn sang bàn đích
+        // Tách từng món sang bàn đích
         for (SplitTableRequest.SplitItemRequest item : request.getItems()) {
             Integer menuItemId = item.getMenuItemId();
             Integer splitQuantity = item.getQuantity();
-
+            if (splitQuantity == null || splitQuantity <= 0) continue;
             InvoiceDetailEntity sourceDetail = sourceDetailMap.get(menuItemId);
             MenuItemEntity menuItem = sourceDetail.getMenuItem();
-
             InvoiceDetailEntity targetDetail = targetDetailMap.get(menuItemId);
-            // Nếu bàn đích đã có món này thì cộng dồn số lượng
+
             if (targetDetail != null) {
                 targetDetail.setQuantity(targetDetail.getQuantity() + splitQuantity);
                 invoiceDetailRepository.save(targetDetail);
             } else {
-                // Nếu chưa có thì tạo mới một chi tiết hóa đơn cho bàn đích
                 InvoiceDetailEntity newDetail = new InvoiceDetailEntity();
-                com.viettridao.cafe.model.InvoiceKey newKey = new com.viettridao.cafe.model.InvoiceKey();
+                InvoiceKey newKey = new InvoiceKey();
                 newKey.setIdInvoice(targetInvoice.getId());
                 newKey.setIdMenuItem(menuItemId);
                 newDetail.setId(newKey);
@@ -524,7 +449,6 @@ public class ReservationServiceImpl implements ReservationService {
                 targetDetailMap.put(menuItemId, newDetail);
             }
 
-            // Cập nhật lại số lượng món ở bàn nguồn, nếu hết thì xóa mềm chi tiết hóa đơn
             int remainingQuantity = sourceDetail.getQuantity() - splitQuantity;
             if (remainingQuantity > 0) {
                 sourceDetail.setQuantity(remainingQuantity);
@@ -535,63 +459,41 @@ public class ReservationServiceImpl implements ReservationService {
             }
         }
 
-        // Kiểm tra nếu bàn nguồn hết món thì hủy hóa đơn, reservation và cập nhật trạng thái bàn
+        // Nếu bàn nguồn hết món thì xóa mềm reservation/invoice, trả bàn về AVAILABLE
         List<InvoiceDetailEntity> remainingSourceDetails = invoiceDetailRepository
                 .findAllByInvoice_IdAndIsDeletedFalse(sourceInvoice.getId());
 
         if (remainingSourceDetails.isEmpty()) {
-            sourceInvoice.setStatus(InvoiceStatus.CANCELLED);
-            sourceInvoice.setIsDeleted(true);
-            invoiceRepository.save(sourceInvoice);
-
-            sourceReservation.setIsDeleted(true);
-            reservationRepository.save(sourceReservation);
-
-            sourceTable.setStatus(TableStatus.AVAILABLE);
-            tableRepository.save(sourceTable);
+            softDeleteInvoice(sourceInvoice, InvoiceStatus.CANCELLED);
+            softDeleteReservation(sourceReservation);
+            updateTableStatus(sourceTable, TableStatus.AVAILABLE);
         } else {
-            // Nếu còn món thì chuyển trạng thái hóa đơn thành PENDING_PAYMENT
-            sourceInvoice.setStatus(InvoiceStatus.PENDING_PAYMENT);
-            invoiceRepository.save(sourceInvoice);
+            updateInvoiceStatus(sourceInvoice, InvoiceStatus.PENDING_PAYMENT);
         }
     }
 
+    /**
+     * Chuẩn bị dữ liệu cho form tách bàn (danh sách bàn, món, request mẫu...).
+     */
     @Override
     public Map<String, Object> prepareSplitTableForm(Integer sourceTableId) {
         Map<String, Object> result = new HashMap<>();
-
-        // 1. Lấy thông tin bàn nguồn
-        TableEntity sourceTable = tableRepository.findById(sourceTableId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bàn nguồn với ID: " + sourceTableId));
+        TableEntity sourceTable = requireTable(sourceTableId, TableStatus.OCCUPIED);
         result.put("sourceTable", sourceTable);
 
-        // 2. Kiểm tra trạng thái bàn nguồn
-        if (sourceTable.getStatus() != TableStatus.OCCUPIED) {
-            throw new IllegalArgumentException(
-                    "Chỉ có thể tách từ bàn đang sử dụng (OCCUPIED). Bàn hiện tại: " + sourceTable.getStatus()
-            );
-        }
-
-        // 3. Tìm reservation của bàn nguồn
-        ReservationEntity sourceReservation = reservationRepository.findCurrentReservationByTableId(sourceTableId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy thông tin đặt bàn cho bàn nguồn"));
+        ReservationEntity sourceReservation = requireCurrentReservation(sourceTableId);
         result.put("sourceReservation", sourceReservation);
 
-        // 4. Kiểm tra hóa đơn của bàn nguồn
-        InvoiceEntity sourceInvoice = sourceReservation.getInvoice();
-        if (sourceInvoice == null) {
-            throw new IllegalArgumentException("Không tìm thấy hóa đơn cho bàn nguồn");
-        }
+        InvoiceEntity sourceInvoice = requireInvoice(sourceReservation);
 
-        // 5. Lấy danh sách món trong hóa đơn
+        // Lấy danh sách món của bàn nguồn
         List<InvoiceDetailEntity> invoiceDetails = invoiceDetailRepository
                 .findAllByInvoice_IdAndIsDeletedFalse(sourceInvoice.getId());
-        if (invoiceDetails.isEmpty()) {
+        if (invoiceDetails.isEmpty())
             throw new IllegalArgumentException("Bàn nguồn không có món nào để tách");
-        }
         result.put("sourceInvoiceDetails", invoiceDetails);
 
-        // 6. Lấy danh sách bàn khả dụng để tách đến
+        // Lấy danh sách bàn trống và bàn đang sử dụng khác
         List<TableEntity> allTables = tableRepository.findAll();
         List<TableEntity> availableTables = allTables.stream()
                 .filter(table -> table.getStatus() == TableStatus.AVAILABLE)
@@ -603,11 +505,10 @@ public class ReservationServiceImpl implements ReservationService {
         result.put("availableTables", availableTables);
         result.put("occupiedTables", occupiedTables);
 
-        if (availableTables.isEmpty() && occupiedTables.isEmpty()) {
+        if (availableTables.isEmpty() && occupiedTables.isEmpty())
             throw new IllegalArgumentException("Không có bàn nào khả dụng để tách đến");
-        }
 
-        // 7. Chuẩn bị request tách bàn mẫu cho form
+        // Tạo request mẫu cho form tách bàn
         SplitTableRequest splitRequest = new SplitTableRequest();
         splitRequest.setSourceTableId(sourceTableId);
         List<SplitTableRequest.SplitItemRequest> items = new ArrayList<>();
@@ -621,59 +522,33 @@ public class ReservationServiceImpl implements ReservationService {
 
         result.put("splitTableRequest", splitRequest);
         result.put("selectedTableId", sourceTableId);
-
-        // Có thể thêm các trường khác nếu view cần
         return result;
     }
 
     /**
-     * Chuyển bàn: chuyển toàn bộ món từ bàn nguồn sang bàn đích
+     * Chuyển toàn bộ reservation/invoice từ bàn nguồn sang bàn đích (transactional).
      */
     @Override
     @Transactional
     public void moveTable(MoveTableRequest request, Integer employeeId) {
-        // Lấy id bàn nguồn và bàn đích từ request
         Integer sourceTableId = request.getSourceTableId();
         Integer targetTableId = request.getTargetTableId();
-
-        // Nếu bàn nguồn và bàn đích trùng nhau thì báo lỗi
-        if (sourceTableId.equals(targetTableId)) {
+        if (sourceTableId.equals(targetTableId))
             throw new IllegalArgumentException("Bàn nguồn và bàn đích không được trùng nhau");
-        }
 
-        // Lấy thông tin bàn nguồn và bàn đích từ database
-        TableEntity sourceTable = tableRepository.findById(sourceTableId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bàn nguồn"));
-        TableEntity targetTable = tableRepository.findById(targetTableId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bàn đích"));
+        TableEntity sourceTable = requireTable(sourceTableId, TableStatus.OCCUPIED);
+        TableEntity targetTable = requireTable(targetTableId, TableStatus.AVAILABLE);
 
-        // Kiểm tra trạng thái bàn nguồn và bàn đích
-        if (sourceTable.getStatus() != TableStatus.OCCUPIED) {
-            throw new IllegalArgumentException("Chỉ có thể chuyển từ bàn đang sử dụng (OCCUPIED)");
-        }
-        if (targetTable.getStatus() != TableStatus.AVAILABLE) {
-            throw new IllegalArgumentException("Chỉ có thể chuyển sang bàn trống (AVAILABLE)");
-        }
+        ReservationEntity sourceReservation = requireCurrentReservation(sourceTableId);
+        InvoiceEntity sourceInvoice = requireInvoice(sourceReservation);
+        EmployeeEntity employee = requireEmployee(employeeId);
 
-        // Lấy reservation và invoice của bàn nguồn
-        ReservationEntity sourceReservation = reservationRepository.findCurrentReservationByTableId(sourceTableId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy reservation của bàn nguồn"));
-        InvoiceEntity sourceInvoice = sourceReservation.getInvoice();
-        if (sourceInvoice == null) {
-            throw new IllegalArgumentException("Không tìm thấy hóa đơn của bàn nguồn");
-        }
-
-        // Kiểm tra nhân viên thực hiện chuyển bàn có tồn tại không
-        EmployeeEntity employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy nhân viên thực hiện chuyển bàn"));
-
-        // Tạo mới ReservationKey cho bàn đích
+        // Tạo reservation mới cho bàn đích, gán lại invoice cũ
         ReservationKey newKey = new ReservationKey();
         newKey.setIdTable(targetTable.getId());
         newKey.setIdEmployee(employee.getId());
         newKey.setIdInvoice(sourceInvoice.getId());
 
-        // Tạo mới reservation cho bàn đích
         ReservationEntity targetReservation = new ReservationEntity();
         targetReservation.setId(newKey);
         targetReservation.setTable(targetTable);
@@ -685,51 +560,34 @@ public class ReservationServiceImpl implements ReservationService {
         targetReservation.setIsDeleted(false);
         reservationRepository.save(targetReservation);
 
-        // Cập nhật trạng thái hóa đơn, bàn đích và bàn nguồn
         sourceInvoice.setIsDeleted(false);
         invoiceRepository.save(sourceInvoice);
 
-        targetTable.setStatus(TableStatus.OCCUPIED);
-        tableRepository.save(targetTable);
+        updateTableStatus(targetTable, TableStatus.OCCUPIED);
+        updateTableStatus(sourceTable, TableStatus.AVAILABLE);
 
-        sourceTable.setStatus(TableStatus.AVAILABLE);
-        tableRepository.save(sourceTable);
-
-        // Đánh dấu reservation bàn nguồn là đã xóa mềm
-        sourceReservation.setIsDeleted(true);
-        reservationRepository.save(sourceReservation);
-        // Không cần xóa mềm invoice hay invoice detail vì đã chuyển toàn bộ sang bàn mới
+        softDeleteReservation(sourceReservation);
     }
 
     /**
-     * Chuẩn bị dữ liệu cho form chuyển bàn: kiểm tra và trả về các thông tin cần thiết.
-     *
-     * @param sourceTableId ID bàn nguồn
-     * @return Map chứa dữ liệu cho form (sourceTable, availableTables, tất cả tables,...)
-     * @throws IllegalArgumentException nếu gặp lỗi nghiệp vụ
+     * Chuẩn bị dữ liệu cho form chuyển bàn (danh sách bàn, bàn nguồn, bàn trống...).
      */
     @Override
     public Map<String, Object> prepareMoveTableForm(Integer sourceTableId) {
         Map<String, Object> result = new HashMap<>();
-        // 1. Lấy thông tin bàn nguồn
-        TableEntity sourceTable = tableRepository.findById(sourceTableId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bàn nguồn với ID: " + sourceTableId));
-        // 2. Kiểm tra bàn nguồn phải OCCUPIED
-        if (sourceTable.getStatus() != TableStatus.OCCUPIED) {
-            throw new IllegalArgumentException("Chỉ có thể chuyển từ bàn đang sử dụng (OCCUPIED). Bàn hiện tại: " + sourceTable.getStatus());
-        }
-        // 3. Tìm reservation bàn nguồn
+        TableEntity sourceTable = requireTable(sourceTableId, TableStatus.OCCUPIED);
         ReservationEntity sourceReservation = findCurrentReservationByTableId(sourceTableId);
-        if (sourceReservation == null) {
+        if (sourceReservation == null)
             throw new IllegalArgumentException("Không tìm thấy thông tin đặt bàn cho bàn nguồn");
-        }
-        // 4. Lấy danh sách bàn
+
+        // Lấy danh sách bàn và bàn trống
         List<TableEntity> allTables = tableRepository.findAll();
-        List<TableEntity> availableTables = allTables.stream().filter(table -> table.getStatus() == TableStatus.AVAILABLE).toList();
-        if (availableTables.isEmpty()) {
+        List<TableEntity> availableTables = allTables.stream()
+                .filter(table -> table.getStatus() == TableStatus.AVAILABLE)
+                .toList();
+        if (availableTables.isEmpty())
             throw new IllegalArgumentException("Không có bàn trống nào để chuyển đến");
-        }
-        // 5. Trả dữ liệu
+
         result.put("sourceTable", sourceTable);
         result.put("tables", allTables);
         result.put("availableTables", availableTables);

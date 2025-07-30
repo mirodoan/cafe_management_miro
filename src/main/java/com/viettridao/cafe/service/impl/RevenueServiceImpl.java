@@ -24,17 +24,6 @@ import java.util.TreeMap;
 
 /**
  * RevenueServiceImpl
- *
- * Version 1.0
- *
- * Date: 18-07-2025
- *
- * Copyright
- *
- * Modification Logs:
- * DATE         AUTHOR      DESCRIPTION
- * -------------------------------------------------------
- * 18-07-2025   mirodoan    Create
  */
 @Service
 @RequiredArgsConstructor

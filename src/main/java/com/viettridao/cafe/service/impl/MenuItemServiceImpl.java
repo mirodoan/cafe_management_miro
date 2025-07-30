@@ -27,18 +27,6 @@ import java.util.List;
 
 /**
  * MenuItemServiceImpl
- *
- * Version 1.0
- *
- * Date: 18-07-2025
- *
- * Copyright
- *
- * Modification Logs:
- * DATE         AUTHOR      DESCRIPTION
- * -------------------------------------------------------
- * 18-07-2025   mirodoan    Create
- *
  * Triển khai Service cho thực đơn (MenuItem).
  * Xử lý lấy danh sách, tạo mới, cập nhật, xóa mềm, kiểm tra tên món, thêm chi tiết món.
  */
@@ -202,7 +190,7 @@ public class MenuItemServiceImpl implements MenuItemService {
     /**
      * Kiểm tra tên món đã tồn tại chưa (không tính id hiện tại, chưa bị xóa).
      *
-     * @param itemName tên món cần kiểm tra.
+     * @param itemName   tên món cần kiểm tra.
      * @param menuItemId id thực đơn cần loại trừ.
      * @return true nếu tồn tại, false nếu không tồn tại.
      */

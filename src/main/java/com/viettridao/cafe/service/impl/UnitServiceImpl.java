@@ -12,18 +12,6 @@ import java.util.stream.Collectors;
 
 /**
  * UnitServiceImpl
- *
- * Version 1.0
- *
- * Date: 18-07-2025
- *
- * Copyright
- *
- * Modification Logs:
- * DATE         AUTHOR      DESCRIPTION
- * -------------------------------------------------------
- * 18-07-2025   mirodoan    Create
- *
  * Triển khai các phương thức xử lý logic liên quan đến đơn vị tính (Unit).
  * Xử lý lấy danh sách, lấy chi tiết, chuyển đổi sang DTO.
  */

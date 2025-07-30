@@ -1,11 +1,5 @@
 package com.viettridao.cafe.repository;
 
-/**
- * ProductRepository
- * Repository cho thực thể ProductEntity.
- * Chịu trách nhiệm truy vấn dữ liệu liên quan đến sản phẩm (Product) từ cơ sở dữ liệu.
- */
-
 import com.viettridao.cafe.model.ProductEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +10,11 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+/**
+ * ProductRepository
+ * Repository cho thực thể ProductEntity.
+ * Chịu trách nhiệm truy vấn dữ liệu liên quan đến sản phẩm (Product) từ cơ sở dữ liệu.
+ */
 @Repository
 public interface ProductRepository extends JpaRepository<ProductEntity, Integer> {
 

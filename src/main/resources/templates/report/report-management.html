@@ -91,19 +91,19 @@
                                 th:value="INVOICE_MONTHLY"
                                 th:selected="${type == 'INVOICE_MONTHLY'}"
                         >
-                            🧾 Hóa đơn theo tháng
+                            🧾 Hóa đơn
                         </option>
                         <option
                                 th:value="REVENUE_SUMMARY"
                                 th:selected="${type == 'REVENUE_SUMMARY'}"
                         >
-                            📊 Doanh thu
+                            📊 Doanh thu - Chi phí
                         </option>
                         <option
                                 th:value="EXPENSE_ONLY"
                                 th:selected="${type == 'EXPENSE_ONLY'}"
                         >
-                            💸 Chi tiêu
+                            💸 Chi tiêu khác
                         </option>
                         <option
                                 th:value="IMPORT_ONLY"
@@ -192,7 +192,7 @@
                                 </td>
                                 <td
                                         class="px-4 py-3 text-right"
-                                        th:text="${#numbers.formatDecimal(e.position.salary, 0, 'COMMA', 2, 'POINT')}"
+                                        th:text="${#numbers.formatDecimal(e.position.salary, 0, 'COMMA', 0, 'POINT')}"
                                 >
                                     Lương
                                 </td>
@@ -228,7 +228,7 @@
                                 </td>
                                 <td
                                         class="px-4 py-3 text-right"
-                                        th:text="${#numbers.formatDecimal(inv.totalAmount, 0, 'COMMA', 2, 'POINT')}"
+                                        th:text="${#numbers.formatDecimal(inv.totalAmount, 0, 'COMMA', 0, 'POINT')}"
                                 >
                                     Tổng
                                 </td>
@@ -256,13 +256,13 @@
                                 </td>
                                 <td
                                         class="px-4 py-3 text-right"
-                                        th:text="${#numbers.formatDecimal(r.income, 0, 'COMMA', 2, 'POINT')}"
+                                        th:text="${#numbers.formatDecimal(r.income, 0, 'COMMA', 0, 'POINT')}"
                                 >
                                     Doanh thu
                                 </td>
                                 <td
                                         class="px-4 py-3 text-right"
-                                        th:text="${#numbers.formatDecimal(r.expense, 0, 'COMMA', 2, 'POINT')}"
+                                        th:text="${#numbers.formatDecimal(r.expense, 0, 'COMMA', 0, 'POINT')}"
                                 >
                                     Chi phí
                                 </td>
@@ -273,13 +273,13 @@
                                 <td class="px-4 py-3 text-left">Tổng</td>
                                 <td
                                         class="px-4 py-3 text-right"
-                                        th:text="${#numbers.formatDecimal(reportData[0].totalIncome, 0, 'COMMA', 2, 'POINT')}"
+                                        th:text="${#numbers.formatDecimal(reportData[0].totalIncome, 0, 'COMMA', 0, 'POINT')}"
                                 >
                                     0
                                 </td>
                                 <td
                                         class="px-4 py-3 text-right"
-                                        th:text="${#numbers.formatDecimal(reportData[0].totalExpense, 0, 'COMMA', 2, 'POINT')}"
+                                        th:text="${#numbers.formatDecimal(reportData[0].totalExpense, 0, 'COMMA', 0, 'POINT')}"
                                 >
                                     0
                                 </td>
@@ -316,7 +316,7 @@
                                 </td>
                                 <td
                                         class="px-4 py-3 text-right"
-                                        th:text="${#numbers.formatDecimal(ex.amount, 0, 'COMMA', 2, 'POINT')}"
+                                        th:text="${#numbers.formatDecimal(ex.amount, 0, 'COMMA', 0, 'POINT')}"
                                 >
                                     Số tiền
                                 </td>
@@ -361,7 +361,7 @@
                                 </td>
                                 <td
                                         class="px-4 py-3 text-right"
-                                        th:text="${#numbers.formatDecimal(imp.totalAmount, 0, 'COMMA', 2, 'POINT')}"
+                                        th:text="${#numbers.formatDecimal(imp.unitImportPrice * imp.quantity, 0, 'COMMA', 0, 'POINT')}"
                                 >
                                     Tổng
                                 </td>
@@ -409,7 +409,7 @@
                                 </td>
                                 <td
                                         class="px-4 py-3 text-right"
-                                        th:text="${#numbers.formatDecimal(ex.totalExportAmount, 0, 'COMMA', 2, 'POINT')}"
+                                        th:text="${#numbers.formatDecimal(ex.unitExportPrice * ex.quantity, 0, 'COMMA', 0, 'POINT')}"
                                 >
                                     Tổng
                                 </td>
@@ -461,7 +461,7 @@
                                     </td>
                                     <td
                                             class="px-4 py-3 text-right"
-                                            th:text="${#numbers.formatDecimal(imp.totalAmount, 0, 'COMMA', 2, 'POINT')}"
+                                            th:text="${#numbers.formatDecimal(imp.unitImportPrice * imp.quantity, 0, 'COMMA', 0, 'POINT')}"
                                     >
                                         Tổng
                                     </td>
@@ -511,7 +511,7 @@
                                     </td>
                                     <td
                                             class="px-4 py-3 text-right"
-                                            th:text="${#numbers.formatDecimal(ex.totalExportAmount, 0, 'COMMA', 2, 'POINT')}"
+                                            th:text="${#numbers.formatDecimal(ex.unitExportPrice * ex.quantity, 0, 'COMMA', 0, 'POINT')}"
                                     >
                                         Tổng
                                     </td>

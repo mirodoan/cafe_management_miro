@@ -99,8 +99,8 @@ public class BudgetController {
         double totalExpense = budgetPage.getContent().stream()
                 .mapToDouble(item -> item.getExpense() != null ? item.getExpense() : 0.0).sum();
 
-        model.addAttribute("totalIncomeText", formatCurrency(totalIncome));
-        model.addAttribute("totalExpenseText", formatCurrency(totalExpense));
+        model.addAttribute("totalIncomeText", totalIncome);
+        model.addAttribute("totalExpenseText", totalExpense);
 
         if (success != null && !success.isEmpty()) {
             model.addAttribute("success", success);

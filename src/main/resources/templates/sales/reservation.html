@@ -10,7 +10,7 @@
                     type="button"
                     onclick="closeReservationModal()"
                     class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-xl"
-            >×
+            >X
             </button>
             <!-- Icon và tiêu đề -->
             <div
@@ -100,7 +100,7 @@
                                 placeholder="Nhập số điện thoại"
                                 minlength="10"
                                 maxlength="11"
-                                pattern="^[0-9]{10,11}$"
+                                pattern="^0[0-9]{9,10}$"
                                 oninvalid="this.setCustomValidity('Số điện thoại phải bắt đầu từ 0, có 10-11 chữ số và chỉ chứa số')"
                                 oninput="this.value = this.value.replace(/[^0-9]/g, ''); this.setCustomValidity('');"
                         />

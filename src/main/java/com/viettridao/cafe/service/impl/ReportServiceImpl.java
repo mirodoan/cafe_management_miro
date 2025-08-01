@@ -5,7 +5,6 @@ import com.viettridao.cafe.dto.request.reports.ReportFilterRequest;
 import com.viettridao.cafe.dto.request.reservation.RevenueFilterRequest;
 import com.viettridao.cafe.dto.response.revenue.RevenueResponse;
 import com.viettridao.cafe.repository.*;
-import com.viettridao.cafe.service.PdfExportService;
 import com.viettridao.cafe.service.ReportService;
 import com.viettridao.cafe.service.RevenueService;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +32,7 @@ public class ReportServiceImpl implements ReportService {
     private final EmployeeRepository employeeRepository;
     private final ExpenseRepository expenseRepository;
     private final RevenueService revenueService;
-    private final PdfExportService pdfExportService;
+    // private final PdfExportService pdfExportService;
 
     /**
      * Sinh báo cáo PDF từ bộ lọc yêu cầu.

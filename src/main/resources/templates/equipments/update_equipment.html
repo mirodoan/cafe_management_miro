@@ -12,7 +12,7 @@
         <h1 class="text-3xl font-bold text-[#3e2723] mb-10 text-center tracking-wide">Chỉnh sửa thiết bị</h1>
 
         <form th:action="@{/equipment/update}" th:object="${equipment}" method="post" class="space-y-6">
-            <input type="hidden" th:field="*{id}" />
+            <input type="hidden" th:field="*{id}"/>
 
             <!-- Tên thiết bị -->
             <div>
@@ -21,23 +21,35 @@
                        required minlength="5" pattern="^(?!\s*$).{5,}$"
                        title="Tên thiết bị phải có ít nhất 5 ký tự và không được để trống"
                        class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-yellow-300 outline-none"/>
-                <p class="text-red-500 text-sm mt-1" th:if="${#fields.hasErrors('equipmentName')}" th:errors="*{equipmentName}"></p>
+                <p class="text-red-500 text-sm mt-1" th:if="${#fields.hasErrors('equipmentName')}"
+                   th:errors="*{equipmentName}"></p>
             </div>
 
             <!-- Số lượng -->
             <div>
                 <label for="quantity" class="block text-[#3e2723] font-bold text-lg mb-2">* Số lượng:</label>
-                <input type="number" th:field="*{quantity}" id="quantity" min="1" required
+
+                <input type="text" th:field="*{quantity}" id="quantity" min="1" step="1" required
+                       pattern="^[1-9][0-9]*$"
+                       oninvalid="this.setCustomValidity('Chỉ có thể nhập số nguyên dương')"
+                       oninput="this.setCustomValidity(''); this.value = this.value.replace(/[^0-9]/g,'');"
                        class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-yellow-300 outline-none"/>
-                <p class="text-red-500 text-sm mt-1" th:if="${#fields.hasErrors('quantity')}" th:errors="*{quantity}"></p>
+                <p class="text-red-500 text-sm mt-1" th:if="${#fields.hasErrors('quantity')}"
+                   th:errors="*{quantity}"></p>
             </div>
 
             <!-- Đơn giá -->
             <div>
-                <label for="purchasePrice" class="block text-[#3e2723] font-bold text-lg mb-2">* Đơn giá:</label>
-                <input type="number" th:field="*{purchasePrice}" id="purchasePrice" step="0.01" min="0.01" required
+                <label for="purchasePrice" class="block text-[#3e2723] font-bold text-lg mb-2">* Đơn giá (VND):</label>
+                <input type="text" id="purchasePrice" min="1000" step="1000" required
+                       name="purchasePrice"
+                       th:value="${#numbers.formatDecimal(equipment.purchasePrice, 0, 'COMMA', 0, 'POINT')}"
+                       pattern="^[1-9][0-9]*$"
+                       oninvalid="this.setCustomValidity('Chỉ có thể nhập số nguyên dương')"
+                       oninput="this.setCustomValidity(''); this.value = this.value.replace(/[^0-9]/g,'');"
                        class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-yellow-300 outline-none"/>
-                <p class="text-red-500 text-sm mt-1" th:if="${#fields.hasErrors('purchasePrice')}" th:errors="*{purchasePrice}"></p>
+                <p class="text-red-500 text-sm mt-1" th:if="${#fields.hasErrors('purchasePrice')}"
+                   th:errors="*{purchasePrice}"></p>
             </div>
 
             <!-- Ngày mua -->
@@ -46,7 +58,8 @@
                 <input type="date" th:field="*{purchaseDate}" id="purchaseDate"
                        th:attr="max=${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}" required
                        class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-yellow-300 outline-none"/>
-                <p class="text-red-500 text-sm mt-1" th:if="${#fields.hasErrors('purchaseDate')}" th:errors="*{purchaseDate}"></p>
+                <p class="text-red-500 text-sm mt-1" th:if="${#fields.hasErrors('purchaseDate')}"
+                   th:errors="*{purchaseDate}"></p>
             </div>
 
             <!-- Nút -->

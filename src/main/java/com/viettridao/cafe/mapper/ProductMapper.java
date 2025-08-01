@@ -28,9 +28,13 @@ public class ProductMapper {
         ProductResponse productResponse = new ProductResponse();
         modelMapper.map(product, productResponse);
 
-        if (product.getUnit() != null) {
-            productResponse.setUnitName(product.getUnit().getUnitName());
-        }
+        productResponse.setUnitName(
+                product.getUnit() != null ? product.getUnit().getUnitName() : ""
+        );
+        productResponse.setQuantity(
+                product.getQuantity() != null ? product.getQuantity() : 0
+        );
+
         return productResponse;
     }
 

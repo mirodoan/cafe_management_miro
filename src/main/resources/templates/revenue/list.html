@@ -51,13 +51,19 @@
                     <tbody>
                     <tr th:if="${revenue != null}" th:each="item : ${revenue.summaries}">
                         <td th:text="${#temporals.format(item.date, 'dd/MM/yyyy')}">__/__/____</td>
-                        <td th:text="${#numbers.formatDecimal(item.income ?: 0, 0, 'POINT', 0, 'COMMA')} + ' VND'">0</td>
-                        <td th:text="${#numbers.formatDecimal(item.expense ?: 0, 0, 'POINT', 0, 'COMMA')} + ' VND'">0</td>
+                        <td th:text="${#numbers.formatDecimal(item.income ?: 0, 0, 'POINT', 0, 'COMMA')} + ' VND'">0
+                        </td>
+                        <td th:text="${#numbers.formatDecimal(item.expense ?: 0, 0, 'POINT', 0, 'COMMA')} + ' VND'">0
+                        </td>
                     </tr>
                     <tr th:if="${revenue != null}" class="table-secondary fw-bold">
                         <td>Tổng</td>
-                        <td th:text="${#numbers.formatDecimal(revenue.totalIncome ?: 0, 0, 'POINT', 0, 'COMMA')} + ' VND'">0</td>
-                        <td th:text="${#numbers.formatDecimal(revenue.totalExpense ?: 0, 0, 'POINT', 0, 'COMMA')} + ' VND'">0</td>
+                        <td th:text="${#numbers.formatDecimal(revenue.totalIncome ?: 0, 0, 'POINT', 0, 'COMMA')} + ' VND'">
+                            0
+                        </td>
+                        <td th:text="${#numbers.formatDecimal(revenue.totalExpense ?: 0, 0, 'POINT', 0, 'COMMA')} + ' VND'">
+                            0
+                        </td>
                     </tr>
                     <tr th:if="${revenue == null}">
                         <td colspan="3" class="text-muted">Không có dữ liệu trong khoảng thời gian đã chọn.</td>

@@ -66,6 +66,7 @@ public class AccountController {
         // Nếu có lỗi validate, trả về lại view và truyền lỗi xuống frontend
         if (bindingResult.hasErrors()) {
             model.addAttribute("account", request);
+            model.addAttribute("editMode", true);
             return "/accounts/account";
         }
         try {

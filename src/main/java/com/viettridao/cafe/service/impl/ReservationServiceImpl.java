@@ -169,10 +169,9 @@ public class ReservationServiceImpl implements ReservationService {
                 .stream().filter(d -> d.getQuantity() > 0).toList();
 
         // Nếu không còn món nào, trả về null hoặc empty, hoặc có thể soft-delete reservation/invoice tại đây luôn (phòng trường hợp logic trước đó bị lỗi)
-        if (invoiceDetails.isEmpty())
-            return null;
-
-        return orderDetailMapper.toOrderDetailResponse(table, invoice, reservation, invoiceDetails);
+        return orderDetailMapper.toOrderDetailResponse(
+                table, invoice, reservation, invoiceDetails.isEmpty() ? new ArrayList<>() : invoiceDetails
+        );
     }
 
     /**

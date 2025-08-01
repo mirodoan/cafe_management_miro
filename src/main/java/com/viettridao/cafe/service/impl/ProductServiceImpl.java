@@ -45,6 +45,12 @@ public class ProductServiceImpl implements ProductService {
         } else {
             productPage = productRepository.getAllProducts(PageRequest.of(page, size));
         }
+
+        // Lọc bỏ sản phẩm không có đơn vị (unit == null)
+        List<ProductEntity> filtered = productPage.getContent().stream()
+                .filter(p -> p.getUnit() != null)
+                .toList();
+
         ProductPageResponse response = new ProductPageResponse();
         response.setPageNumber(productPage.getNumber());
         response.setPageSize(productPage.getSize());
@@ -61,7 +67,11 @@ public class ProductServiceImpl implements ProductService {
      */
     @Override
     public List<ProductResponse> getAllProducts() {
-        List<ProductEntity> entities = productRepository.findAllByIsDeletedFalse();
+        List<ProductEntity> entities = productRepository.findAllByIsDeletedFalseAndUnitIsNotNull();
+        // Loại bỏ sản phẩm thiếu đơn vị
+        List<ProductEntity> filtered = entities.stream()
+                .filter(p -> p.getUnit() != null)
+                .toList();
         return productMapper.toListProductResponse(entities);
     }
 

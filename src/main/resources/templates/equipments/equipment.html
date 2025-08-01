@@ -27,7 +27,7 @@
                         <th class="w-[20%] px-4 py-3 text-left">Tên thiết bị</th>
                         <th class="w-[15%] px-4 py-3 text-left">Ngày mua</th>
                         <th class="w-[10%] px-4 py-3 text-center">Số lượng</th>
-                        <th class="w-[10%] px-4 py-3 text-right">Đơn giá</th>
+                        <th class="w-[15%] px-4 py-3 text-right">Đơn giá</th>
                         <th class="w-[15%] px-4 py-3 text-right">Giá</th>
                         <th class="w-[15%] px-4 py-3 text-center">Thao tác</th>
                     </tr>
@@ -35,10 +35,18 @@
                     <tbody class="divide-y divide-gray-200">
                     <tr th:each="equipment : ${equipments.equipments}" class="hover:bg-[#f9f9f9] transition">
                         <td class="px-4 py-3 font-medium" th:text="${equipment.equipmentName}">Máy POS</td>
-                        <td class="px-4 py-3" th:text="${#temporals.format(equipment.purchaseDate, 'dd/MM/yyyy')}">01/01/2025</td>
+                        <td class="px-4 py-3" th:text="${#temporals.format(equipment.purchaseDate, 'dd/MM/yyyy')}">
+                            01/01/2025
+                        </td>
                         <td class="px-4 py-3 text-center" th:text="${equipment.quantity}">1</td>
-                        <td class="px-4 py-3 text-right" th:text="${#numbers.formatDecimal(equipment.purchasePrice, 0, 'COMMA', 0, 'POINT')}">100,000</td>
-                        <td class="px-4 py-3 text-right" th:text="${#numbers.formatDecimal(equipment.quantity * equipment.purchasePrice, 0, 'COMMA', 0, 'POINT')}">100,000</td>
+                        <td class="px-4 py-3 text-right"
+                            th:text="${#numbers.formatDecimal(equipment.purchasePrice, 0, 'COMMA', 0, 'POINT')} + ' đ'">
+                            100,000
+                        </td>
+                        <td class="px-4 py-3 text-right"
+                            th:text="${#numbers.formatDecimal(equipment.quantity * equipment.purchasePrice, 0, 'COMMA', 0, 'POINT')} + ' đ'">
+                            100,000
+                        </td>
                         <td class="px-4 py-3">
                             <div class="flex justify-center gap-2">
                                 <a th:href="@{/equipment/update/{id}(id=${equipment.id})}"

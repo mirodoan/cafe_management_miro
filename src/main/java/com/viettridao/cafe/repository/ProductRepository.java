@@ -25,15 +25,15 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Integer>
      * @param pageable thông tin phân trang
      * @return Page<ProductEntity>
      */
-    @Query("select p from ProductEntity p where p.isDeleted = false and lower(p.productName) like lower(CONCAT('%', :keyword, '%')) ")
+    @Query("select p from ProductEntity p where p.isDeleted = false and p.unit is not null and lower(p.productName) like lower(CONCAT('%', :keyword, '%'))")
     Page<ProductEntity> getAllProductBySearch(@Param("keyword") String keyword, Pageable pageable);
 
     /**
-     * Lấy danh sách tất cả hàng hóa không bị xóa mềm.
+     * Lấy danh sách tất cả hàng hóa không bị xóa mềm và không null
      *
      * @return List<ProductEntity>
      */
-    List<ProductEntity> findAllByIsDeletedFalse();
+    List<ProductEntity> findAllByIsDeletedFalseAndUnitIsNotNull();
 
     /**
      * Lấy danh sách tất cả hàng hóa không bị xóa mềm với phân trang.
@@ -41,7 +41,7 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Integer>
      * @param pageable thông tin phân trang
      * @return Page<ProductEntity>
      */
-    @Query("select p from ProductEntity p where p.isDeleted = false")
+    @Query("select p from ProductEntity p where p.isDeleted = false and p.unit is not null")
     Page<ProductEntity> getAllProducts(Pageable pageable);
 
     /**

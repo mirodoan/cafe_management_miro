@@ -29,7 +29,7 @@
                     th:name="${_csrf.parameterName}"
                     th:value="${_csrf.token}"
             />
-            
+
             <input type="hidden" th:field="*{id}"/>
 
             <!-- Header -->
@@ -165,8 +165,8 @@
                                 required
                                 minlength="10"
                                 maxlength="11"
-                                pattern="^[0-9]{10,11}$"
-                                oninvalid="this.setCustomValidity('Số điện thoại phải có 10-11 chữ số và chỉ chứa số')"
+                                pattern="^0[0-9]{9,10}$"
+                                oninvalid="this.setCustomValidity('Số điện thoại phải bắt đầu bằng số 0 và có 10-11 chữ số')"
                                 oninput="this.setCustomValidity(''); validatePhoneNumber(this);"
                         />
                         <span
@@ -217,10 +217,10 @@
 
                 <!-- Lương -->
                 <div class="info-field">
-                    <label id="salary" class="font-semibold mb-1 block">LƯƠNG</label>
+                    <label id="salary" class="font-semibold mb-1 block">LƯƠNG (VND)</label>
                     <input
                             type="text"
-                            th:value="${account.salary != null ? #numbers.formatDecimal(account.salary, 0, 'POINT', 0, 'COMMA') : 'Chưa có thông tin'}"
+                            th:value="${account.salary != null ? #numbers.formatDecimal(account.salary, 0, 'COMMA', 0, 'POINT') : 'Chưa có thông tin'}"
                             readonly
                             class="w-full px-3 py-2 border rounded bg-gray-100"
                     />
@@ -286,26 +286,12 @@
             }
           };
 
-          window.validatePhoneNumber = function (input) {
-            const value = input.value.trim();
-            const errorElement = input
-              .closest('.input-wrapper')
-              .querySelector('.text-red-500');
-
-            if (!/^[0-9]{10,11}$/.test(value)) {
-              showFieldError(
-                input,
-                'Số điện thoại phải có 10-11 chữ số và chỉ chứa số'
-              );
-              return false;
-            } else if (!value.startsWith('0')) {
-              showFieldError(input, 'Số điện thoại phải bắt đầu bằng số 0');
-              return false;
-            } else {
-              clearFieldErrorByElement(errorElement);
-              return true;
+          var input = document.getElementById('phoneNumber');
+            if (input) {
+              input.addEventListener('input', function () {
+                this.value = this.value.replace(/\D/g,''); // Loại bỏ mọi ký tự không phải số
+              });
             }
-          };
 
           window.validateAddress = function (input) {
             const value = input.value.trim();
@@ -794,6 +780,13 @@
             });
           });
         });
+
+        /*<![CDATA[*/
+        var isEditMode = /*[[${editMode}]]*/ false;
+        if (isEditMode) {
+            setEditMode(true);
+        }
+        /*]]>*/
     </script>
 </div>
 </body>

@@ -16,10 +16,10 @@ public class HomeController {
     /**
      * Hiển thị trang chủ/dashboard của ứng dụng.
      *
-     * @return template layout chính của ứng dụng
+     * @return template trang chủ home
      */
     @GetMapping
     public String home() {
-        return "layout";
+        return "home";
     }
 }

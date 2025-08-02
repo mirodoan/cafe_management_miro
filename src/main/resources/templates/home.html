@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html
+        lang="vi"
+        xmlns:th="http://www.thymeleaf.org"
+        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+        layout:decorate="~{layout}"
+>
+<head>
+    <title>Trang chủ</title>
+    <link th:href="@{/css/home.css}" rel="stylesheet"/>
+</head>
+<body>
+<main layout:fragment="content" class="home-page">
+    <div class="home-container">
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <div class="welcome-content">
+                <h1 class="welcome-title" th:text="'Xin chào, ' + ${user.username}">
+                    Xin chào, Username
+                </h1>
+                <p class="welcome-subtitle">
+                    Chúc bạn một ngày làm việc hiệu quả và tràn đầy năng lượng ☕✨
+                </p>
+            </div>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>

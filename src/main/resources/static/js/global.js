@@ -38,7 +38,7 @@ window.showNotification = function (message, type = 'error') {
     notificationArea = document.createElement('div');
     notificationArea.id = 'notification-area';
     notificationArea.className =
-      'mt-6 flex justify-center fixed top-4 left-1/2 transform -translate-x-1/2 z-50';
+      'mt-6 flex justify-center fixed top-20 left-1/2 transform -translate-x-1/2 z-50'; // Đổi từ top-4 thành top-20 để tránh header
     document.body.appendChild(notificationArea);
   }
 
@@ -84,27 +84,10 @@ window.showNotification = function (message, type = 'error') {
 
   notificationArea.appendChild(alertDiv);
 
-  // Fade in effect
+  // Auto dismiss after 5 seconds
   setTimeout(() => {
-    alertDiv.style.opacity = '0';
-    alertDiv.style.transform = 'translateY(-10px)';
-    alertDiv.style.transition = 'all 0.3s ease';
-    setTimeout(() => {
-      alertDiv.style.opacity = '1';
-      alertDiv.style.transform = 'translateY(0)';
-    }, 10);
-  }, 10);
-
-  // Auto hide after 4 seconds
-  setTimeout(() => {
-    if (alertDiv && alertDiv.parentNode) {
-      alertDiv.style.opacity = '0';
-      alertDiv.style.transform = 'translateY(-10px)';
-      setTimeout(() => {
-        if (alertDiv.parentNode) {
-          alertDiv.remove();
-        }
-      }, 300);
+    if (alertDiv.parentNode) {
+      alertDiv.remove();
     }
-  }, 4000);
+  }, 5000);
 };

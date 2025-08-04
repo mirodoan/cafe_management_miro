@@ -252,7 +252,6 @@ select:focus {
   /* Let it grow naturally with content */
 }
 
-/* ========== HEADER IMPROVEMENTS (Much Larger) ========== */
 /* ========== HEADER RESPONSIVE - Mobile First ========== */
 header {
   position: fixed;
@@ -261,7 +260,7 @@ header {
   right: 0;
   width: 100%;
   z-index: 1000;
-  height: 80px; /* Giảm từ 100px xuống 80px cho mobile */
+  height: 80px;
   min-height: 80px;
   max-height: 80px;
   flex-shrink: 0;
@@ -355,27 +354,27 @@ header {
 
 @media (min-width: 768px) {
   .mobile-menu-btn {
-    width: 48px; /* Giảm từ 60px */
+    width: 48px;
     height: 48px;
   }
 }
 
 @media (min-width: 1024px) {
   .mobile-menu-btn {
-    width: 44px; /* Giảm từ 70px về kích thước v���a phải */
+    width: 44px;
     height: 44px;
   }
 }
 
 @media (min-width: 1200px) {
   .mobile-menu-btn {
-    width: 44px; /* Giữ kích thước nhỏ gọn */
+    width: 44px;
     height: 44px;
   }
 }
 
 .mobile-menu-btn svg {
-  width: 28px; /* Lớn hơn trên mobile */
+  width: 28px;
   height: 28px;
   stroke-width: 2.5;
 }
@@ -389,14 +388,14 @@ header {
 
 @media (min-width: 1024px) {
   .mobile-menu-btn svg {
-    width: 20px; /* Giảm từ 36px về kích thước nhỏ gọn */
+    width: 20px;
     height: 20px;
   }
 }
 
 @media (min-width: 1200px) {
   .mobile-menu-btn svg {
-    width: 20px; /* Giữ kích thước nhỏ gọn */
+    width: 20px;
     height: 20px;
   }
 }

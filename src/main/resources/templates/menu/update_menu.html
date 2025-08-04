@@ -114,7 +114,7 @@
                                         required
                                         oninvalid="this.setCustomValidity('Vui lòng chọn nguyên liệu')"
                                         oninput="this.setCustomValidity('')"
-                                        class="border border-gray-300 rounded-md px-3 py-2 w-full"
+                                        class="border border-gray-300 rounded-md px-3 py-2 w-full dropdown-normal"
                                 >
                                     <option value="">-- Chọn nguyên liệu --</option>
                                     <option
@@ -143,7 +143,7 @@
                                         required
                                         oninvalid="this.setCustomValidity('Vui lòng chọn đơn vị tính')"
                                         oninput="this.setCustomValidity('')"
-                                        class="border border-gray-300 rounded-md px-3 py-2 w-full"
+                                        class="border border-gray-300 rounded-md px-3 py-2 w-full dropdown-normal"
                                 >
                                     <option value="">-- Chọn đơn vị --</option>
                                     <option
@@ -190,7 +190,7 @@
             </div>
         </form>
     </div>
-    <script>
+    <script th:inline="javascript">
         document.addEventListener('DOMContentLoaded', function () {
 
           var input = document.getElementById('currentPrice');
@@ -213,8 +213,10 @@
 
           const addBtn = document.getElementById('addIngredientBtn');
           const tableBody = document.getElementById('ingredientTableBody');
-          const products = /*[[${products}]]*/ [];
-          const units = /*[[${units}]]*/ [];
+
+          // Lấy dữ liệu từ Thymeleaf
+          const products = [[${products}]];
+          const units = [[${units}]];
 
           // Thêm nguyên liệu
           addBtn.addEventListener('click', function () {
@@ -225,7 +227,7 @@
                 <select name="menuDetails[${rowCount}].productId" required 
                         oninvalid="this.setCustomValidity('Vui lòng chọn nguyên liệu')"
                         oninput="this.setCustomValidity('')"
-                        class="border border-gray-300 rounded-md px-3 py-2 w-full">
+                        class="border border-gray-300 rounded-md px-3 py-2 w-full dropdown-normal">
                   <option value="">-- Chọn nguyên liệu --</option>
                   ${products
                     .map(
@@ -244,7 +246,7 @@
                 <select name="menuDetails[${rowCount}].unitId" required
                         oninvalid="this.setCustomValidity('Vui lòng chọn đơn vị tính')"
                         oninput="this.setCustomValidity('')"
-                        class="border border-gray-300 rounded-md px-3 py-2 w-full">
+                        class="border border-gray-300 rounded-md px-3 py-2 w-full dropdown-normal">
                   <option value="">-- Chọn đơn vị --</option>
                   ${units
                     .map(

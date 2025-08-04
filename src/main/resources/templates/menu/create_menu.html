@@ -39,7 +39,7 @@
                                 minlength="3"
                                 maxlength="100"
                                 pattern="^(?!\s*$).{3,}$"
-                                oninvalid="this.setCustomValidity('Tên món phải có ít nhất 3 ký tự và không được để trống hoặc toàn dấu cách')"
+                                oninvalid="this.setCustomValidity('Tên m��n phải có ít nhất 3 ký tự và không được để trống hoặc toàn dấu cách')"
                                 oninput="this.setCustomValidity('')"
                                 class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-yellow-400 focus:border-yellow-500 outline-none"
                         />
@@ -63,8 +63,8 @@
                                 th:field="*{currentPrice}"
                                 id="currentPrice"
                                 required
-                                min="0.01"
-                                step="0.01"
+                                min="0"
+                                step="1"
                                 placeholder="Nhập giá tiền"
                                 oninvalid="this.setCustomValidity('Giá tiền phải là số hợp lệ và lớn hơn 0')"
                                 oninput="this.setCustomValidity('')"
@@ -105,62 +105,7 @@
                         </tr>
                         </thead>
                         <tbody id="ingredientTableBody">
-                        <tr th:each="detail,iter : *{menuDetails}">
-                            <td>
-                                <select
-                                        th:field="*{menuDetails[__${iter.index}__].productId}"
-                                        required
-                                        oninvalid="this.setCustomValidity('Vui lòng chọn nguyên liệu')"
-                                        oninput="this.setCustomValidity('')"
-                                        class="border border-gray-300 rounded-md px-3 py-2 w-full"
-                                >
-                                    <option value="">-- Chọn nguyên liệu --</option>
-                                    <option
-                                            th:each="product : ${products}"
-                                            th:value="${product.id}"
-                                            th:text="${product.productName}"
-                                            th:selected="${product.id == detail.productId}"
-                                    ></option>
-                                </select>
-                            </td>
-                            <td>
-                                <input
-                                        type="number"
-                                        min="0.01"
-                                        step="0.01"
-                                        th:field="*{menuDetails[__${iter.index}__].quantity}"
-                                        required
-                                        oninvalid="this.setCustomValidity('Trọng lượng phải lớn hơn 0')"
-                                        oninput="this.setCustomValidity('')"
-                                        class="border border-gray-300 rounded-md px-3 py-2 w-full"
-                                />
-                            </td>
-                            <td>
-                                <select
-                                        th:field="*{menuDetails[__${iter.index}__].unitId}"
-                                        required
-                                        oninvalid="this.setCustomValidity('Vui lòng chọn đơn vị tính')"
-                                        oninput="this.setCustomValidity('')"
-                                        class="border border-gray-300 rounded-md px-3 py-2 w-full"
-                                >
-                                    <option value="">-- Chọn đơn vị --</option>
-                                    <option
-                                            th:each="unit : ${units}"
-                                            th:value="${unit.id}"
-                                            th:text="${unit.unitName}"
-                                            th:selected="${unit.id == detail.unitId}"
-                                    ></option>
-                                </select>
-                            </td>
-                            <td class="text-center">
-                                <button
-                                        type="button"
-                                        class="text-red-500 hover:underline btn-remove-ingredient"
-                                >
-                                    Xóa
-                                </button>
-                            </td>
-                        </tr>
+                        <!-- Các hàng nguyên liệu sẽ được thêm động bằng JavaScript -->
                         </tbody>
                     </table>
                 </div>
@@ -183,17 +128,38 @@
                         type="submit"
                         class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-6 py-2 rounded-md shadow"
                 >
-                    Thêm
+                    Lưu
                 </button>
             </div>
         </form>
     </div>
     <script th:inline="javascript">
         document.addEventListener('DOMContentLoaded', function () {
+
+          var input = document.getElementById('currentPrice');
+            if (input) {
+              input.addEventListener('input', function () {
+                this.value = this.value.replace(/\D/g,''); // Loại bỏ mọi ký tự không phải số
+              });
+            }
+
+           var priceInput = document.getElementById('currentPrice');
+            if (priceInput) {
+                var value = priceInput.value;
+                if (value && !isNaN(value)) {
+                    // Nếu là số nguyên dạng x.0 hoặc x.00..., chuyển thành số nguyên
+                    if (Number(value) % 1 === 0) {
+                        priceInput.value = parseInt(value, 10);
+                    }
+                }
+            }
+
           const addBtn = document.getElementById('addIngredientBtn');
           const tableBody = document.getElementById('ingredientTableBody');
-          const products = /*[[${products}]]*/ [];
-          const units = /*[[${units}]]*/ [];
+
+          // Lấy dữ liệu từ Thymeleaf
+          const products = [[${products}]];
+          const units = [[${units}]];
 
           // Thêm nguyên liệu
           addBtn.addEventListener('click', function () {
@@ -204,7 +170,7 @@
                 <select name="menuDetails[${rowCount}].productId" required
                         oninvalid="this.setCustomValidity('Vui lòng chọn nguyên liệu')"
                         oninput="this.setCustomValidity('')"
-                        class="border border-gray-300 rounded-md px-3 py-2 w-full">
+                        class="border border-gray-300 rounded-md px-3 py-2 w-full dropdown-normal">
                   <option value="">-- Chọn nguyên liệu --</option>
                   ${products
                     .map(
@@ -223,7 +189,7 @@
                 <select name="menuDetails[${rowCount}].unitId" required
                         oninvalid="this.setCustomValidity('Vui lòng chọn đơn vị tính')"
                         oninput="this.setCustomValidity('')"
-                        class="border border-gray-300 rounded-md px-3 py-2 w-full">
+                        class="border border-gray-300 rounded-md px-3 py-2 w-full dropdown-normal">
                   <option value="">-- Chọn đơn vị --</option>
                   ${units
                     .map(

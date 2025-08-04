@@ -7,22 +7,24 @@
 >
 <head>
     <title>Trang chủ</title>
-    <link th:href="@{/css/home.css}" rel="stylesheet"/>
 </head>
 <body>
-<main layout:fragment="content" class="home-page">
-    <div class="home-container">
+<main layout:fragment="content"
+      class="flex flex-col items-center justify-start min-h-screen px-2 md:px-8 bg-[var(--color-background-main)]">
+    <div class="w-full max-w-5xl flex flex-col gap-8 md:gap-12">
         <!-- Welcome Section -->
-        <div class="welcome-section">
-            <div class="welcome-content">
-                <h1 class="welcome-title" th:text="'Xin chào, ' + ${user.username}">
+        <div class="rounded-2xl border border-orange-200 bg-gradient-to-br from-yellow-50 to-orange-100 shadow-xl flex items-center justify-center py-10 px-4 md:py-16 md:px-12 mb-4">
+            <div class="max-w-2xl mx-auto text-center">
+                <h1 class="font-extrabold text-3xl sm:text-4xl md:text-5xl lg:text-6xl mb-4 text-[var(--color-text-main)] leading-tight tracking-tight"
+                    th:text="'Xin chào, ' + ${user.username}">
                     Xin chào, Username
                 </h1>
-                <p class="welcome-subtitle">
+                <p class="text-lg md:text-xl lg:text-2xl font-medium opacity-90 mb-6">
                     Chúc bạn một ngày làm việc hiệu quả và tràn đầy năng lượng ☕✨
                 </p>
             </div>
         </div>
+        <!-- Bạn có thể thêm các section khác ở đây, sử dụng class Tailwind -->
     </div>
 </main>
 

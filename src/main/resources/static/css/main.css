@@ -1,8 +1,6 @@
 :root {
   --color-primary: #8d6e63;
-  --color-primary-rgb: 141, 110, 99;
   --color-secondary: #ff6f61;
-  --color-secondary-rgb: 255, 111, 97;
   --color-background-main: #f9f5f2;
   --color-text-main: #3e2723;
   --color-accent: #64b5f6;
@@ -10,41 +8,16 @@
   --color-error-red: #d32f2f;
   --color-error-bg: #ffebe9;
   --color-info-blue: #2196f3;
-
   --font-family-main: 'Inter', sans-serif;
-  --spacing-unit: 0.25rem;
   --border-radius-default: 0.75rem;
   --shadow-default: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 6px 15px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.12);
-
   --sidebar-bg: #8d6e63;
   --sidebar-text: #fff;
   --color-orange-pastel: #ffe0c2;
   --color-orange-active: #ff7043;
-
-  /* Responsive breakpoints */
-  --mobile-breakpoint: 768px;
-  --tablet-breakpoint: 1024px;
-  --desktop-breakpoint: 1280px;
 }
 
-/* Base responsive typography */
-html {
-  font-size: 14px;
-}
-
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-@media (min-width: 1024px) {
-  html {
-    font-size: 16px;
-  }
-}
+/* KHÔNG có dòng nào set font-size html! */
 
 body {
   font-family: var(--font-family-main);
@@ -53,48 +26,20 @@ body {
   margin: 0;
   padding: 0;
   line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  min-width: 0;
   overflow-x: hidden;
-  height: auto; /* Let content determine actual height */
 }
 
-/* Responsive headings */
 h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
   color: var(--color-text-main);
   line-height: 1.2;
 }
 
-h1 { font-size: 2rem; }
-h2 { font-size: 1.75rem; }
-h3 { font-size: 1.5rem; }
-h4 { font-size: 1.25rem; }
-h5 { font-size: 1.125rem; }
-h6 { font-size: 1rem; }
-
-@media (min-width: 768px) {
-  h1 { font-size: 2.5rem; }
-  h2 { font-size: 2rem; }
-  h3 { font-size: 1.75rem; }
-  h4 { font-size: 1.5rem; }
-  h5 { font-size: 1.25rem; }
-  h6 { font-size: 1.125rem; }
-}
-
-@media (min-width: 1024px) {
-  h1 { font-size: 3rem; }
-  h2 { font-size: 2.5rem; }
-  h3 { font-size: 2rem; }
-  h4 { font-size: 1.75rem; }
-  h5 { font-size: 1.5rem; }
-  h6 { font-size: 1.25rem; }
-}
-
 a {
   color: var(--color-accent);
   text-decoration: none;
-  transition: color 0.3s ease;
+  transition: color 0.3s;
 }
 a:hover {
   color: var(--color-primary);
@@ -103,65 +48,21 @@ a:hover {
 button {
   cursor: pointer;
   border: none;
-  padding: var(--spacing-unit) calc(var(--spacing-unit) * 2);
   border-radius: var(--border-radius-default);
-  transition: all 0.3s ease;
-  touch-action: manipulation; /* Better mobile touch */
+  transition: all 0.3s;
+  touch-action: manipulation;
 }
 
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1rem;
-}
-
-@media (min-width: 768px) {
-  .container {
-    padding: 1.5rem;
-  }
-}
-
-@media (min-width: 1024px) {
-  .container {
-    padding: 2rem;
-  }
-}
-
-.shadow-md {
-  box-shadow: var(--shadow-default);
-}
-
-/* Responsive form inputs */
-input[type='text'],
-input[type='password'],
-input[type='email'],
-input[type='number'],
-input[type='tel'],
-select,
-textarea {
+input, select, textarea {
   border: 1px solid #e2e8f0;
   border-radius: var(--border-radius-default);
   padding: 0.75rem 1rem;
   font-size: 1rem;
   color: var(--color-text-main);
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  transition: border-color 0.3s, box-shadow 0.3s;
   width: 100%;
   box-sizing: border-box;
 }
-
-@media (max-width: 767px) {
-  input[type='text'],
-  input[type='password'],
-  input[type='email'],
-  input[type='number'],
-  input[type='tel'],
-  select,
-  textarea {
-    padding: 0.875rem 1rem;
-    font-size: 16px; /* Prevent zoom on iOS */
-  }
-}
-
 input:focus,
 textarea:focus,
 select:focus {
@@ -170,857 +71,154 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(255, 111, 97, 0.2);
 }
 
+.error-message, .success-message {
+  padding: 1rem;
+  border-radius: var(--border-radius-default);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
 .error-message {
   background-color: var(--color-error-bg);
   color: var(--color-error-red);
-  padding: 1rem;
-  border-radius: var(--border-radius-default);
   border: 1px solid var(--color-error-red);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  font-size: 0.875rem;
 }
-
-@media (min-width: 768px) {
-  .error-message {
-    font-size: 1rem;
-  }
-}
-
 .success-message {
   background-color: rgba(67, 160, 71, 0.1);
   color: var(--color-success);
-  padding: 1rem;
-  border-radius: var(--border-radius-default);
   border: 1px solid var(--color-success);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  font-size: 0.875rem;
 }
 
+.container {
+  width: 100%;
+  max-width: 100vw;
+  margin: 0 auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+@media (min-width: 640px) {
+  .container { max-width: 640px; }
+}
 @media (min-width: 768px) {
-  .success-message {
-    font-size: 1rem;
-  }
+  .container { max-width: 768px; }
 }
-
-/* ========== IMPROVED LAYOUT SYSTEM ========== */
-.layout-root {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.layout-page {
-  display: flex;
-  flex-direction: column;
-  background: var(--color-background-main);
-  padding-top: 80px; /* Giảm từ 100px xuống 80px để khớp với header mobile */
-}
-
-@media (min-width: 768px) {
-  .layout-page {
-    padding-top: 72px; /* Giảm từ 120px xuống 72px để khớp với header tablet */
-  }
-}
-
 @media (min-width: 1024px) {
-  .layout-page {
-    padding-top: 64px; /* Giảm từ 140px xuống 64px để khớp với header desktop */
-  }
+  .container { max-width: 1024px; }
+}
+@media (min-width: 1280px) {
+  .container { max-width: 1280px; }
 }
 
-@media (min-width: 1200px) {
-  .layout-page {
-    padding-top: 64px; /* Giữ 64px cho large desktop */
-  }
-}
-
-@media (min-width: 1440px) {
-  .layout-page {
-    padding-top: 64px; /* Giữ 64px cho extra large */
-  }
-}
-
-.layout-main {
-  display: flex;
-  flex: 1;
-  /* Let it grow naturally with content */
-}
-
-/* ========== HEADER RESPONSIVE - Mobile First ========== */
 header {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
-  z-index: 1000;
-  height: 80px;
-  min-height: 80px;
-  max-height: 80px;
-  flex-shrink: 0;
+  top: 0; left: 0; right: 0; z-index: 50;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  background: linear-gradient(to right, var(--color-primary), var(--color-text-main));
 }
 
-@media (min-width: 768px) {
-  header {
-    height: 72px; /* Giảm từ 120px xuống 72px cho tablet */
-    min-height: 72px;
-    max-height: 72px;
-  }
-}
-
-@media (min-width: 1024px) {
-  header {
-    height: 64px; /* Giảm từ 140px xuống 64px cho desktop */
-    min-height: 64px;
-    max-height: 64px;
-  }
-}
-
-@media (min-width: 1200px) {
-  header {
-    height: 64px; /* Giữ 64px cho large desktop */
-    min-height: 64px;
-    max-height: 64px;
-  }
-}
-
-@media (min-width: 1440px) {
-  header {
-    height: 64px; /* Giữ 64px cho extra large */
-    min-height: 64px;
-    max-height: 64px;
-  }
-}
-
-/* Header content styling - VnExpress approach */
-.header-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 100%;
-  padding: 0 12px;
-  max-width: 100%;
-  margin: 0 auto;
-}
-
-@media (min-width: 768px) {
-  .header-content {
-    padding: 0 20px;
-    max-width: 1200px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .header-content {
-    padding: 0 24px;
-    max-width: none; /* Bỏ giới hạn max-width để spread full width */
-  }
-}
-
-@media (min-width: 1200px) {
-  .header-content {
-    padding: 0 32px;
-    max-width: none; /* Full width trên large desktop */
-  }
-}
-
-/* Mobile menu button - Adjusted for desktop */
-.mobile-menu-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 50px; /* Lớn hơn trên mobile */
-  height: 50px;
-  padding: 0;
-  border-radius: 8px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.mobile-menu-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-@media (min-width: 768px) {
-  .mobile-menu-btn {
-    width: 48px;
-    height: 48px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .mobile-menu-btn {
-    width: 44px;
-    height: 44px;
-  }
-}
-
-@media (min-width: 1200px) {
-  .mobile-menu-btn {
-    width: 44px;
-    height: 44px;
-  }
-}
-
-.mobile-menu-btn svg {
-  width: 28px;
-  height: 28px;
-  stroke-width: 2.5;
-}
-
-@media (min-width: 768px) {
-  .mobile-menu-btn svg {
-    width: 24px; /* Giảm từ 32px */
-    height: 24px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .mobile-menu-btn svg {
-    width: 20px;
-    height: 20px;
-  }
-}
-
-@media (min-width: 1200px) {
-  .mobile-menu-btn svg {
-    width: 20px;
-    height: 20px;
-  }
-}
-
-/* Header logo - Adjusted alignment with sidebar */
-.header-logo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-  justify-content: center;
-  max-width: 200px;
-  margin: 0 auto;
-}
-
-@media (min-width: 768px) {
-  .header-logo {
-    justify-content: flex-start;
-    margin: 0;
-    margin-left: 16px;
-    gap: 12px;
-    max-width: none;
-  }
-}
-
-@media (min-width: 1024px) {
-  .header-logo {
-    margin-left: 0; /* Sát bên trái */
-    gap: 16px;
-    flex: none; /* Không chiếm space, để user info có thể về sát bên phải */
-  }
-}
-
-.header-logo i {
-  font-size: 32px; /* Lớn hơn trên mobile */
-  flex-shrink: 0;
-}
-
-@media (min-width: 768px) {
-  .header-logo i {
-    font-size: 30px; /* Giảm từ 40px */
-  }
-}
-
-@media (min-width: 1024px) {
-  .header-logo i {
-    font-size: 28px; /* Giảm từ 48px về kích thước vừa phải */
-  }
-}
-
-@media (min-width: 1200px) {
-  .header-logo i {
-    font-size: 28px; /* Giữ kích thước nhỏ gọn */
-  }
-}
-
-@media (min-width: 1440px) {
-  .header-logo i {
-    font-size: 28px; /* Giữ kích thước nhỏ gọn */
-  }
-}
-
-.header-logo span {
-  font-size: 24px; /* Lớn hơn trên mobile */
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
-}
-
-@media (min-width: 768px) {
-  .header-logo span {
-    font-size: 22px; /* Giảm từ 28px */
-    font-weight: 800;
-  }
-}
-
-@media (min-width: 1024px) {
-  .header-logo span {
-    font-size: 20px; /* Giảm từ 32px về kích thước vừa phải */
-  }
-}
-
-@media (min-width: 1200px) {
-  .header-logo span {
-    font-size: 20px; /* Giữ kích thước nhỏ gọn */
-  }
-}
-
-@media (min-width: 1440px) {
-  .header-logo span {
-    font-size: 20px; /* Giữ kích thước nhỏ gọn */
-  }
-}
-
-/* Header user info - VnExpress compact style */
-.header-user-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-@media (min-width: 768px) {
-  .header-user-info {
-    gap: 12px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .header-user-info {
-    gap: 16px;
-  }
-}
-
-.user-text-info {
-  text-align: right;
-  font-size: 14px; /* Lớn hơn trên mobile */
-  line-height: 1.2;
-  display: none;
-}
-
-@media (min-width: 640px) {
-  .user-text-info {
-    display: block;
-    font-size: 14px; /* Giảm từ 16px */
-  }
-}
-
-@media (min-width: 1024px) {
-  .user-text-info {
-    font-size: 13px; /* Giảm từ 18px về kích thước vừa phải */
-  }
-}
-
-@media (min-width: 1200px) {
-  .user-text-info {
-    font-size: 13px; /* Giữ kích thước nhỏ gọn */
-  }
-}
-
-@media (min-width: 1440px) {
-  .user-text-info {
-    font-size: 13px; /* Giữ kích thước nhỏ gọn */
-  }
-}
-
-.user-text-info .username {
-  font-weight: 600;
-  margin-bottom: 2px;
-}
-
-.user-text-info .role {
-  opacity: 0.85;
-  font-size: 0.9em;
-}
-
-.user-avatar {
-  width: 48px; /* Lớn hơn trên mobile */
-  height: 48px;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  object-fit: cover;
-}
-
-@media (min-width: 768px) {
-  .user-avatar {
-    width: 44px; /* Giảm từ 56px */
-    height: 44px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .user-avatar {
-    width: 40px; /* Giảm từ 64px về kích thước vừa phải */
-    height: 40px;
-  }
-}
-
-@media (min-width: 1200px) {
-  .user-avatar {
-    width: 40px; /* Giữ kích thước nhỏ gọn */
-    height: 40px;
-  }
-}
-
-@media (min-width: 1440px) {
-  .user-avatar {
-    width: 40px; /* Giữ kích thước nhỏ gọn */
-    height: 40px;
-  }
-}
-
-.logout-btn {
-  padding: 10px 16px; /* Lớn hơn trên mobile */
-  font-size: 14px;
-  border-radius: 6px;
-  font-weight: 500;
-  white-space: nowrap;
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-@media (min-width: 768px) {
-  .logout-btn {
-    padding: 8px 16px; /* Giảm từ 12px 20px */
-    font-size: 13px; /* Giảm từ 16px */
-    min-height: 40px; /* Giảm từ 52px */
-    border-radius: 6px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .logout-btn {
-    padding: 8px 16px; /* Giảm từ 14px 24px về kích thước vừa phải */
-    font-size: 13px; /* Giảm từ 18px */
-    min-height: 40px; /* Giảm từ 60px */
-  }
-}
-
-@media (min-width: 1200px) {
-  .logout-btn {
-    padding: 8px 16px; /* Giữ kích thước nhỏ gọn */
-    font-size: 13px;
-    min-height: 40px;
-  }
-}
-
-@media (min-width: 1440px) {
-  .logout-btn {
-    padding: 8px 16px; /* Giữ kích thước nhỏ gọn */
-    font-size: 13px;
-    min-height: 40px;
-  }
-}
-
-/* ========== SIDEBAR RESPONSIVE LAYOUT ========== */
 .sidebar {
   background-color: var(--sidebar-bg);
   color: var(--sidebar-text);
-  padding: 1rem;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
-  width: 240px; /* Mobile width */
-  transition: all 0.3s ease;
+  scrollbar-color: rgba(255,255,255,0.3) transparent;
+  transition: all 0.3s;
 }
 
-@media (min-width: 768px) {
-  .sidebar {
-    width: 260px; /* Giảm từ 280px */
-    padding: 0.75rem; /* Giảm từ 1rem */
-  }
-}
-
-@media (min-width: 1024px) {
-  .sidebar {
-    width: 260px; /* Giảm từ 320px */
-    padding: 0.75rem; /* Giảm từ 1rem để tiết kiệm không gian */
-  }
-}
-
-@media (min-width: 1440px) {
-  .sidebar {
-    width: 280px; /* Giảm từ 360px */
-    padding: 1rem; /* Giảm từ 1.25rem */
-  }
-}
-
-/* Desktop sidebar - Fit content height */
-.sidebar-desktop {
-  position: relative;
-  flex-shrink: 0;
-}
-
-/* Mobile sidebar positioning */
-.sidebar-mobile-open {
-  position: fixed;
-  top: 80px; /* Cập nhật t����� 100px xuống 80px để khớp với header mobile */
-  left: 0;
-  height: calc(100vh - 80px);
-  z-index: 50;
-  transform: translateX(0);
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-}
-
-@media (min-width: 768px) {
-  .sidebar-mobile-open {
-    top: 72px; /* Cập nhật từ 120px xuống 72px để khớp với header tablet */
-    height: calc(100vh - 72px);
-  }
-}
-
-.sidebar-mobile-closed {
-  position: fixed;
-  top: 80px; /* Cập nhật từ 100px xuống 80px để khớp với header mobile */
-  left: 0;
-  height: calc(100vh - 80px);
-  z-index: 50;
-  transform: translateX(-100%);
-}
-
-@media (min-width: 768px) {
-  .sidebar-mobile-closed {
-    top: 72px; /* Cập nhật từ 120px xuống 72px để khớp với header tablet */
-    height: calc(100vh - 72px);
-  }
-}
-
-/* ========== SIDEBAR LINKS STYLING ========== */
-.sidebar-link {
+.sidebar-link, .dropdown-item {
   display: flex;
   align-items: center;
-  padding: 0.75rem 1rem;
-  color: rgba(255, 255, 255, 0.9);
-  background: rgba(255, 255, 255, 0.05);
-  border: none;
-  text-decoration: none;
-  margin: 0.25rem 0;
+  color: rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.05);
   border-radius: 0.5rem;
-  font-size: 0.875rem; /* Mobile */
-  transition: all 0.2s ease;
+  transition: all 0.2s;
   cursor: pointer;
-  width: 100%;
   text-align: left;
   white-space: nowrap;
-  overflow: visible;
   justify-content: flex-start;
 }
-
-@media (min-width: 768px) {
-  .sidebar-link {
-    padding: 0.75rem 1rem; /* Giảm từ 1rem 1.25rem */
-    margin: 0.25rem 0; /* Giảm từ 0.375rem */
-    font-size: 0.9rem; /* Giảm từ 1rem */
-  }
-}
-
-@media (min-width: 1024px) {
-  .sidebar-link {
-    padding: 0.625rem 1rem; /* Giảm đáng kể từ 1.25rem 1.5rem */
-    margin: 0.2rem 0; /* Giảm từ 0.5rem để tiết kiệm không gian */
-    font-size: 0.875rem; /* Giảm từ 1.125rem */
-  }
-}
-
-@media (min-width: 1440px) {
-  .sidebar-link {
-    padding: 0.75rem 1.25rem; /* Giảm từ 1.5rem 1.75rem */
-    margin: 0.25rem 0; /* Giảm từ 0.625rem */
-    font-size: 0.95rem; /* Giảm từ 1.25rem */
-  }
-}
-
-.sidebar-link:hover {
-  background: rgba(255, 255, 255, 0.1) !important;
+.sidebar-link:hover, .dropdown-item:hover {
+  background: rgba(255,255,255,0.1) !important;
   color: #fff !important;
   transform: translateX(4px);
 }
-
-.sidebar-link.active {
+.sidebar-link.active, .dropdown-item-active {
   background: #fff !important;
   color: var(--color-secondary) !important;
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(255, 111, 97, 0.3);
+  box-shadow: 0 2px 8px rgba(255,111,97,0.3);
 }
-
-.sidebar-link i {
-  margin-right: 0.75rem;
-  width: 16px;
-  text-align: center;
-  flex-shrink: 0;
-  font-size: 1em;
-}
-
-@media (min-width: 768px) {
-  .sidebar-link i {
-    margin-right: 1rem;
-    width: 20px;
-    font-size: 1.125em;
-  }
-}
-
-@media (min-width: 1024px) {
-  .sidebar-link i {
-    margin-right: 1.25rem;
-    width: 24px;
-    font-size: 1.25em;
-  }
-}
-
-@media (min-width: 1440px) {
-  .sidebar-link i {
-    margin-right: 1.5rem;
-    width: 28px;
-    font-size: 1.375em;
-  }
-}
-
-/* Specific styling for dropdown buttons */
-.sidebar-link.w-full {
-  justify-content: space-between;
-}
-
-.sidebar-link.w-full > div {
-  display: flex;
-  align-items: center;
-  flex: 1;
-  min-width: 0;
-  white-space: nowrap;
-}
-
-.sidebar-link.w-full > div > span {
-  white-space: nowrap;
-  overflow: visible;
-  text-overflow: unset;
-}
-
-/* Main dropdown button improvements */
-.sidebar button.sidebar-link {
-  white-space: nowrap;
-  overflow: visible;
-}
-
-.sidebar button.sidebar-link span.flex {
-  display: flex;
-  align-items: center;
-  min-width: 0;
-  flex: 1;
-  white-space: nowrap;
-}
-
-.sidebar button.sidebar-link span.truncate {
-  overflow: visible;
-  text-overflow: unset;
-  white-space: nowrap;
-}
-
-/* Dropdown items styling */
-.dropdown-item {
-  color: rgba(255, 255, 255, 0.8);
-  background: rgba(255, 255, 255, 0.05);
-  border: none;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  margin: 0.15rem 0;
-  border-radius: 0.5rem;
-  font-size: 0.8rem; /* Mobile */
-  transition: all 0.2s ease;
-  white-space: nowrap;
-  padding: 0.5rem 1rem;
-}
-
-@media (min-width: 768px) {
-  .dropdown-item {
-    font-size: 0.85rem; /* Giảm từ 0.9rem */
-    padding: 0.5rem 1rem; /* Giảm từ 0.75rem 1.25rem */
-    margin: 0.15rem 0; /* Giảm từ 0.25rem */
-  }
-}
-
-@media (min-width: 1024px) {
-  .dropdown-item {
-    font-size: 0.8rem; /* Giảm từ 1rem để tiết kiệm không gian */
-    padding: 0.5rem 1rem; /* Giảm từ 1rem 1.5rem */
-    margin: 0.15rem 0; /* Giảm từ 0.375rem */
-  }
-}
-
-@media (min-width: 1440px) {
-  .dropdown-item {
-    font-size: 0.85rem; /* Giảm từ 1.125rem */
-    padding: 0.6rem 1.25rem; /* Giảm từ 1.25rem 1.75rem */
-    margin: 0.2rem 0; /* Giảm từ 0.5rem */
-  }
-}
-
-.dropdown-item:hover {
-  background: rgba(255, 255, 255, 0.1) !important;
-  color: #fff !important;
-}
-
-.dropdown-item-active {
-  background: #fff !important;
-  color: var(--color-secondary) !important;
-  font-weight: 600;
-  box-shadow: 0 2px 8px rgba(255, 111, 97, 0.3);
-}
-
-/* Sidebar divider */
 .sidebar-divider {
   border: none;
   height: 1px;
-  background: rgba(255, 255, 255, 0.2);
-  margin: 1rem 0;
+  background: rgba(255,255,255,0.2);
+  margin: 2rem 0;
 }
 
-@media (min-width: 768px) {
-  .sidebar-divider {
-    margin: 1.5rem 0;
-  }
-}
-
-@media (min-width: 1024px) {
-  .sidebar-divider {
-    margin: 2rem 0;
-  }
-}
-
-/* ========== MAIN CONTENT RESPONSIVE ========== */
-.main-content {
-  flex: 1;
-  background: var(--color-background-main);
-  transition: all 0.3s ease;
-  padding: 1rem; /* Mobile */
-}
-
-@media (min-width: 768px) {
-  .main-content {
-    padding: 1.5rem 2rem; /* Tablet */
-  }
-}
-
-@media (min-width: 1024px) {
-  .main-content {
-    padding: 2rem 3rem; /* Desktop */
-  }
-}
-
-@media (min-width: 1440px) {
-  .main-content {
-    padding: 3rem 4rem; /* Large desktop */
-  }
-}
-
-.main-content-desktop {
-  /* Let responsive padding handle this */
-}
-
-.main-content-mobile {
-  width: 100%;
-  /* Let responsive padding handle this */
-}
-
-/* Content wrapper for better control */
-.main-content > div {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-}
-
-/* Welcome message responsive */
-.main-content h2 {
-  font-size: 1.75rem !important;
-  margin-bottom: 1rem;
-}
-
-@media (min-width: 768px) {
-  .main-content h2 {
-    font-size: 2.5rem !important;
-  }
-}
-
-@media (min-width: 1024px) {
-  .main-content h2 {
-    font-size: 3rem !important;
-  }
-}
-
-.main-content p {
-  font-size: 1rem;
-}
-
-@media (min-width: 768px) {
-  .main-content p {
-    font-size: 1.125rem;
-  }
-}
-
-/* ========== FOOTER IMPROVEMENTS ========== */
-.main-footer {
+.main-footer, footer {
   background: var(--color-background-main);
   border-top: 1px solid #e0d6d0;
-  padding: 0;
   flex-shrink: 0;
-  margin-top: auto; /* Push footer to bottom */
-}
-
-.footer-content {
-  padding: 1rem 1rem; /* Mobile */
+  margin-top: auto;
   text-align: center;
-  font-size: 0.875rem;
+  font-size: 0.8rem;
 }
-
 @media (min-width: 768px) {
-  .footer-content {
+  .main-footer, footer {
     text-align: right;
-    padding: 1.5rem 2rem; /* Tablet */
     font-size: 1rem;
   }
 }
-
-@media (min-width: 1024px) {
-  .footer-content {
-    padding: 2rem 3rem; /* Desktop */
-    font-size: 1.125rem;
-  }
-}
-
-@media (min-width: 1440px) {
-  .footer-content {
-    padding: 2.5rem 4rem; /* Large desktop */
-    font-size: 1.25rem;
-  }
-}
-
 .main-footer-link {
   color: var(--color-primary);
   text-decoration: none;
   transition: color 0.2s;
   font-weight: 500;
 }
-
 .main-footer-link:hover {
   color: var(--color-secondary);
 }
+
+/* Chặn các set cứng padding, margin, width, height, font-size cho layout, header, sidebar, ... ở dưới */
+.layout-root, .layout-page, .layout-main, .main-content, .main-content-desktop, .main-content-mobile,
+.header-content, .header-logo, .header-user-info, .user-text-info, .user-avatar, .logout-btn,
+.sidebar-desktop, .sidebar-mobile-open, .sidebar-mobile-closed
+{
+  all: unset;
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+}
+
+@media (max-width: 1024px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 50;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    transform: translateX(-100%);
+    transition: transform 0.3s;
+  }
+}
+@media (min-width: 1024px) {
+  .sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    z-index: 40;
+    box-shadow: none;
+    transform: none;
+  }
+}
+

@@ -8,75 +8,68 @@
     <meta charset="UTF-8"/>
     <title>Quản lý hàng hóa</title>
     <style>
-        /* Hover effects for buttons */
         .hover-lift {
           transition: transform 0.2s ease-in-out;
         }
-
         .hover-lift:hover {
           transform: translateY(-2px);
         }
-
-        /* Badge animation */
         .badge-animate {
           animation: pulse 2s infinite;
         }
-
         @keyframes pulse {
-          0% {
-            transform: scale(1);
-          }
-          50% {
-            transform: scale(1.05);
-          }
-          100% {
-            transform: scale(1);
-          }
+          0% { transform: scale(1);}
+          50% { transform: scale(1.05);}
+          100% { transform: scale(1);}
         }
     </style>
 </head>
 <body>
 <div
         layout:fragment="content"
-        class="bg-[#fefae0] min-h-screen w-full px-6 py-8"
+        class="bg-[#fefae0] min-h-screen w-full px-2 xs:px-4 sm:px-6 py-4 sm:py-8"
 >
     <div class="max-w-[1500px] mx-auto">
-        <div class="bg-white rounded-xl shadow-lg p-6">
+        <div class="bg-white rounded-xl shadow-lg p-3 xs:p-4 sm:p-6">
             <!-- Tiêu đề + nút thêm -->
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-3xl font-bold text-[#3e2723]">
-                    Danh sách hàng hóa
-                </h2>
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-4 sm:mb-6">
+                <h2 class="text-xl xs:text-2xl sm:text-3xl font-bold text-[#3e2723]">Danh sách hàng hóa</h2>
                 <a
                         th:href="@{/warehouse/product/create}"
-                        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg shadow transition-colors duration-200 hover-lift"
+                        class="w-full md:w-auto flex justify-center items-center bg-blue-600 hover:bg-blue-700 text-white font-semibold text-base px-4 py-2 md:px-6 md:h-[48px] rounded shadow mt-2 md:mt-0 text-center hover-lift"
                 >
                     Thêm hàng hóa
                 </a>
             </div>
 
             <!-- Form tìm kiếm -->
-            <div class="mb-6">
+            <div class="mb-4 sm:mb-6">
                 <form
                         th:action="@{/warehouse/product}"
                         method="get"
-                        class="flex gap-3"
+                        class="flex flex-col sm:flex-row md:flex-row md:items-center md:gap-2 md:flex-1"
                 >
-                    <div class="flex-1 relative">
-                        <input
-                                type="text"
-                                name="keyword"
-                                id="searchProductInput"
-                                th:value="${param.keyword}"
-                                placeholder="Tìm kiếm theo tên hàng hóa..."
-                                class="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                        />
-                    </div>
+                    <input
+                            type="text"
+                            name="keyword"
+                            id="searchProductInput"
+                            th:value="${param.keyword}"
+                            placeholder="Tìm kiếm theo tên hàng hóa..."
+                            class="w-full px-3 py-2 mb-2 sm:mb-0 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm md:text-base md:h-[48px] md:flex-1"
+                    />
                     <button
                             type="submit"
-                            class="bg-green-600 hover:bg-green-700 text-white font-medium px-6 py-2 rounded-lg shadow transition"
+                            class="bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-lg shadow transition text-sm md:text-base md:px-6 md:h-[48px] flex justify-center items-center md:ml-2"
                     >
-                        🔍 Tìm kiếm
+                        <span class="inline-flex items-center gap-1">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" stroke-width="2"
+                                      stroke-linecap="round"/>
+                            </svg>
+                            <span class="hidden md:inline">Tìm kiếm</span>
+                            <span class="md:hidden">Tìm kiếm</span>
+                        </span>
                     </button>
                 </form>
                 <!-- Breadcrumb khi đang tìm kiếm -->
@@ -84,65 +77,86 @@
                         th:if="${param.keyword != null and param.keyword[0] != null and !param.keyword[0].isEmpty()}"
                         class="mt-2"
                 >
-              <span class="text-sm text-gray-600">
-                Kết quả tìm kiếm cho: "<span
-                      th:text="${param.keyword[0]}"
-                      class="font-semibold text-blue-600"
-              ></span
-              >" •
-                <a
-                        th:href="@{/warehouse/product}"
-                        class="text-blue-600 hover:text-blue-800 underline"
-                >Xem tất cả hàng hóa</a
-                >
-              </span>
+                  <span class="text-xs sm:text-sm text-gray-600">
+                    Kết quả tìm kiếm cho: "<span
+                          th:text="${param.keyword[0]}"
+                          class="font-semibold text-blue-600"
+                  ></span
+                  >" •
+                    <a
+                            th:href="@{/warehouse/product}"
+                            class="text-blue-600 hover:text-blue-800 underline"
+                    >Xem tất cả hàng hóa</a
+                    >
+                  </span>
                 </div>
             </div>
-            <!-- Bảng danh sách hàng hóa -->
-            <div
-                    class="overflow-x-auto border border-gray-300 rounded-xl shadow bg-white"
-            >
-                <table class="w-full text-sm text-gray-800 table-fixed">
-                    <thead
-                            class="bg-[#FFF8E1] text-xs font-semibold text-gray-700 uppercase"
-                    >
+
+            <!-- Card responsive: chỉ hiện ở mobile (sm:hidden) -->
+            <div class="sm:hidden space-y-2 mb-2">
+                <div th:each="product : ${products.products}"
+                     class="bg-white rounded-lg shadow border border-gray-200 p-3 flex flex-col gap-1">
+                    <div>
+                        <span class="block text-xs font-semibold text-gray-400">Tên hàng hóa</span>
+                        <span class="font-medium text-[#3e2723]" th:text="${product.productName}"></span>
+                    </div>
+                    <div>
+                        <span class="block text-xs font-semibold text-gray-400">Số lượng</span>
+                        <span th:text="${product.quantity}"></span>
+                    </div>
+                    <div>
+                        <span class="block text-xs font-semibold text-gray-400">Đơn vị</span>
+                        <span th:text="${product.unitName}"></span>
+                    </div>
+                    <div class="flex gap-2 mt-2">
+                        <a th:href="@{'/warehouse/product/update/' + ${product.id}}"
+                           class="bg-yellow-400 hover:bg-yellow-500 text-white text-xs font-medium px-3 py-1.5 rounded shadow text-center w-full">Sửa</a>
+                        <form th:action="@{/warehouse/product/delete/{id}(id=${product.id})}" method="post"
+                              th:id="'deleteForm-' + ${product.id}" class="w-full">
+                            <button type="button" th:attr="data-id=${product.id},data-name=${product.productName}"
+                                    class="btn-delete bg-red-500 hover:bg-red-600 text-white text-xs font-medium px-3 py-1.5 rounded shadow w-full">
+                                Xóa
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <!-- Nếu không có hàng hóa -->
+                <div th:if="${products.products.size() == 0}"
+                     class="text-center text-gray-500 italic py-6 bg-white rounded shadow">
+                    Không có hàng hóa nào.
+                </div>
+            </div>
+
+            <!-- Table responsive: chỉ hiện ở sm trở lên -->
+            <div class="hidden sm:block overflow-x-auto border border-gray-300 rounded-xl shadow bg-white mb-2">
+                <table class="w-full text-sm text-gray-800 table-fixed min-w-[480px]">
+                    <thead class="bg-[#FFF8E1] text-xs font-semibold text-gray-700 uppercase">
                     <tr>
-                        <th class="w-[30%] px-4 py-3 text-left">Tên</th>
-                        <th class="w-[20%] px-4 py-3 text-left">Số lượng</th>
-                        <th class="w-[20%] px-4 py-3 text-left">Đơn vị</th>
-                        <th class="w-[30%] px-4 py-3 text-center">Thao Tác</th>
+                        <th class="w-[30%] px-2 sm:px-4 py-2 sm:py-3 text-left">Tên</th>
+                        <th class="w-[20%] px-2 sm:px-4 py-2 sm:py-3 text-left">Số lượng</th>
+                        <th class="w-[20%] px-2 sm:px-4 py-2 sm:py-3 text-left">Đơn vị</th>
+                        <th class="w-[30%] px-2 sm:px-4 py-2 sm:py-3 text-center">Thao Tác</th>
                     </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200">
-                    <!-- Dữ liệu động từ backend -->
                     <tr
                             th:each="product, stat : ${products.products}"
                             class="hover:bg-[#f9f9f9] transition"
                     >
-                        <td
-                                class="px-4 py-3 font-medium"
-                                th:text="${product.productName}"
-                        ></td>
-                        <td class="px-4 py-3" th:text="${product.quantity}"></td>
-                        <td class="px-4 py-3" th:text="${product.unitName}"></td>
-                        <td class="px-4 py-3">
+                        <td class="px-2 sm:px-4 py-2 sm:py-3 font-medium" th:text="${product.productName}"></td>
+                        <td class="px-2 sm:px-4 py-2 sm:py-3" th:text="${product.quantity}"></td>
+                        <td class="px-2 sm:px-4 py-2 sm:py-3" th:text="${product.unitName}"></td>
+                        <td class="px-2 sm:px-4 py-2 sm:py-3">
                             <div class="flex justify-center gap-2">
-                                <a
-                                        th:href="@{'/warehouse/product/update/' + ${product.id}}"
-                                        class="bg-yellow-400 hover:bg-yellow-500 text-white text-xs font-medium px-3 py-1.5 rounded shadow"
-                                >
+                                <a th:href="@{'/warehouse/product/update/' + ${product.id}}"
+                                   class="bg-yellow-400 hover:bg-yellow-500 text-white text-xs font-medium px-3 py-1.5 rounded shadow">
                                     Sửa
                                 </a>
-                                <form
-                                        th:action="@{/warehouse/product/delete/{id}(id=${product.id})}"
-                                        method="post"
-                                        th:id="'deleteForm-' + ${product.id}"
-                                >
-                                    <button
-                                            type="button"
+                                <form th:action="@{/warehouse/product/delete/{id}(id=${product.id})}" method="post"
+                                      th:id="'deleteForm-' + ${product.id}">
+                                    <button type="button"
                                             th:attr="data-id=${product.id},data-name=${product.productName}"
-                                            class="btn-delete bg-red-500 hover:bg-red-600 text-white text-xs font-medium px-3 py-1.5 rounded shadow transition"
-                                    >
+                                            class="btn-delete bg-red-500 hover:bg-red-600 text-white text-xs font-medium px-3 py-1.5 rounded shadow transition">
                                         Xóa
                                     </button>
                                 </form>
@@ -159,19 +173,12 @@
             </div>
 
             <!-- Phân trang cho hàng hóa -->
-            <div
-                    class="flex items-center justify-between mt-6 text-sm text-gray-600"
-            >
+            <div class="flex flex-col xs:flex-row items-center justify-between mt-4 sm:mt-6 text-xs sm:text-sm text-gray-600 gap-2">
                 <div>
-              <span
-              >Trang <span th:text="${products.pageNumber + 1}"></span> /
-                <span th:text="${products.totalPages}"></span
-                ></span>
+                  <span>Trang <span th:text="${products.pageNumber + 1}"></span> /
+                    <span th:text="${products.totalPages}"></span></span>
                     |
-                    <span
-                    >Tổng: <span th:text="${products.totalElements}"></span> hàng
-                hóa</span
-                    >
+                    <span>Tổng: <span th:text="${products.totalElements}"></span> hàng hóa</span>
                 </div>
                 <nav th:if="${products.totalPages > 1}">
                     <ul class="inline-flex items-center gap-1">
@@ -180,24 +187,20 @@
                             <a
                                     th:if="${products.pageNumber == 0}"
                                     href="#"
-                                    class="px-3 py-1.5 rounded border transition text-gray-300 border-gray-300 bg-gray-100 cursor-not-allowed pointer-events-none"
-                            >Trước</a
-                            >
+                                    class="px-2 sm:px-3 py-1.5 rounded border transition text-gray-300 border-gray-300 bg-gray-100 cursor-not-allowed pointer-events-none"
+                            >Trước</a>
                             <a
                                     th:if="${products.pageNumber > 0}"
                                     th:href="@{/warehouse/product(page=${products.pageNumber - 1},keyword=${param.keyword})}"
-                                    class="px-3 py-1.5 rounded border transition text-gray-700 border-gray-300 bg-white hover:bg-gray-100"
-                            >Trước</a
-                            >
+                                    class="px-2 sm:px-3 py-1.5 rounded border transition text-gray-700 border-gray-300 bg-white hover:bg-gray-100"
+                            >Trước</a>
                         </li>
                         <!-- Trang -->
-                        <li
-                                th:each="pageNum : ${#numbers.sequence(1, products.totalPages)}"
-                        >
+                        <li th:each="pageNum : ${#numbers.sequence(1, products.totalPages)}">
                             <a
                                     th:href="@{/warehouse/product(page=${pageNum - 1},keyword=${param.keyword})}"
                                     th:classappend="${products.pageNumber + 1 == pageNum} ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'"
-                                    class="px-3 py-1.5 rounded border text-sm font-medium transition"
+                                    class="px-2 sm:px-3 py-1.5 rounded border text-xs sm:text-sm font-medium transition"
                             >
                                 <span th:text="${pageNum}"></span>
                             </a>
@@ -207,15 +210,13 @@
                             <a
                                     th:if="${products.pageNumber + 1 >= products.totalPages}"
                                     href="#"
-                                    class="px-3 py-1.5 rounded border transition text-gray-300 border-gray-300 bg-gray-100 cursor-not-allowed pointer-events-none"
-                            >Tiếp</a
-                            >
+                                    class="px-2 sm:px-3 py-1.5 rounded border transition text-gray-300 border-gray-300 bg-gray-100 cursor-not-allowed pointer-events-none"
+                            >Tiếp</a>
                             <a
                                     th:if="${products.pageNumber + 1 < products.totalPages}"
                                     th:href="@{/warehouse/product(page=${products.pageNumber + 1},keyword=${param.keyword})}"
-                                    class="px-3 py-1.5 rounded border transition text-gray-700 border-gray-300 bg-white hover:bg-gray-100"
-                            >Tiếp</a
-                            >
+                                    class="px-2 sm:px-3 py-1.5 rounded border transition text-gray-700 border-gray-300 bg-white hover:bg-gray-100"
+                            >Tiếp</a>
                         </li>
                     </ul>
                 </nav>

@@ -8,55 +8,36 @@
     <meta charset="UTF-8"/>
     <title>Quản lý giao dịch nhập xuất</title>
     <style>
-        /* Hover effects for buttons */
-        .hover-lift {
-          transition: transform 0.2s ease-in-out;
-        }
-
-        .hover-lift:hover {
-          transform: translateY(-2px);
-        }
-
-        /* Badge animation */
-        .badge-animate {
-          animation: pulse 2s infinite;
-        }
-
+        .hover-lift { transition: transform 0.2s ease-in-out; }
+        .hover-lift:hover { transform: translateY(-2px);}
+        .badge-animate { animation: pulse 2s infinite; }
         @keyframes pulse {
-          0% {
-            transform: scale(1);
-          }
-          50% {
-            transform: scale(1.05);
-          }
-          100% {
-            transform: scale(1);
-          }
+          0% { transform: scale(1);}
+          50% { transform: scale(1.05);}
+          100% { transform: scale(1);}
         }
     </style>
 </head>
 <body>
 <div
         layout:fragment="content"
-        class="bg-[#fefae0] min-h-screen w-full px-6 py-8"
+        class="bg-[#fefae0] min-h-screen w-full px-2 xs:px-4 sm:px-6 py-4 sm:py-8"
 >
     <div class="max-w-[1500px] mx-auto">
-        <div class="bg-white rounded-xl shadow-lg p-6">
+        <div class="bg-white rounded-xl shadow-lg p-3 xs:p-4 sm:p-6">
             <!-- Tiêu đề + nút thêm -->
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-3xl font-bold text-[#3e2723]">
-                    Danh sách Giao Dịch Nhập Xuất
-                </h2>
-                <div class="flex gap-2">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-4 sm:mb-6">
+                <h2 class="text-xl xs:text-2xl sm:text-3xl font-bold text-[#3e2723]">Danh sách Giao Dịch Nhập Xuất</h2>
+                <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto mt-2 md:mt-0">
                     <a
                             th:href="@{/warehouse/transaction/import/create}"
-                            class="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg shadow transition-colors duration-200 hover-lift"
+                            class="w-full sm:w-auto flex justify-center items-center bg-green-600 hover:bg-green-700 text-white font-semibold text-base px-4 py-2 md:px-6 md:h-[48px] rounded shadow hover-lift text-center"
                     >
                         Thêm Đơn Nhập
                     </a>
                     <a
                             th:href="@{/warehouse/transaction/export/create}"
-                            class="bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2 rounded-lg shadow transition-colors duration-200 hover-lift"
+                            class="w-full sm:w-auto flex justify-center items-center bg-red-600 hover:bg-red-700 text-white font-semibold text-base px-4 py-2 md:px-6 md:h-[48px] rounded shadow hover-lift text-center"
                     >
                         Thêm Đơn Xuất
                     </a>
@@ -64,112 +45,129 @@
             </div>
 
             <!-- Form tìm kiếm -->
-            <div class="mb-6">
+            <div class="mb-4 sm:mb-6">
                 <form
                         th:action="@{/warehouse/transaction}"
                         method="get"
-                        class="flex gap-3"
+                        class="flex flex-col sm:flex-row md:flex-row md:items-center md:gap-2 md:flex-1"
                 >
-                    <div class="flex-1 relative">
-                        <input
-                                type="text"
-                                name="keyword"
-                                id="searchTransactionInput"
-                                th:value="${keyword}"
-                                placeholder="Tìm kiếm theo tên hàng hóa..."
-                                class="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                        />
-                        <!-- Nút X để xóa -->
-                        <button
-                                type="button"
-                                id="clearTransactionBtn"
-                                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
-                                style="display: none"
-                        >
-                            ✕
-                        </button>
-                    </div>
+                    <input
+                            type="text"
+                            name="keyword"
+                            id="searchTransactionInput"
+                            th:value="${keyword}"
+                            placeholder="Tìm kiếm theo tên hàng hóa..."
+                            class="w-full px-3 py-2 mb-2 sm:mb-0 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm md:text-base md:h-[48px] md:flex-1"
+                    />
                     <button
                             type="submit"
-                            class="bg-green-600 hover:bg-green-700 text-white font-medium px-6 py-2 rounded-lg shadow transition-colors duration-200"
+                            class="bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-lg shadow transition text-sm md:text-base md:px-6 md:h-[48px] flex justify-center items-center md:ml-2"
                     >
-                        🔍 Tìm kiếm
+                        <span class="inline-flex items-center gap-1">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" stroke-width="2"
+                                      stroke-linecap="round"/>
+                            </svg>
+                            <span class="hidden md:inline">Tìm kiếm</span>
+                            <span class="md:hidden">Tìm kiếm</span>
+                        </span>
                     </button>
                 </form>
-
                 <!-- Breadcrumb khi đang tìm kiếm -->
                 <div th:if="${keyword != null and !keyword.isEmpty()}" class="mt-2">
-              <span class="text-sm text-gray-600">
-                Kết quả tìm kiếm cho: "<span
-                      th:text="${keyword}"
-                      class="font-semibold text-blue-600"
-              ></span
-              >" •
-                <a
-                        th:href="@{/warehouse/transaction}"
-                        class="text-blue-600 hover:text-blue-800 underline"
-                >Xem tất cả giao dịch</a
-                >
-              </span>
+                  <span class="text-xs sm:text-sm text-gray-600">
+                    Kết quả tìm kiếm cho: "<span
+                          th:text="${keyword}"
+                          class="font-semibold text-blue-600"
+                  ></span
+                  >" •
+                    <a
+                            th:href="@{/warehouse/transaction}"
+                            class="text-blue-600 hover:text-blue-800 underline"
+                    >Xem tất cả giao dịch</a
+                    >
+                  </span>
                 </div>
             </div>
 
-            <!-- Bảng danh sách giao dịch -->
-            <div
-                    class="overflow-x-auto border border-gray-300 rounded-xl shadow bg-white"
-            >
-                <table class="w-full text-sm text-gray-800">
-                    <thead
-                            class="bg-[#FFF8E1] text-xs font-semibold text-gray-700 uppercase"
-                    >
+            <!-- Card responsive: chỉ hiện ở mobile (sm:hidden) -->
+            <div class="sm:hidden space-y-2 mb-2">
+                <div th:each="transaction : ${transactions.transactions}"
+                     class="bg-white rounded-lg shadow border border-gray-200 p-3 flex flex-col gap-1">
+                    <div>
+                        <span class="block text-xs font-semibold text-gray-400">Tên</span>
+                        <span class="font-medium text-[#3e2723]" th:text="${transaction.productName}"></span>
+                    </div>
+                    <div>
+                        <span class="block text-xs font-semibold text-gray-400">Loại</span>
+                        <span th:if="${transaction.type == 'IMPORT'}"
+                              class="inline-block px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 whitespace-nowrap">Nhập</span>
+                        <span th:if="${transaction.type == 'EXPORT'}"
+                              class="inline-block px-2 py-1 text-xs rounded-full bg-red-100 text-red-800 whitespace-nowrap">Xuất</span>
+                    </div>
+                    <div>
+                        <span class="block text-xs font-semibold text-gray-400">Ngày</span>
+                        <span th:text="${#temporals.format(transaction.importDate != null ? transaction.importDate : transaction.exportDate, 'dd/MM/yyyy')}"></span>
+                    </div>
+                    <div>
+                        <span class="block text-xs font-semibold text-gray-400">Số lượng</span>
+                        <span th:text="${transaction.quantity}"></span>
+                    </div>
+                    <div>
+                        <span class="block text-xs font-semibold text-gray-400">Đơn vị</span>
+                        <span th:text="${transaction.unitName}"></span>
+                    </div>
+                    <div>
+                        <span class="block text-xs font-semibold text-gray-400">Đơn giá</span>
+                        <span th:text="${#numbers.formatInteger(transaction.unitPrice, 0, 'COMMA')} + ' đ'"></span>
+                    </div>
+                    <div>
+                        <span class="block text-xs font-semibold text-gray-400">Thành tiền</span>
+                        <span th:text="${#numbers.formatInteger(transaction.totalAmount, 0, 'COMMA')} + ' đ'"></span>
+                    </div>
+                </div>
+                <!-- Nếu không có giao dịch -->
+                <div th:if="${transactions.transactions.size() == 0}"
+                     class="text-center text-gray-500 italic py-6 bg-white rounded shadow">
+                    Không có giao dịch nào.
+                </div>
+            </div>
+
+            <!-- Table responsive: chỉ hiện ở sm trở lên -->
+            <div class="hidden sm:block overflow-x-auto border border-gray-300 rounded-xl shadow bg-white mb-2">
+                <table class="w-full text-sm text-gray-800 min-w-[480px]">
+                    <thead class="bg-[#FFF8E1] text-xs font-semibold text-gray-700 uppercase">
                     <tr>
-                        <th class="px-4 py-3 text-left min-w-[150px]">Tên</th>
-                        <th class="px-4 py-3 text-left min-w-[80px]">Loại</th>
-                        <th class="px-4 py-3 text-left min-w-[100px]">Ngày</th>
-                        <th class="px-4 py-3 text-left min-w-[80px]">Số lượng</th>
-                        <th class="px-4 py-3 text-left min-w-[60px]">Đơn vị</th>
-                        <th class="px-4 py-3 text-right min-w-[120px]">Đơn giá</th>
-                        <th class="px-4 py-3 text-right min-w-[120px]">Thành tiền</th>
+                        <th class="px-2 sm:px-4 py-2 sm:py-3 text-left min-w-[150px]">Tên</th>
+                        <th class="px-2 sm:px-4 py-2 sm:py-3 text-left min-w-[80px]">Loại</th>
+                        <th class="px-2 sm:px-4 py-2 sm:py-3 text-left min-w-[100px]">Ngày</th>
+                        <th class="px-2 sm:px-4 py-2 sm:py-3 text-left min-w-[80px]">Số lượng</th>
+                        <th class="px-2 sm:px-4 py-2 sm:py-3 text-left min-w-[60px]">Đơn vị</th>
+                        <th class="px-2 sm:px-4 py-2 sm:py-3 text-right min-w-[120px]">Đơn giá</th>
+                        <th class="px-2 sm:px-4 py-2 sm:py-3 text-right min-w-[120px]">Thành tiền</th>
                     </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200">
-                    <!-- Dữ liệu động từ backend -->
                     <tr
                             th:each="transaction, stat : ${transactions.transactions}"
                             class="hover:bg-[#f9f9f9] transition"
                     >
-                        <td
-                                class="px-4 py-3 font-medium"
-                                th:text="${transaction.productName}"
-                        ></td>
-                        <td class="px-4 py-3">
-                    <span
-                            th:if="${transaction.type == 'IMPORT'}"
-                            class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 whitespace-nowrap"
-                    >
-                      Nhập
-                    </span>
-                            <span
-                                    th:if="${transaction.type == 'EXPORT'}"
-                                    class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800 whitespace-nowrap"
-                            >
-                      Xuất
-                    </span>
+                        <td class="px-2 sm:px-4 py-2 sm:py-3 font-medium" th:text="${transaction.productName}"></td>
+                        <td class="px-2 sm:px-4 py-2 sm:py-3">
+                            <span th:if="${transaction.type == 'IMPORT'}"
+                                  class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 whitespace-nowrap">Nhập</span>
+                            <span th:if="${transaction.type == 'EXPORT'}"
+                                  class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800 whitespace-nowrap">Xuất</span>
                         </td>
-                        <td
-                                class="px-4 py-3 whitespace-nowrap"
-                                th:text="${#temporals.format(transaction.importDate != null ? transaction.importDate : transaction.exportDate, 'dd/MM/yyyy')}"
-                        ></td>
-                        <td class="px-4 py-3" th:text="${transaction.quantity}"></td>
-                        <td class="px-4 py-3" th:text="${transaction.unitName}"></td>
-                        <td
-                                class="px-4 py-3 text-right whitespace-nowrap"
-                                th:text="${#numbers.formatInteger(transaction.unitPrice, 0, 'COMMA')} + ' đ'"
-                        ></td>
-                        <td
-                                class="px-4 py-3 text-right whitespace-nowrap"
-                                th:text="${#numbers.formatInteger(transaction.totalAmount, 0, 'COMMA')} + ' đ'"
-                        ></td>
+                        <td class="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap"
+                            th:text="${#temporals.format(transaction.importDate != null ? transaction.importDate : transaction.exportDate, 'dd/MM/yyyy')}"></td>
+                        <td class="px-2 sm:px-4 py-2 sm:py-3" th:text="${transaction.quantity}"></td>
+                        <td class="px-2 sm:px-4 py-2 sm:py-3" th:text="${transaction.unitName}"></td>
+                        <td class="px-2 sm:px-4 py-2 sm:py-3 text-right whitespace-nowrap"
+                            th:text="${#numbers.formatInteger(transaction.unitPrice, 0, 'COMMA')} + ' đ'"></td>
+                        <td class="px-2 sm:px-4 py-2 sm:py-3 text-right whitespace-nowrap"
+                            th:text="${#numbers.formatInteger(transaction.totalAmount, 0, 'COMMA')} + ' đ'"></td>
                     </tr>
                     <tr th:if="${transactions.transactions.size() == 0}">
                         <td colspan="7" class="text-center py-6 text-gray-400">
@@ -181,19 +179,11 @@
             </div>
 
             <!-- Phân trang cho giao dịch -->
-            <div
-                    class="flex items-center justify-between mt-6 text-sm text-gray-600"
-            >
+            <div class="flex flex-col xs:flex-row items-center justify-between mt-4 sm:mt-6 text-xs sm:text-sm text-gray-600 gap-2">
                 <div class="flex items-center gap-4">
-              <span
-              >Trang <span th:text="${transactions.pageNumber + 1}"></span> /
-                <span th:text="${transactions.totalPages}"></span
-                ></span>
-                    <span
-                    >Tổng:
-                <span th:text="${transactions.totalElements}"></span> giao
-                dịch</span
-                    >
+                  <span>Trang <span th:text="${transactions.pageNumber + 1}"></span> /
+                    <span th:text="${transactions.totalPages}"></span></span>
+                    <span>Tổng: <span th:text="${transactions.totalElements}"></span> giao dịch</span>
                 </div>
                 <nav th:if="${transactions.totalPages > 1}">
                     <ul class="inline-flex items-center gap-1">
@@ -202,24 +192,20 @@
                             <a
                                     th:if="${transactions.pageNumber == 0}"
                                     href="#"
-                                    class="px-3 py-1.5 rounded border transition text-gray-300 border-gray-300 bg-gray-100 cursor-not-allowed pointer-events-none"
-                            >Trước</a
-                            >
+                                    class="px-2 sm:px-3 py-1.5 rounded border transition text-gray-300 border-gray-300 bg-gray-100 cursor-not-allowed pointer-events-none"
+                            >Trước</a>
                             <a
                                     th:if="${transactions.pageNumber > 0}"
                                     th:href="@{/warehouse/transaction(page=${transactions.pageNumber - 1},keyword=${keyword})}"
-                                    class="px-3 py-1.5 rounded border transition text-gray-700 border-gray-300 bg-white hover:bg-gray-100"
-                            >Trước</a
-                            >
+                                    class="px-2 sm:px-3 py-1.5 rounded border transition text-gray-700 border-gray-300 bg-white hover:bg-gray-100"
+                            >Trước</a>
                         </li>
                         <!-- Trang -->
-                        <li
-                                th:each="pageNum : ${#numbers.sequence(1, transactions.totalPages)}"
-                        >
+                        <li th:each="pageNum : ${#numbers.sequence(1, transactions.totalPages)}">
                             <a
                                     th:href="@{/warehouse/transaction(page=${pageNum - 1},keyword=${keyword})}"
                                     th:classappend="${transactions.pageNumber + 1 == pageNum} ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'"
-                                    class="px-3 py-1.5 rounded border text-sm font-medium transition"
+                                    class="px-2 sm:px-3 py-1.5 rounded border text-xs sm:text-sm font-medium transition"
                             >
                                 <span th:text="${pageNum}"></span>
                             </a>
@@ -229,15 +215,13 @@
                             <a
                                     th:if="${transactions.pageNumber + 1 >= transactions.totalPages}"
                                     href="#"
-                                    class="px-3 py-1.5 rounded border transition text-gray-300 border-gray-300 bg-gray-100 cursor-not-allowed pointer-events-none"
-                            >Tiếp</a
-                            >
+                                    class="px-2 sm:px-3 py-1.5 rounded border transition text-gray-300 border-gray-300 bg-gray-100 cursor-not-allowed pointer-events-none"
+                            >Tiếp</a>
                             <a
                                     th:if="${transactions.pageNumber + 1 < transactions.totalPages}"
                                     th:href="@{/warehouse/transaction(page=${transactions.pageNumber + 1},keyword=${keyword})}"
-                                    class="px-3 py-1.5 rounded border transition text-gray-700 border-gray-300 bg-white hover:bg-gray-100"
-                            >Tiếp</a
-                            >
+                                    class="px-2 sm:px-3 py-1.5 rounded border transition text-gray-700 border-gray-300 bg-white hover:bg-gray-100"
+                            >Tiếp</a>
                         </li>
                     </ul>
                 </nav>
@@ -253,39 +237,10 @@
       const searchTransactionInput = document.getElementById(
         'searchTransactionInput'
       );
-      const clearTransactionBtn = document.getElementById(
-        'clearTransactionBtn'
-      );
+
       const searchTransactionForm = searchTransactionInput
         ? searchTransactionInput.closest('form')
         : null;
-
-      // Show clear button if there's a keyword from server
-      if (searchTransactionInput && clearTransactionBtn) {
-        const hasKeyword =
-          searchTransactionInput.value &&
-          searchTransactionInput.value.trim() !== '';
-        clearTransactionBtn.style.display = hasKeyword ? 'block' : 'none';
-      }
-
-      // Clear transaction search
-      if (clearTransactionBtn) {
-        clearTransactionBtn.addEventListener('click', function (e) {
-          e.preventDefault();
-          searchTransactionInput.value = '';
-          clearTransactionBtn.style.display = 'none';
-          window.location.href = '/warehouse/transaction';
-        });
-      }
-
-      // Show/hide clear button on input
-      if (searchTransactionInput) {
-        searchTransactionInput.addEventListener('input', function () {
-          if (clearTransactionBtn) {
-            clearTransactionBtn.style.display =
-              this.value.trim() === '' ? 'none' : 'block';
-          }
-        });
 
         // Enter key to submit form
         searchTransactionInput.addEventListener('keypress', function (e) {

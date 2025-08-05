@@ -15,10 +15,16 @@
 >
     <div class="max-w-[1500px] mx-auto">
         <div class="bg-white rounded-xl shadow-lg p-3 xs:p-4 sm:p-6">
-            <!-- Tiêu đề -->
-            <h2 class="text-xl xs:text-2xl sm:text-3xl font-bold text-[#3e2723] mb-2 sm:mb-4">
-                Danh sách nhân viên
-            </h2>
+            <!-- Tiêu đề + nút thêm nhân viên -->
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-4 sm:mb-6">
+                <h2 class="text-xl xs:text-2xl sm:text-3xl font-bold text-[#3e2723]">Danh sách nhân viên</h2>
+                <a
+                        th:href="@{/employee/create}"
+                        class="w-full md:w-auto flex justify-center items-center bg-blue-600 hover:bg-blue-700 text-white font-semibold text-base px-4 py-2 md:px-6 md:h-[48px] rounded shadow mt-2 md:mt-0 text-center"
+                >
+                    Thêm nhân viên
+                </a>
+            </div>
             <!-- Action/search row: dọc ở mobile, ngang ở md+ với 3 ô cùng chiều cao -->
             <div class="flex flex-col md:flex-row md:items-center md:gap-4 mb-4 sm:mb-6">
                 <form th:action="@{/employee}" method="get"
@@ -30,7 +36,7 @@
                             id="searchInput"
                             th:value="${param.keyword}"
                             placeholder="Tìm kiếm theo tên nhân viên..."
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm md:text-base md:h-[48px] md:flex-1"
+                            class="w-full px-3 py-2 mb-2 sm:mb-0 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm md:text-base md:h-[48px] md:flex-1"
                     />
                     <!-- Tìm kiếm button -->
                     <button
@@ -49,13 +55,6 @@
             </span>
                     </button>
                 </form>
-                <!-- Thêm nhân viên button -->
-                <a
-                        th:href="@{/employee/create}"
-                        class="mt-2 md:mt-0 w-full md:w-auto flex justify-center items-center bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg shadow transition text-base md:text-base md:px-6 md:h-[48px] text-center md:ml-2"
-                >
-                    <span class="w-full text-center">Thêm nhân viên</span>
-                </a>
             </div>
 
             <!-- Breadcrumb khi đang tìm kiếm -->

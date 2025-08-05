@@ -1,350 +1,45 @@
-/* -- Thêm các biến màu mới -- */
 :root {
-    /* ... các biến màu cũ ... */
-    --color-profile-header-start: #FFECB3; /* Vàng nhạt hơn */
-    --color-profile-header-end: #FFD54F;   /* Vàng cam dịu hơn */
-    --color-button-edit: #1976D2; /* Xanh dương cho nút Edit */
-    --color-button-edit-hover: #1565C0;
-    --color-button-cancel: #6c757d; /* Xám cho nút Cancel */
-    --color-button-cancel-hover: #5a6268;
-    --color-edit-icon: #D32F2F; /* Màu đỏ cho icon edit */
-    --color-edit-icon-hover: #C62828;
-    --color-field-background: #f8f9fa; /* Nền cho các ô thông tin */
-}
-
-/* Profile Card Styling - Specific for this fragment */
-.page-content {
-    flex-grow: 1;
-    padding: 30px;
-    background-color: var(--color-background-main); /* Đảm bảo nền khớp với main layout */
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding-top: 50px;
-}
-
-/* Mobile và Tablet - Tối ưu kích thước hợp lý */
-@media (max-width: 1023px) {
-    .page-content {
-        padding: 15px; /* Giảm padding vừa phải */
-        padding-top: 25px;
-    }
-}
-
-@media (max-width: 768px) {
-    .page-content {
-        padding: 10px; /* Padding nhỏ nhưng không quá cực đoan */
-        padding-top: 20px;
-    }
-}
-
-.profile-card {
-    background: var(--color-background-secondary);
-    border-radius: var(--border-radius-default);
-    box-shadow: var(--shadow-lg);
-    max-width: 750px;
-    margin: 0.2rem auto; /* Siết margin dọc tối đa */
-    padding: 0;
-    overflow: hidden;
-}
-
-/* Mobile và Tablet - Profile card rộng nhưng không chiếm toàn bộ chiều cao */
-@media (max-width: 1023px) {
-    .profile-card {
-        max-width: 95%; /* Rộng nhưng vẫn có margin */
-        margin: 0 auto; /* Căn giữa */
-        /* Bỏ min-height để content tự quyết định chiều cao */
-        border-radius: 8px; /* Giữ border radius đẹp */
-    }
-}
-
-@media (max-width: 768px) {
-    .profile-card {
-        max-width: 98%; /* Gần full width trên mobile */
-        margin: 0 auto;
-        border-radius: 6px;
-    }
-}
-
-.profile-header {
-    padding: 0.8rem 1.5rem; /* Giảm padding */
-    background: linear-gradient(135deg, var(--color-profile-header-start), var(--color-profile-header-end));
-    color: var(--color-text-dark);
-    text-align: center;
-    position: relative;
-}
-
-/* Mobile và Tablet - Tăng padding header */
-@media (max-width: 1023px) {
-    .profile-header {
-        padding: 2rem 1.5rem; /* Tăng padding từ 0.8rem lên 2rem */
-    }
-
-    .profile-header h3 {
-        font-size: 1.8rem; /* Tăng từ default lên 1.8rem */
-        margin-bottom: 0.5rem;
-    }
-
-    .profile-header p {
-        font-size: 1.1rem; /* Tăng kích thước chữ mô tả */
-        margin-bottom: 0.5rem;
-    }
-}
-
-@media (max-width: 768px) {
-    .profile-header {
-        padding: 2.5rem 2rem; /* Tăng padding hơn nữa trên mobile */
-    }
-
-    .profile-header h3 {
-        font-size: 2rem; /* Tăng lên 2rem trên mobile */
-        margin-bottom: 0.8rem;
-    }
-
-    .profile-header p {
-        font-size: 1.2rem; /* Tăng lên 1.2rem trên mobile */
-        margin-bottom: 0.8rem;
-    }
+  --color-profile-header-start: #FFECB3;
+  --color-profile-header-end: #FFD54F;
+  --color-edit-icon: #D32F2F;
+  --color-edit-icon-hover: #C62828;
+  --color-field-background: #f8f9fa;
 }
 
 .avatar-container {
-    position: relative;
-    width: 80px; /* Giảm mạnh kích thước avatar */
-    height: 80px;
-    margin: 0 auto 0.2rem; /* Giảm mạnh margin */
+  position: relative;
 }
 
-/* Mobile và Tablet - Tăng kích thước avatar */
-@media (max-width: 1023px) {
-    .avatar-container {
-        width: 120px; /* Tăng từ 80px lên 120px */
-        height: 120px;
-        margin: 0 auto 1rem; /* Tăng margin bottom */
-    }
-}
-
-@media (max-width: 768px) {
-    .avatar-container {
-        width: 140px; /* Tăng lên 140px trên mobile */
-        height: 140px;
-        margin: 0 auto 1.5rem; /* Tăng margin bottom hơn nữa */
-    }
-}
-
+/* Hide edit icons by default, show by JS in edit mode */
 .edit-icon {
-    display: none; /* Mặc định ẩn */
-    position: absolute;
-    width: 28px; /* Kích thước icon */
-    height: 28px;
-    background-color: var(--color-edit-icon);
-    color: white;
-    border-radius: 50%;
-    border: 2px solid white;
-    cursor: pointer;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.8rem;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    transition: all 0.2s ease-in-out;
-}
-.edit-icon:hover {
-    background-color: var(--color-edit-icon-hover);
-    transform: scale(1.1);
-}
-.info-field {
-    position: relative;
-    text-align: left;
-}
-.info-field label {
-    font-size: 0.7rem;
-    margin-bottom: 0.1rem;
-}
-.info-field input {
-    width: 100%;
-    padding: 0.35rem 2.5rem 0.35rem 0.8rem; /* Giảm mạnh padding dọc */
-    border-radius: var(--border-radius-sm);
-    background-color: var(--color-field-background);
-    border: 1px solid #dee2e6;
-    font-size: 0.9rem;
-    color: var(--color-text-main);
-    transition: border-color 0.2s ease;
-    cursor: default;
+  display: none;
 }
 
-/* Mobile và Tablet - Tăng kích thước input fields */
-@media (max-width: 1023px) {
-    .info-field label {
-        font-size: 0.95rem; /* Tăng từ 0.7rem lên 0.95rem */
-        margin-bottom: 0.5rem; /* Tăng margin */
-        font-weight: 600; /* Làm đậm label */
-    }
-
-    .info-field input {
-        padding: 1rem 3rem 1rem 1rem; /* Tăng padding đáng kể */
-        font-size: 1.1rem; /* Tăng font-size từ 0.9rem lên 1.1rem */
-        min-height: 50px; /* Đảm bảo chiều cao tối thiểu */
-    }
-}
-
-@media (max-width: 768px) {
-    .info-field label {
-        font-size: 1rem; /* Tăng lên 1rem trên mobile */
-        margin-bottom: 0.8rem;
-        font-weight: 600;
-    }
-
-    .info-field input {
-        padding: 1.2rem 3.5rem 1.2rem 1.2rem; /* Padding lớn hơn nữa */
-        font-size: 1.2rem; /* Font-size lớn hơn */
-        min-height: 55px; /* Chiều cao tối thiểu lớn hơn */
-        border-radius: 8px; /* Border radius lớn hơn */
-    }
-}
-
-.password-field input {
-    -webkit-text-security: disc;
-}
-.password-field .toggle-password {
-    cursor: pointer;
-    color: var(--color-accent); /* Màu xanh da trời cho icon mắt */
-    padding-top: 20px;
-    font-size: 1rem;
-    position: absolute;
-    top: 50%;
-    right: 20px;
-    transform: translateY(-50%);
-    transition: color 0.3s ease;
-}
-.password-field .toggle-password:hover {
-    color: var(--color-secondary); /* Màu hồng cam khi hover */
-}
-.grid-container {
-    padding: 0.8rem 1.5rem; /* Giảm padding */
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem 1.5rem; /* Giảm gap dọc */
-}
-
-/* Mobile và Tablet - Tăng padding và gap */
-@media (max-width: 1023px) {
-    .grid-container {
-        padding: 2rem 2rem; /* Tăng padding từ 0.8rem lên 2rem */
-        gap: 1.5rem 2rem; /* Tăng gap dọc và ngang */
-        grid-template-columns: 1fr; /* Single column cho tablet */
-    }
-}
-
-@media (max-width: 768px) {
-    .grid-container {
-        padding: 2.5rem 2rem; /* Tăng padding hơn nữa trên mobile */
-        gap: 2rem; /* Gap lớn hơn trên mobile */
-        grid-template-columns: 1fr;
-    }
-}
-
-.full-width {
-    grid-column: 1 / span 2;
-}
-
-@media (max-width: 1023px) {
-    .full-width {
-        grid-column: 1 / span 1; /* Điều chỉnh cho single column */
-    }
-}
-
-.profile-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.8rem;
-    padding: 0.8rem 1.5rem; /* Giảm padding */
-    border-top: 1px solid #eee;
-    margin-top: 0.5rem; /* Giảm margin */
-}
-
-.btn-edit, .btn-save, .btn-cancel {
-    padding: 0.5rem 1.1rem; /* Giảm padding nút */
-    font-size: 0.85rem; /* Giảm font-size nút */
-    border: none;
-    border-radius: var(--border-radius-default);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: all 0.2s ease-in-out;
-}
-
-/* Mobile và Tablet - Tăng kích thước buttons */
-@media (max-width: 1023px) {
-    .profile-actions {
-        padding: 2rem; /* Tăng padding từ 0.8rem lên 2rem */
-        gap: 1.5rem; /* Tăng gap giữa các nút */
-        justify-content: center; /* Center buttons trên mobile/tablet */
-        flex-wrap: wrap; /* Cho phép wrap nếu cần */
-    }
-
-    .btn-edit, .btn-save, .btn-cancel {
-        padding: 1rem 2rem; /* Tăng padding nút đáng kể */
-        font-size: 1.1rem; /* Tăng font-size */
-        min-height: 50px; /* Chiều cao tối thiểu */
-        min-width: 120px; /* Chiều rộng tối thiểu */
-    }
-}
-
-@media (max-width: 768px) {
-    .profile-actions {
-        padding: 2.5rem 2rem; /* Padding lớn hơn nữa */
-        gap: 1rem;
-        flex-direction: column; /* Stack buttons vertically trên mobile */
-    }
-
-    .btn-edit, .btn-save, .btn-cancel {
-        padding: 1.2rem 2rem; /* Padding lớn hơn */
-        font-size: 1.2rem; /* Font-size lớn hơn */
-        min-height: 55px; /* Chiều cao lớn hơn */
-        width: 100%; /* Full width trên mobile */
-        justify-content: center; /* Center text trong button */
-    }
-}
-
-/* CSS cho thông báo */
-.alert-success, .alert-error {
-    margin: 0 1.5rem 0.8rem; /* Giảm margin/padding */
-    padding: 0.6rem 1rem;
-    border-radius: var(--border-radius-default);
-    font-weight: 500;
-}
-.alert-success {
-    background-color: #E8F5E9;
-    color: #2E7D32;
-    border: 1px solid #A5D6A7;
-}
-.alert-error {
-    background-color: #FFEBEE;
-    color: #C62828;
-    border: 1px solid #EF9A9A;
-}
-
-/* Wrapper cho input và icon */
-.input-wrapper {
-    position: relative;
-}
-
-/* Icon bên trong input-wrapper */
-.input-wrapper .edit-icon {
-    position: absolute;
-    top: 50%;
-    right: 12px;
-    transform: translateY(-50%);
+.text-red-500 {
+  color: #ef4444;
 }
 
 .disabled-button {
   pointer-events: none !important;
   opacity: 0.5 !important;
   cursor: not-allowed !important;
-  background-color: #6b7280 !important; /* Gray background */
 }
 
-.disabled-button:hover {
-  background-color: #6b7280 !important;
-  transform: none !important;
+/* Optional: Nice gradient for header (override tailwind if needed) */
+.bg-gradient-to-r {
+  background: linear-gradient(135deg, var(--color-profile-header-start), var(--color-profile-header-end));
+}
+
+input[readonly] {
+  background-color: #f8fafc;
+}
+
+/* Optional: Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  background: #f7f7f7;
+}
+::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 9999px;
 }

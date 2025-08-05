@@ -4,44 +4,44 @@
             th:if="${showPaymentModal} and ${orderDetail != null}"
             class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
     >
-        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-xl w-full relative border border-[#b5c99a]">
+        <div class="bg-white rounded-2xl shadow-2xl px-2 py-4 sm:p-6 md:p-8 max-w-[95vw] w-full max-w-md sm:max-w-lg md:max-w-xl relative border border-[#b5c99a] flex flex-col">
             <button
                     type="button"
                     onclick="closePaymentModal()"
-                    class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-xl"
-            >×
+                    class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-xl"
+            >X
             </button>
             <h3
-                    class="text-3xl font-extrabold mb-6 text-center tracking-tight"
+                    class="text-xl sm:text-2xl md:text-3xl font-extrabold mb-4 sm:mb-6 text-center tracking-tight break-words"
                     style="color: #3e2723"
             >
                 Thanh toán -
                 <span th:text="${orderDetail.tableName}"></span>
             </h3>
-            <div class="mb-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="mb-2 sm:mb-4">
+                <div class="grid grid-cols-1 gap-3 sm:gap-5 md:grid-cols-2">
                     <div>
                         <label class="block text-base font-semibold text-[#3e2723] mb-1">Khách hàng</label>
-                        <div class="mt-1 block w-full rounded-lg border border-[#b5c99a] bg-[#f6e7cb] px-3 py-2">
+                        <div class="mt-1 w-full rounded-lg border border-[#b5c99a] bg-[#f6e7cb] px-2 py-1 sm:px-3 sm:py-2 text-[15px] sm:text-base">
                             <span th:text="${orderDetail.customerName ?: '---'}"></span>
                         </div>
                     </div>
                     <div>
                         <label class="block text-base font-semibold text-[#3e2723] mb-1">Số điện thoại</label>
-                        <div class="mt-1 block w-full rounded-lg border border-[#b5c99a] bg-[#f6e7cb] px-3 py-2">
+                        <div class="mt-1 w-full rounded-lg border border-[#b5c99a] bg-[#f6e7cb] px-2 py-1 sm:px-3 sm:py-2 text-[15px] sm:text-base">
                             <span th:text="${orderDetail.customerPhone ?: '---'}"></span>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="overflow-x-auto mb-6">
-                <table class="min-w-full border rounded-lg">
+            <div class="overflow-x-auto mb-4 sm:mb-6">
+                <table class="min-w-full border rounded-lg text-sm sm:text-base">
                     <thead>
                     <tr class="bg-gray-200">
-                        <th class="px-4 py-2 text-left">Tên món</th>
-                        <th class="px-4 py-2 text-center">Số lượng</th>
-                        <th class="px-4 py-2 text-center">Đơn giá</th>
-                        <th class="px-4 py-2 text-center">Thành tiền</th>
+                        <th class="px-2 py-1 sm:px-4 sm:py-2 text-left">Tên món</th>
+                        <th class="px-2 py-1 sm:px-4 sm:py-2 text-center">Số lượng</th>
+                        <th class="px-2 py-1 sm:px-4 sm:py-2 text-center">Đơn giá</th>
+                        <th class="px-2 py-1 sm:px-4 sm:py-2 text-center">Thành tiền</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -49,21 +49,21 @@
                         <td colspan="4" class="text-center text-gray-500">Chưa có thông tin chọn món</td>
                     </tr>
                     <tr th:each="item : ${orderDetail.items}">
-                        <td class="px-4 py-2" th:text="${item.menuItemName}"></td>
-                        <td class="px-4 py-2 text-center" th:text="${item.quantity}"></td>
-                        <td class="px-4 py-2 text-center"
+                        <td class="px-2 py-1 sm:px-4 sm:py-2 break-words" th:text="${item.menuItemName}"></td>
+                        <td class="px-2 py-1 sm:px-4 sm:py-2 text-center" th:text="${item.quantity}"></td>
+                        <td class="px-2 py-1 sm:px-4 sm:py-2 text-center"
                             th:text="${#numbers.formatDecimal(item.price, 0, 'COMMA', 0, 'POINT')}"></td>
-                        <td class="px-4 py-2 text-center"
+                        <td class="px-2 py-1 sm:px-4 sm:py-2 text-center"
                             th:text="${#numbers.formatDecimal(item.amount, 0, 'COMMA', 0, 'POINT')}"></td>
                     </tr>
                     </tbody>
                 </table>
             </div>
-            <div class="flex justify-end mb-4">
-                <span class="font-bold text-lg text-[#3e2723]">Tổng tiền (VND):</span>
+            <div class="flex flex-col sm:flex-row sm:justify-end sm:items-center gap-2 mb-2 sm:mb-4">
+                <span class="font-bold text-base sm:text-lg text-[#3e2723]">Tổng tiền (VND):</span>
                 <span
                         id="totalAmountValue"
-                        class="ml-2 font-bold text-lg text-[#3e2723]"
+                        class="font-bold text-base sm:text-lg text-[#3e2723]"
                         th:text="${#numbers.formatDecimal(orderDetail.totalAmount ?: 0, 0, 'COMMA', 0, 'POINT')}">
                 </span>
             </div>
@@ -71,7 +71,7 @@
                     id="payment-form"
                     th:action="@{/sale/pay-invoice}"
                     method="post"
-                    class="mt-6 flex flex-col items-center"
+                    class="mt-2 sm:mt-4 flex flex-col items-center"
             >
                 <!-- CSRF token: Bảo vệ chống tấn công Cross-Site Request Forgery -->
                 <input
@@ -85,7 +85,7 @@
                         name="tableId"
                         th:value="${orderDetail.tableId}"
                 />
-                <div class="flex flex-col w-full max-w-xs mb-4">
+                <div class="flex flex-col w-full max-w-[260px] sm:max-w-xs mb-3 sm:mb-4">
                     <label for="customerPaid" class="block text-base font-semibold text-[#3e2723] mb-1">
                         Khách đưa:
                     </label>
@@ -94,7 +94,7 @@
                             id="customerPaid"
                             name="customerPaid"
                             maxlength="11"
-                            class="border border-gray-400 rounded px-3 py-2 text-right font-bold text-lg"
+                            class="border border-gray-400 rounded px-2 py-1 sm:px-3 sm:py-2 text-right font-bold text-base sm:text-lg"
                             placeholder="0"
                             autocomplete="off"
                             oninput="validateInput(this)"
@@ -103,18 +103,18 @@
                     />
                     <span
                             id="customerPaidError"
-                            class="text-red-500 text-sm mt-1 min-h-[20px]"
+                            class="text-red-500 text-xs sm:text-sm mt-1 min-h-[18px] sm:min-h-[20px]"
                             style="display: none"
                     ></span>
                 </div>
-                <div class="flex flex-col w-full max-w-xs mb-6">
+                <div class="flex flex-col w-full max-w-[260px] sm:max-w-xs mb-4 sm:mb-6">
                     <label class="block text-base font-semibold text-[#3e2723] mb-1">Tiền thừa của khách:</label>
-                    <span id="changeAmount" class="font-bold text-lg text-[#3e2723]"
-                          style="display:block; max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">0</span>
+                    <span id="changeAmount" class="font-bold text-base sm:text-lg text-[#3e2723] block truncate"
+                          style="max-width:220px;">0</span>
                 </div>
                 <button
                         type="submit"
-                        class="bg-gradient-to-tr from-[#3e2723] to-[#b5c99a] text-white px-8 py-3 rounded-lg font-semibold shadow hover:scale-105 hover:from-[#5d4037] hover:to-[#b5c99a] transition-all duration-200"
+                        class="bg-gradient-to-tr from-[#3e2723] to-[#b5c99a] text-white w-full px-2 sm:px-8 py-2 sm:py-3 rounded-lg font-semibold shadow hover:scale-105 hover:from-[#5d4037] hover:to-[#b5c99a] transition-all duration-200 text-base sm:text-lg"
                 >
                     Xác nhận thanh toán
                 </button>
@@ -216,20 +216,20 @@
             th:if="${showPaymentModal} and ${orderDetail == null}"
             class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
     >
-        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-xl w-full relative border border-[#b5c99a] flex flex-col items-center">
+        <div class="bg-white rounded-2xl shadow-2xl px-2 py-4 sm:p-6 md:p-8 max-w-[95vw] w-full max-w-md sm:max-w-lg md:max-w-xl relative border border-[#b5c99a] flex flex-col items-center">
             <button
                     type="button"
                     onclick="closePaymentModal()"
-                    class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-xl"
+                    class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-xl"
             >X
             </button>
-            <h3 class="text-2xl font-bold mb-4 text-center text-[#3e2723]">
+            <h3 class="text-lg sm:text-2xl font-bold mb-4 text-center text-[#3e2723]">
                 Không có thông tin hóa đơn để thanh toán!
             </h3>
             <button
                     type="button"
                     onclick="closePaymentModal()"
-                    class="bg-gray-400 hover:bg-gray-500 text-white px-6 py-2 rounded-lg font-semibold shadow mt-4"
+                    class="bg-gray-400 hover:bg-gray-500 text-white px-6 py-2 rounded-lg font-semibold shadow mt-4 text-base sm:text-lg"
             >Đóng
             </button>
         </div>

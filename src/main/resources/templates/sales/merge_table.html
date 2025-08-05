@@ -5,40 +5,42 @@
             class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
             style="overflow-y:auto;"
     >
-        <div class="bg-white/90 p-8 rounded-2xl shadow-2xl border border-[#b5c99a] max-w-4xl w-full relative">
+        <!-- Modal content: nền trắng đậm, responsive, icon không che tiêu đề -->
+        <div class="bg-white p-2 xs:p-3 sm:p-6 lg:p-8 rounded-2xl shadow-2xl border border-[#b5c99a] w-full max-w-[98vw] sm:max-w-2xl lg:max-w-4xl min-h-0 overflow-y-auto relative">
             <!-- Nút đóng modal -->
             <button
                     type="button"
                     onclick="closeMergeTableModal()"
-                    class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-xl"
+                    class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-xl"
             >X
             </button>
-            <!-- Icon và tiêu đề -->
-            <div
-                    class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gradient-to-tr from-[#b5c99a] to-[#f6e7cb] rounded-full shadow-lg p-2"
-            >
-                <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-12 w-12 text-[#3e2723]"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                >
-                    <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M8 17l4 4 4-4m0-5V3m-8 4v4a4 4 0 004 4h4"
-                    />
-                </svg>
+            <!-- Icon và tiêu đề: icon nằm trên, tiêu đề phía dưới, không overlap -->
+            <div class="flex flex-col items-center justify-center mt-2">
+                <div class="bg-gradient-to-tr from-[#b5c99a] to-[#f6e7cb] rounded-full shadow-lg p-2 flex items-center justify-center mb-2">
+                    <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-12 w-12 text-[#3e2723]"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                    >
+                        <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M8 17l4 4 4-4m0-5V3m-8 4v4a4 4 0 004 4h4"
+                        />
+                    </svg>
+                </div>
+                <h3 class="text-lg xs:text-xl sm:text-2xl lg:text-3xl font-extrabold mb-4 sm:mb-6 text-center tracking-tight"
+                    style="color: #3e2723">
+                    Gộp bàn
+                </h3>
             </div>
-            <h3 class="text-3xl font-extrabold mb-6 text-center tracking-tight" style="color: #3e2723">
-                Gộp bàn
-            </h3>
             <!-- Hiển thị lỗi từ controller nếu có -->
             <div
                     th:if="${errorMessage}"
-                    class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6 text-center font-semibold"
+                    class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 sm:mb-6 text-center font-semibold"
             >
                 <span th:text="${errorMessage}"></span>
             </div>
@@ -48,39 +50,41 @@
                     method="post"
                     id="merge-table-form"
                     autocomplete="off"
-                    class="space-y-6"
+                    class="space-y-4 sm:space-y-6"
             >
-                <!-- CSRF token: Bảo vệ chống tấn công Cross-Site Request Forgery -->
+                <!-- CSRF token -->
                 <input
                         type="hidden"
                         th:name="${_csrf.parameterName}"
                         th:value="${_csrf.token}"
                 />
 
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
+                <!-- Responsive grid: 1 cột mobile, 3 cột lg -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-6 items-center">
                     <!-- Chọn các bàn cần gộp -->
                     <div>
-                        <fieldset class="border border-[#b5c99a] rounded-lg p-4">
-                            <legend class="font-semibold text-[#3e2723] px-2 text-lg">
+                        <fieldset class="border border-[#b5c99a] rounded-lg p-2 xs:p-3 sm:p-4">
+                            <legend class="font-semibold text-[#3e2723] px-2 text-base sm:text-lg">
                                 Chọn các bàn cần gộp
                             </legend>
-                            <div class="max-h-60 overflow-y-auto space-y-3 mt-4">
+                            <div class="max-h-44 sm:max-h-60 overflow-y-auto space-y-2 sm:space-y-3 mt-3 sm:mt-4">
                                 <div th:each="table : ${occupiedTables}">
-                                    <label class="flex items-center gap-3 cursor-pointer p-2 hover:bg-[#f6e7cb] rounded">
+                                    <label class="flex items-center gap-3 cursor-pointer p-1 xs:p-2 hover:bg-[#f6e7cb] rounded">
                                         <input
                                                 type="checkbox"
                                                 name="tableIds"
                                                 th:value="${table.id}"
                                                 class="merge-table-checkbox w-4 h-4"
                                         />
-                                        <span th:text="${table.tableName}" class="font-medium"></span>
+                                        <span th:text="${table.tableName}"
+                                              class="font-medium text-sm sm:text-base"></span>
                                     </label>
                                 </div>
                             </div>
                         </fieldset>
                     </div>
                     <!-- Icon mũi tên cho mobile -->
-                    <div class="lg:hidden flex justify-center py-2">
+                    <div class="lg:hidden flex justify-center py-1 xs:py-2">
                         <div class="flex items-center">
                             <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -123,11 +127,12 @@
                     </div>
                     <!-- Chọn bàn gộp đến -->
                     <div>
-                        <fieldset class="border border-[#b5c99a] rounded-lg p-4">
-                            <legend class="font-semibold text-[#3e2723] px-2 text-lg">
+                        <fieldset class="border border-[#b5c99a] rounded-lg p-2 xs:p-3 sm:p-4">
+                            <legend class="font-semibold text-[#3e2723] px-2 text-base sm:text-lg">
                                 Chọn bàn gộp đến
                             </legend>
-                            <div class="max-h-60 overflow-y-auto space-y-3 mt-4" id="merge-target-list">
+                            <div class="max-h-44 sm:max-h-60 overflow-y-auto space-y-2 sm:space-y-3 mt-3 sm:mt-4"
+                                 id="merge-target-list">
                                 <p class="text-gray-500 text-center py-4">
                                     Vui lòng chọn các bàn cần gộp bên trái trước
                                 </p>
@@ -139,17 +144,18 @@
                         id="merge-error-message"
                         class="text-red-600 text-center font-semibold min-h-[24px]"
                 ></div>
-                <div class="flex justify-end space-x-4 mt-8">
+                <!-- Nút bấm: full width mobile, nằm ngang khi lên xs/sm -->
+                <div class="flex flex-col xs:flex-row justify-end gap-2 xs:gap-4 mt-6 sm:mt-8">
                     <button
                             type="submit"
-                            class="bg-gradient-to-tr from-[#3e2723] to-[#b5c99a] text-white px-8 py-3 rounded-lg font-semibold shadow hover:scale-105 hover:from-[#5d4037] hover:to-[#b5c99a] transition-all duration-200"
+                            class="bg-gradient-to-tr from-[#3e2723] to-[#b5c99a] text-white px-4 sm:px-8 py-2 sm:py-3 rounded-lg font-semibold shadow hover:scale-105 hover:from-[#5d4037] hover:to-[#b5c99a] transition-all duration-200 w-full xs:w-auto"
                     >
                         Gộp bàn
                     </button>
                     <button
                             type="button"
                             onclick="closeMergeTableModal()"
-                            class="bg-gray-400 hover:bg-gray-500 text-white px-8 py-3 rounded-lg font-semibold shadow transition-all duration-200"
+                            class="bg-gray-400 hover:bg-gray-500 text-white px-4 sm:px-8 py-2 sm:py-3 rounded-lg font-semibold shadow transition-all duration-200 w-full xs:w-auto"
                     >
                         Hủy
                     </button>
@@ -185,7 +191,7 @@
                 cb.parentElement.querySelector('span').textContent;
               const labelEl = document.createElement('label');
               labelEl.className =
-                'flex items-center gap-3 cursor-pointer p-2 hover:bg-[#f6e7cb] rounded';
+                'flex items-center gap-3 cursor-pointer p-1 xs:p-2 hover:bg-[#f6e7cb] rounded';
 
               const radio = document.createElement('input');
               radio.type = 'radio';
@@ -196,7 +202,7 @@
 
               const span = document.createElement('span');
               span.textContent = label;
-              span.className = 'font-medium';
+              span.className = 'font-medium text-sm sm:text-base';
               labelEl.appendChild(radio);
               labelEl.appendChild(span);
               targetList.appendChild(labelEl);

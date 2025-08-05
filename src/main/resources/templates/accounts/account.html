@@ -8,38 +8,28 @@
     <meta charset="UTF-8"/>
     <title>Trang cá nhân</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link
-            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
-            rel="stylesheet"
-    />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"/>
     <link rel="stylesheet" th:href="@{/css/account.css}"/>
 </head>
 <body>
 <div layout:fragment="content">
-    <main class="page-content">
+    <main class="flex flex-col min-h-screen bg-[var(--color-background-main)] px-2 sm:px-4 md:px-10 pt-4 md:pt-8">
         <form
-                class="profile-card max-w-4xl mx-auto px-6"
+                class="max-w-xl w-full mx-auto bg-white rounded-xl shadow-lg p-4 sm:p-8 md:p-10"
                 th:action="@{/account/update}"
                 th:object="${account}"
                 method="post"
         >
-            <!-- CSRF token: Bảo vệ chống tấn công Cross-Site Request Forgery -->
-            <input
-                    type="hidden"
-                    th:name="${_csrf.parameterName}"
-                    th:value="${_csrf.token}"
-            />
-
+            <!-- CSRF token -->
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
             <input type="hidden" th:field="*{id}"/>
 
             <!-- Header -->
-            <div
-                    class="profile-header bg-yellow-300 p-6 rounded-xl text-center mb-6"
-            >
-                <div class="avatar-container relative mx-auto mb-4 w-fit">
+            <div class="bg-gradient-to-r from-yellow-200 to-yellow-400 px-4 py-6 rounded-xl text-center mb-6">
+                <div class="flex flex-col items-center mb-4 relative w-fit mx-auto avatar-container">
                     <img
                             alt="Ảnh đại diện"
-                            class="avatar w-24 h-24 rounded-full border-4 border-white object-cover mx-auto"
+                            class="rounded-full border-4 border-white object-cover w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 mx-auto"
                             id="avatarImage"
                             th:src="*{imageUrl != null and !#strings.isEmpty(imageUrl)} ? *{imageUrl} : 'https://randomuser.me/api/portraits/men/32.jpg'"
                     />
@@ -55,52 +45,43 @@
                             readonly
                             style="display: none"
                     />
-                    <p
-                            class="text-red-500 text-sm mt-1"
-                            th:if="${#fields.hasErrors('imageUrl')}"
-                            th:errors="*{imageUrl}"
-                    ></p>
+                    <p class="text-red-500 text-sm mt-1"
+                       th:if="${#fields.hasErrors('imageUrl')}"
+                       th:errors="*{imageUrl}"></p>
                     <span
                             class="edit-icon absolute bottom-0 right-0 bg-white p-1 rounded-full border shadow cursor-pointer hover:bg-gray-100"
                             id="editAvatar"
                             style="display: none"
                     >
-                <i class="fas fa-pen text-sm"></i>
-              </span>
+                        <i class="fas fa-pen text-sm"></i>
+                    </span>
                 </div>
-                <h3 class="text-2xl font-bold" th:text="*{fullName}">
-                    Tên người dùng
-                </h3>
+                <h3 class="text-xl md:text-2xl font-bold mb-2" th:text="*{fullName}">Tên người dùng</h3>
                 <div class="flex justify-center">
-                    <!-- Hiển thị chức vụ, luôn giữ binding kể cả khi validate lỗi -->
                     <input
                             type="text"
                             th:field="*{positionName}"
                             placeholder="Chưa có thông tin"
                             disabled
                             class="text-center font-semibold text-yellow-700 bg-white px-4 py-1 rounded-full shadow w-auto border-none outline-none"
-                            style="min-width: 180px"
+                            style="min-width: 140px"
                     />
-                    <!-- Hidden input để submit giá trị lên server, tránh mất binding khi validate lỗi -->
                     <input type="hidden" th:field="*{positionName}"/>
                 </div>
-                <!-- <p class="text-md" th:field="*{positionName}">Chức vụ</p> -->
             </div>
 
             <!-- Thông tin cá nhân -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <!-- Họ tên -->
                 <div class="info-field relative">
-                    <label for="fullName" class="font-semibold mb-1 block"
-                    >HỌ TÊN</label
-                    >
+                    <label for="fullName" class="font-semibold mb-1 block">HỌ TÊN</label>
                     <div class="input-wrapper relative">
                         <input
                                 id="fullName"
                                 th:field="*{fullName}"
                                 readonly
                                 type="text"
-                                class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-blue-400"
+                                class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-blue-400 text-base md:text-lg bg-gray-50"
                                 required
                                 minlength="5"
                                 maxlength="50"
@@ -108,60 +89,50 @@
                                 oninvalid="this.setCustomValidity('Họ tên phải có ít nhất 5 ký tự và không được để trống hoặc toàn dấu cách')"
                                 oninput="this.setCustomValidity(''); validateFullName(this);"
                         />
-                        <span
-                                class="edit-icon absolute bottom-2 right-2 text-gray-500 cursor-pointer hover:text-blue-500"
-                                style="display: none"
-                        >
-                  <i class="fas fa-pen text-sm"></i>
-                </span>
-                        <p
-                                class="text-red-500 text-sm mt-1"
-                                th:if="${#fields.hasErrors('fullName')}"
-                                th:errors="*{fullName}"
-                        ></p>
+                        <span class="edit-icon absolute bottom-2 right-2 text-gray-500 cursor-pointer hover:text-blue-500"
+                              style="display: none">
+                            <i class="fas fa-pen text-sm"></i>
+                        </span>
+                        <p class="text-red-500 text-sm mt-1"
+                           th:if="${#fields.hasErrors('fullName')}"
+                           th:errors="*{fullName}"></p>
                     </div>
                 </div>
 
                 <!-- Tên đăng nhập -->
-                <div class="info-field">
-                    <label for="username" class="font-semibold mb-1 block"
-                    >TÊN ĐĂNG NHẬP</label
-                    >
+                <div>
+                    <label for="username" class="font-semibold mb-1 block">TÊN ĐĂNG NHẬP</label>
                     <input
                             id="username"
                             th:field="*{username}"
                             readonly
                             type="text"
-                            class="w-full border border-gray-300 rounded-xl px-4 py-2 bg-gray-100"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-2 bg-gray-100 text-base md:text-lg"
                     />
                 </div>
 
                 <!-- Mật khẩu -->
-                <div class="info-field">
-                    <label for="password" class="font-semibold mb-1 block"
-                    >MẬT KHẨU</label
-                    >
+                <div>
+                    <label for="password" class="font-semibold mb-1 block">MẬT KHẨU</label>
                     <input
                             id="password"
                             value="*******"
                             readonly
                             type="password"
-                            class="w-full border border-gray-300 rounded-xl px-4 py-2 bg-gray-100"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-2 bg-gray-100 text-base md:text-lg"
                     />
                 </div>
 
                 <!-- Số điện thoại -->
                 <div class="info-field relative">
-                    <label for="phoneNumber" class="font-semibold mb-1 block"
-                    >SỐ ĐIỆN THOẠI</label
-                    >
+                    <label for="phoneNumber" class="font-semibold mb-1 block">SỐ ĐIỆN THOẠI</label>
                     <div class="input-wrapper relative">
                         <input
                                 id="phoneNumber"
                                 th:field="*{phoneNumber}"
                                 readonly
                                 type="text"
-                                class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-blue-400"
+                                class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-blue-400 text-base md:text-lg bg-white"
                                 required
                                 minlength="10"
                                 maxlength="11"
@@ -169,76 +140,66 @@
                                 oninvalid="this.setCustomValidity('Số điện thoại phải bắt đầu bằng số 0 và có 10-11 chữ số')"
                                 oninput="this.setCustomValidity(''); validatePhoneNumber(this);"
                         />
-                        <span
-                                class="edit-icon absolute bottom-2 right-2 text-gray-500 cursor-pointer hover:text-blue-500"
-                                style="display: none"
-                        >
-                  <i class="fas fa-pen text-sm"></i>
-                </span>
-                        <p
-                                class="text-red-500 text-sm mt-1"
-                                th:if="${#fields.hasErrors('phoneNumber')}"
-                                th:errors="*{phoneNumber}"
-                        ></p>
+                        <span class="edit-icon absolute bottom-2 right-2 text-gray-500 cursor-pointer hover:text-blue-500"
+                              style="display: none">
+                            <i class="fas fa-pen text-sm"></i>
+                        </span>
+                        <p class="text-red-500 text-sm mt-1"
+                           th:if="${#fields.hasErrors('phoneNumber')}"
+                           th:errors="*{phoneNumber}"></p>
                     </div>
                 </div>
 
                 <!-- Địa chỉ -->
                 <div class="info-field relative">
-                    <label for="address" class="font-semibold mb-1 block"
-                    >ĐỊA CHỈ</label
-                    >
+                    <label for="address" class="font-semibold mb-1 block">ĐỊA CHỈ</label>
                     <div class="input-wrapper relative">
                         <input
                                 id="address"
                                 th:field="*{address}"
                                 readonly
                                 type="text"
-                                class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-blue-400"
+                                class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-blue-400 text-base md:text-lg bg-white"
                                 minlength="5"
                                 maxlength="200"
                                 pattern="^$|^(?!\s*$).{5,}$"
                                 oninvalid="this.setCustomValidity('Địa chỉ phải có ít nhất 5 ký tự nếu nhập, hoặc để trống')"
                                 oninput="this.setCustomValidity(''); validateAddress(this);"
                         />
-                        <span
-                                class="edit-icon absolute bottom-2 right-2 text-gray-500 cursor-pointer hover:text-blue-500"
-                                style="display: none"
-                        >
-                  <i class="fas fa-pen text-sm"></i>
-                </span>
-                        <p
-                                class="text-red-500 text-sm mt-1"
-                                th:if="${#fields.hasErrors('address')}"
-                                th:errors="*{address}"
-                        ></p>
+                        <span class="edit-icon absolute bottom-2 right-2 text-gray-500 cursor-pointer hover:text-blue-500"
+                              style="display: none">
+                            <i class="fas fa-pen text-sm"></i>
+                        </span>
+                        <p class="text-red-500 text-sm mt-1"
+                           th:if="${#fields.hasErrors('address')}"
+                           th:errors="*{address}"></p>
                     </div>
                 </div>
 
                 <!-- Lương -->
-                <div class="info-field">
-                    <label id="salary" class="font-semibold mb-1 block">LƯƠNG (VND)</label>
+                <div>
+                    <label class="font-semibold mb-1 block">LƯƠNG (VND)</label>
                     <input
                             type="text"
                             th:value="${account.salary != null ? #numbers.formatDecimal(account.salary, 0, 'COMMA', 0, 'POINT') : 'Chưa có thông tin'}"
                             readonly
-                            class="w-full px-3 py-2 border rounded bg-gray-100"
+                            class="w-full px-3 py-2 border rounded bg-gray-100 text-base md:text-lg"
                     />
                     <input type="hidden" th:field="*{salary}"/>
                 </div>
             </div>
 
             <!-- Nút hành động -->
-            <div class="profile-actions mt-8 flex justify-center gap-4">
+            <div class="flex flex-col gap-3 mt-8 w-full items-center sm:flex-row sm:justify-center sm:items-center">
                 <button
-                        class="btn-edit bg-yellow-400 hover:bg-yellow-500 text-white font-semibold px-5 py-2 rounded-lg shadow flex items-center gap-2"
+                        class="bg-yellow-400 hover:bg-yellow-500 text-white font-semibold px-6 py-2 rounded-lg shadow flex items-center gap-2"
                         id="editButton"
                         type="button"
                 >
                     <i class="fas fa-pen"></i> Chỉnh sửa
                 </button>
                 <button
-                        class="btn-save bg-green-500 hover:bg-green-600 text-white font-semibold px-5 py-2 rounded-lg shadow flex items-center gap-2"
+                        class="bg-green-500 hover:bg-green-600 text-white font-semibold px-6 py-2 rounded-lg shadow flex items-center gap-2"
                         id="saveButton"
                         style="display: none"
                         type="submit"
@@ -247,7 +208,7 @@
                     <i class="fas fa-save"></i> Lưu thay đổi
                 </button>
                 <button
-                        class="btn-cancel bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold px-5 py-2 rounded-lg shadow flex items-center gap-2"
+                        class="bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold px-6 py-2 rounded-lg shadow flex items-center gap-2"
                         id="cancelButton"
                         style="display: none"
                         type="button"

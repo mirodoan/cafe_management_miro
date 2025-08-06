@@ -17,7 +17,7 @@
         <h1 class="text-2xl xs:text-3xl font-bold text-[#3e2723] mb-6 xs:mb-10 text-center tracking-wide">
             Chỉnh sửa thực đơn
         </h1>
-        <form th:action="@{'/menu/update'}" th:object="${menu}" method="post">
+        <form th:action="@{'/menu/update'}" th:object="${menu}" method="post" id="menuEditForm">
             <input type="hidden" th:field="*{id}"/>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 xs:gap-8">
                 <!-- Tên món -->
@@ -76,6 +76,21 @@
             <!-- Danh sách nguyên liệu -->
             <div class="mt-8 xs:mt-10">
                 <h2 class="text-lg xs:text-xl font-bold text-[#3e2723] mb-3 xs:mb-4">Danh sách nguyên liệu</h2>
+
+                <!-- Thông báo lỗi ngay dưới tiêu đề -->
+                <div id="ingredientError"
+                     style="display:none;"
+                     class="mb-3 relative transition"
+                >
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded flex items-center gap-2">
+                        <span id="ingredientErrorMsg">Cần thêm tối thiểu 1 nguyên liệu!</span>
+                        <button type="button" id="closeIngredientError"
+                                class="ml-auto px-2 py-1 text-red-700 font-bold rounded hover:bg-red-200"
+                                aria-label="Đóng"
+                        >&times;
+                        </button>
+                    </div>
+                </div>
 
                 <!-- Card nguyên liệu trên mobile (sm:hidden) -->
                 <div class="sm:hidden space-y-3 mb-2" id="ingredientCardList">
@@ -146,6 +161,10 @@
           const addBtn = document.getElementById('addIngredientBtn');
           const tableBody = document.getElementById('ingredientTableBody');
           const cardList = document.getElementById('ingredientCardList');
+          const menuEditForm = document.getElementById('menuEditForm');
+          const ingredientError = document.getElementById('ingredientError');
+          const closeIngredientError = document.getElementById('closeIngredientError');
+          let errorTimeout = null;
 
           // Dữ liệu từ Thymeleaf
           const products = [[${products}]];
@@ -162,101 +181,123 @@
               }))
             : [];
 
+          // Helper để kiểm tra chế độ mobile/desktop
+          function isMobileView() {
+            // sm:hidden <=> <640px là mobile
+            return window.innerWidth < 640;
+          }
+
           function renderIngredients() {
-            // Table cho desktop
             tableBody.innerHTML = '';
+            cardList.innerHTML = '';
+
             ingredientList.forEach((item, idx) => {
-              const tr = document.createElement('tr');
-              tr.innerHTML = `
-                <td>
-                  <select name="menuDetails[${idx}].productId" required
-                          oninvalid="this.setCustomValidity('Vui lòng chọn nguyên liệu')"
-                          oninput="this.setCustomValidity('')"
-                          class="border border-gray-300 rounded-md px-3 py-2 w-full dropdown-normal">
-                    <option value="">-- Chọn nguyên liệu --</option>
-                    ${products
-                      .map(
-                        (p) => `<option value="${p.id}" ${item.productId == p.id ? 'selected' : ''}>${p.productName}</option>`
-                      )
-                      .join('')}
-                  </select>
-                </td>
-                <td>
-                  <input type="number" min="0.01" step="0.01" name="menuDetails[${idx}].quantity" required
-                         value="${item.quantity || ''}"
-                         oninvalid="this.setCustomValidity('Trọng lượng phải lớn hơn 0')"
-                         oninput="this.setCustomValidity('')"
-                         class="border border-gray-300 rounded-md px-3 py-2 w-full" />
-                </td>
-                <td>
-                  <select name="menuDetails[${idx}].unitId" required
-                          oninvalid="this.setCustomValidity('Vui lòng chọn đơn vị tính')"
-                          oninput="this.setCustomValidity('')"
-                          class="border border-gray-300 rounded-md px-3 py-2 w-full dropdown-normal">
-                    <option value="">-- Chọn đơn vị --</option>
-                    ${units
-                      .map(
-                        (u) => `<option value="${u.id}" ${item.unitId == u.id ? 'selected' : ''}>${u.unitName}</option>`
-                      )
-                      .join('')}
-                  </select>
-                </td>
-                <td class="text-center">
-                  <button type="button" class="text-red-500 hover:underline btn-remove-ingredient">Xóa</button>
-                </td>
-              `;
-              tableBody.appendChild(tr);
+              // Kiểm tra nguyên liệu tồn tại trong products không
+              const productExists = products.some(p => p.id == item.productId);
+              let productOptions = '';
+              if (!productExists && item.productId) {
+                productOptions += `<option disabled selected value="">-- Nguyên liệu đã bị xóa --</option>`;
+              } else {
+                productOptions += `<option value="">-- Chọn nguyên liệu --</option>`;
+              }
+              productOptions += products
+                .map(
+                  (p) => `<option value="${p.id}" ${item.productId == p.id ? 'selected' : ''}>${p.productName}</option>`
+                )
+                .join('');
+
+              // Render desktop table
+              if (!isMobileView()) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                  <td>
+                    <select name="menuDetails[${idx}].productId" required
+                            oninvalid="this.setCustomValidity('Vui lòng chọn nguyên liệu')"
+                            oninput="this.setCustomValidity('')"
+                            class="border border-gray-300 rounded-md px-3 py-2 w-full dropdown-normal"
+                            style="${!productExists ? 'background:#ffeaea;color:#c00' : ''}">
+                      ${productOptions}
+                    </select>
+                    ${!productExists && item.productId ?
+                      '<span style="color:#c00;font-size:12px;">Nguyên liệu này đã bị xóa khỏi kho, hãy chọn lại hoặc xóa dòng này!</span>'
+                      : ''
+                    }
+                  </td>
+                  <td>
+                    <input type="number" min="0.01" step="0.01" name="menuDetails[${idx}].quantity" required
+                           value="${item.quantity || ''}"
+                           oninvalid="this.setCustomValidity('Trọng lượng phải lớn hơn 0')"
+                           oninput="this.setCustomValidity('')"
+                           class="border border-gray-300 rounded-md px-3 py-2 w-full" />
+                  </td>
+                  <td>
+                    <select name="menuDetails[${idx}].unitId" required
+                            oninvalid="this.setCustomValidity('Vui lòng chọn đơn vị tính')"
+                            oninput="this.setCustomValidity('')"
+                            class="border border-gray-300 rounded-md px-3 py-2 w-full dropdown-normal">
+                      <option value="">-- Chọn đơn vị --</option>
+                      ${units
+                        .map(
+                          (u) => `<option value="${u.id}" ${item.unitId == u.id ? 'selected' : ''}>${u.unitName}</option>`
+                        )
+                        .join('')}
+                    </select>
+                  </td>
+                  <td class="text-center">
+                    <button type="button" class="text-red-500 hover:underline btn-remove-ingredient">Xóa</button>
+                  </td>
+                `;
+                tableBody.appendChild(tr);
+              } else {
+                // Render mobile card
+                const card = document.createElement('div');
+                card.className = 'bg-[#e3f2fd] rounded-lg p-3 flex flex-col gap-2 shadow border border-gray-200';
+                card.innerHTML = `
+                  <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">Nguyên liệu</label>
+                    <select name="menuDetails[${idx}].productId"
+                            required
+                            oninvalid="this.setCustomValidity('Vui lòng chọn nguyên liệu')"
+                            oninput="this.setCustomValidity('')"
+                            class="border border-gray-300 rounded-md px-3 py-2 w-full dropdown-normal"
+                            style="${!productExists ? 'background:#ffeaea;color:#c00' : ''}">
+                      ${productOptions}
+                    </select>
+                    ${!productExists && item.productId ?
+                      '<span style="color:#c00;font-size:12px;">Nguyên liệu này đã bị xóa khỏi kho, hãy chọn lại hoặc xóa dòng này!</span>'
+                      : ''
+                    }
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">Trọng lượng</label>
+                    <input type="number" min="0.01" step="0.01" name="menuDetails[${idx}].quantity" required
+                           value="${item.quantity || ''}"
+                           oninvalid="this.setCustomValidity('Trọng lượng phải lớn hơn 0')"
+                           oninput="this.setCustomValidity('')"
+                           class="border border-gray-300 rounded-md px-3 py-2 w-full" />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">Đơn vị</label>
+                    <select name="menuDetails[${idx}].unitId" required
+                            oninvalid="this.setCustomValidity('Vui lòng chọn đơn vị tính')"
+                            oninput="this.setCustomValidity('')"
+                            class="border border-gray-300 rounded-md px-3 py-2 w-full dropdown-normal">
+                      <option value="">-- Chọn đơn vị --</option>
+                      ${units
+                        .map(
+                          (u) => `<option value="${u.id}" ${item.unitId == u.id ? 'selected' : ''}>${u.unitName}</option>`
+                        )
+                        .join('')}
+                    </select>
+                  </div>
+                  <div class="flex justify-end">
+                    <button type="button" class="text-red-500 hover:underline btn-remove-ingredient">Xóa</button>
+                  </div>
+                `;
+                cardList.appendChild(card);
+              }
             });
 
-            // Card cho mobile
-            cardList.innerHTML = '';
-            ingredientList.forEach((item, idx) => {
-              const card = document.createElement('div');
-              card.className = 'bg-[#e3f2fd] rounded-lg p-3 flex flex-col gap-2 shadow border border-gray-200';
-              card.innerHTML = `
-                <div>
-                  <label class="block text-xs font-semibold text-gray-500 mb-1">Nguyên liệu</label>
-                  <select name="menuDetails[${idx}].productId"
-                          required
-                          oninvalid="this.setCustomValidity('Vui lòng chọn nguyên liệu')"
-                          oninput="this.setCustomValidity('')"
-                          class="border border-gray-300 rounded-md px-3 py-2 w-full dropdown-normal">
-                    <option value="">-- Chọn nguyên liệu --</option>
-                    ${products
-                      .map(
-                        (p) => `<option value="${p.id}" ${item.productId == p.id ? 'selected' : ''}>${p.productName}</option>`
-                      )
-                      .join('')}
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold text-gray-500 mb-1">Trọng lượng</label>
-                  <input type="number" min="0.01" step="0.01" name="menuDetails[${idx}].quantity" required
-                         value="${item.quantity || ''}"
-                         oninvalid="this.setCustomValidity('Trọng lượng phải lớn hơn 0')"
-                         oninput="this.setCustomValidity('')"
-                         class="border border-gray-300 rounded-md px-3 py-2 w-full" />
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold text-gray-500 mb-1">Đơn vị</label>
-                  <select name="menuDetails[${idx}].unitId" required
-                          oninvalid="this.setCustomValidity('Vui lòng chọn đơn vị tính')"
-                          oninput="this.setCustomValidity('')"
-                          class="border border-gray-300 rounded-md px-3 py-2 w-full dropdown-normal">
-                    <option value="">-- Chọn đơn vị --</option>
-                    ${units
-                      .map(
-                        (u) => `<option value="${u.id}" ${item.unitId == u.id ? 'selected' : ''}>${u.unitName}</option>`
-                      )
-                      .join('')}
-                  </select>
-                </div>
-                <div class="flex justify-end">
-                  <button type="button" class="text-red-500 hover:underline btn-remove-ingredient">Xóa</button>
-                </div>
-              `;
-              cardList.appendChild(card);
-            });
           }
 
           // Thêm nguyên liệu
@@ -278,7 +319,43 @@
             });
           });
 
-          // Khởi tạo với dữ liệu có sẵn
+          window.addEventListener('resize', renderIngredients);
+
+          // --- Hiển thị lỗi ingredient dưới danh sách nguyên liệu, tự động ẩn sau 3s hoặc bấm nút x ---
+          menuEditForm.addEventListener('submit', function(e) {
+            // Kiểm tra có nguyên liệu bị xóa không
+            const hasDeletedIngredient = ingredientList.some(item => item.productId && !products.some(p => p.id == item.productId));
+            if (ingredientList.length < 1) {
+              ingredientError.style.display = "block";
+              document.getElementById('ingredientErrorMsg').innerText = "Cần thêm tối thiểu 1 nguyên liệu!";
+              ingredientError.scrollIntoView({behavior: "smooth", block: "center"});
+              clearTimeout(errorTimeout);
+              errorTimeout = setTimeout(function() {
+                ingredientError.style.display = "none";
+              }, 3000);
+              e.preventDefault();
+              return false;
+            } else if (hasDeletedIngredient) {
+              ingredientError.style.display = "block";
+              document.getElementById('ingredientErrorMsg').innerText = "Có nguyên liệu đã bị xóa khỏi kho, hãy chọn lại hoặc xóa dòng này!";
+              ingredientError.scrollIntoView({behavior: "smooth", block: "center"});
+              clearTimeout(errorTimeout);
+              errorTimeout = setTimeout(function() {
+                ingredientError.style.display = "none";
+              }, 3000);
+              e.preventDefault();
+              return false;
+            } else {
+              ingredientError.style.display = "none";
+              clearTimeout(errorTimeout);
+            }
+          });
+
+          closeIngredientError.addEventListener('click', function() {
+            ingredientError.style.display = "none";
+            clearTimeout(errorTimeout);
+          });
+
           renderIngredients();
         });
     </script>

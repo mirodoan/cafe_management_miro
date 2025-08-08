@@ -35,6 +35,15 @@ public interface ReservationService {
      */
     OrderDetailRessponse getPaymentInfoForTable(Integer tableId);
 
+    /**
+     * Tính toán và cập nhật lại tổng tiền cho hóa đơn dựa trên các chi tiết hóa đơn còn hiệu lực.
+     * Chỉ tính các món chưa bị xóa mềm và quantity > 0.
+     * Nên gọi hàm này sau mỗi lần thêm/xóa/cập nhật món (InvoiceDetail) trong hóa đơn.
+     *
+     * @param invoice Hóa đơn cần cập nhật tổng tiền
+     */
+    void updateInvoiceTotalAmount(InvoiceEntity invoice);
+
 
     /**
      * Thực hiện xác nhận thanh toán cho bàn

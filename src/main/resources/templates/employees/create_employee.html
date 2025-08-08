@@ -122,6 +122,8 @@
                         <input
                                 type="text"
                                 th:field="*{imageUrl}"
+                                minlength="10"
+                                maxlength="255"
                                 id="imageUrl"
                                 pattern="^$|^(https?://).*(jpg|jpeg|png|gif|bmp|webp)(\?.*)?$"
                                 oninvalid="this.setCustomValidity('URL ảnh để trống hoặc là một liên kết hợp lệ có đuôi file ảnh (jpg, jpeg, png, gif, bmp, webp)')"
@@ -193,7 +195,9 @@
                                 th:field="*{username}"
                                 id="username"
                                 required
+                                placeholder="Tối thiểu 6 ký tự"
                                 minlength="3"
+                                maxlength="30"
                                 oninvalid="this.setCustomValidity('Tên đăng nhập phải có ít nhất 3 ký tự')"
                                 oninput="this.setCustomValidity('')"
                                 class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-yellow-400 focus:border-yellow-500 outline-none"
@@ -217,6 +221,9 @@
                                 id="password"
                                 required
                                 minlength="6"
+                                maxlength="64"
+                                pattern="^(?!\s*$).{6,}$"
+                                placeholder="Tối thiểu 6 ký tự"
                                 oninvalid="this.setCustomValidity('Mật khẩu phải có ít nhất 6 ký tự')"
                                 oninput="this.setCustomValidity('')"
                                 class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-yellow-400 focus:border-yellow-500 outline-none"

@@ -23,7 +23,8 @@
             <div>
                 <label for="equipmentName" class="block text-[#3e2723] font-bold text-lg mb-2">* Tên thiết bị:</label>
                 <input type="text" th:field="*{equipmentName}" id="equipmentName"
-                       required minlength="5" pattern="^(?!\s*$).{5,}$"
+                       required minlength="5" pattern="^(?!\s*$).{5,100}$"
+                       maxlength="100"
                        title="Tên thiết bị phải có ít nhất 5 ký tự và không được để trống hoặc toàn dấu cách"
                        class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-yellow-300 outline-none"/>
                 <p class="text-red-500 text-sm mt-1" th:if="${#fields.hasErrors('equipmentName')}"
@@ -35,6 +36,7 @@
                 <label for="quantity" class="block text-[#3e2723] font-bold text-lg mb-2">* Số lượng:</label>
                 <input type="text" th:field="*{quantity}" id="quantity" min="1" step="1" required
                        pattern="^[1-9][0-9]*$"
+                       maxlength="4"
                        oninvalid="this.setCustomValidity('Chỉ có thể nhập số nguyên dương')"
                        oninput="this.setCustomValidity(''); this.value = this.value.replace(/[^0-9]/g,'');"
                        class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-yellow-300 outline-none"/>
@@ -47,6 +49,7 @@
                 <label for="purchasePrice" class="block text-[#3e2723] font-bold text-lg mb-2">* Đơn giá (VND):</label>
                 <input type="text" th:field="*{purchasePrice}" id="purchasePrice" min="1000" step="1000" required
                        pattern="^[1-9][0-9]*$"
+                       maxlength="9"
                        oninvalid="this.setCustomValidity('Chỉ có thể nhập số nguyên dương')"
                        oninput="this.setCustomValidity(''); this.value = this.value.replace(/[^0-9]/g,'');"
                        class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-yellow-300 outline-none"/>

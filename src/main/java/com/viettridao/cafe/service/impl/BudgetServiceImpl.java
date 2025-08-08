@@ -1,34 +1,31 @@
 package com.viettridao.cafe.service.impl;
 
+import com.viettridao.cafe.common.InvoiceStatus;
+import com.viettridao.cafe.dto.request.expense.BudgetFilterRequest;
+import com.viettridao.cafe.dto.request.expense.ExpenseRequest;
+import com.viettridao.cafe.dto.response.expense.BudgetResponse;
+import com.viettridao.cafe.mapper.EquipmentMapper;
 import com.viettridao.cafe.mapper.ExpenseMapper;
+import com.viettridao.cafe.mapper.IncomeMapper;
+import com.viettridao.cafe.model.AccountEntity;
+import com.viettridao.cafe.model.EquipmentEntity;
+import com.viettridao.cafe.model.ExpenseEntity;
+import com.viettridao.cafe.model.InvoiceEntity;
 import com.viettridao.cafe.repository.AccountRepository;
 import com.viettridao.cafe.repository.EquipmentRepository;
 import com.viettridao.cafe.repository.ExpenseRepository;
 import com.viettridao.cafe.repository.InvoiceRepository;
 import com.viettridao.cafe.service.BudgetService;
-
 import lombok.RequiredArgsConstructor;
-
-import java.time.LocalDate;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.viettridao.cafe.common.InvoiceStatus;
-import com.viettridao.cafe.dto.request.expense.BudgetFilterRequest;
-import com.viettridao.cafe.dto.request.expense.ExpenseRequest;
-import com.viettridao.cafe.dto.response.expense.BudgetResponse;
-import com.viettridao.cafe.mapper.EquipmentMapper;
-import com.viettridao.cafe.mapper.IncomeMapper;
-import com.viettridao.cafe.model.AccountEntity;
-import com.viettridao.cafe.model.EquipmentEntity;
-import com.viettridao.cafe.model.ExpenseEntity;
-import com.viettridao.cafe.model.InvoiceEntity;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * BudgetServiceImpl
@@ -76,10 +73,18 @@ public class BudgetServiceImpl implements BudgetService {
 
         Map<LocalDate, BudgetResponse> merged = new HashMap<>();
 
-        for (BudgetResponse income : incomeDtos) {
-            merged.put(income.getDate(), new BudgetResponse(income.getDate(), income.getIncome(), 0.0));
+        // Nhóm income theo ngày, cộng tổng doanh thu cho mỗi ngày
+        Map<LocalDate, Double> incomeByDate = incomeDtos.stream()
+                .collect(Collectors.groupingBy(
+                        BudgetResponse::getDate,
+                        Collectors.summingDouble(BudgetResponse::getIncome)
+                ));
+
+        for (Map.Entry<LocalDate, Double> entry : incomeByDate.entrySet()) {
+            merged.put(entry.getKey(), new BudgetResponse(entry.getKey(), entry.getValue(), 0.0));
         }
 
+        // Gộp chi phí và thiết bị vào từng ngày
         expenseDtos.forEach(dto -> mergeExpense(merged, dto));
         equipmentDtos.forEach(dto -> mergeExpense(merged, dto));
 

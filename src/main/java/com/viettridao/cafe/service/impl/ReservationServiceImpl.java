@@ -197,11 +197,50 @@ public class ReservationServiceImpl implements ReservationService {
         TableEntity table = requireTable(tableId, null);
         ReservationEntity reservation = requireCurrentReservation(tableId);
         InvoiceEntity invoice = requireInvoice(reservation);
-        // Đánh dấu hóa đơn đã thanh toán, soft-delete reservation, trả bàn về AVAILABLE
+
+        // Lấy các món còn lại
+        List<InvoiceDetailEntity> invoiceDetails =
+                invoiceDetailRepository.findAllByInvoice_IdAndIsDeletedFalse(invoice.getId())
+                        .stream().filter(d -> d.getQuantity() > 0).toList();
+
+        // Nếu hóa đơn không còn món, không cho phép thanh toán
+        if (invoiceDetails.isEmpty()) {
+            throw new IllegalArgumentException("Không thể thanh toán hóa đơn trống! Vui lòng chọn món trước khi thanh toán.");
+        }
+
+        // Cập nhật lại tổng tiền hóa đơn trước khi thanh toán
+        double totalAmount = invoiceDetails.stream()
+                .mapToDouble(d -> d.getPrice() * d.getQuantity())
+                .sum();
+        invoice.setTotalAmount(totalAmount);
+
         updateInvoiceStatus(invoice, InvoiceStatus.PAID);
         softDeleteReservation(reservation);
         updateTableStatus(table, TableStatus.AVAILABLE);
         saveReservationAndRelated(reservation, invoice, table);
+    }
+
+    /**
+     * Cập nhật lại tổng tiền của hóa đơn dựa trên các món còn lại (chưa xóa mềm, quantity > 0).
+     * Hàm này nên được gọi sau mỗi thao tác thêm/xóa/cập nhật món trong hóa đơn.
+     *
+     * @param invoice Hóa đơn cần cập nhật tổng tiền
+     */
+    @Override
+    @Transactional
+    public void updateInvoiceTotalAmount(InvoiceEntity invoice) {
+        // Lấy danh sách các chi tiết hóa đơn chưa bị xóa mềm và có số lượng > 0
+        List<InvoiceDetailEntity> details = invoiceDetailRepository.findAllByInvoice_IdAndIsDeletedFalse(invoice.getId())
+                .stream().filter(d -> d.getQuantity() > 0).toList();
+
+        // Tính tổng tiền = tổng (giá * số lượng) của tất cả các món còn lại
+        double totalAmount = details.stream()
+                .mapToDouble(d -> d.getPrice() * d.getQuantity())
+                .sum();
+
+        // Gán tổng tiền cho hóa đơn và lưu lại vào DB
+        invoice.setTotalAmount(totalAmount);
+        invoiceRepository.save(invoice);
     }
 
     /**
@@ -338,6 +377,9 @@ public class ReservationServiceImpl implements ReservationService {
             softDeleteReservation(srcReservation);
             updateTableStatus(srcTable, TableStatus.AVAILABLE);
         }
+
+        // Sau khi gộp xong tất cả món sang bàn đích (targetInvoice)
+        updateInvoiceTotalAmount(targetInvoice);
     }
 
     /**
@@ -469,6 +511,13 @@ public class ReservationServiceImpl implements ReservationService {
         } else {
             updateInvoiceStatus(sourceInvoice, InvoiceStatus.PENDING_PAYMENT);
         }
+
+        // Nếu bàn đích là AVAILABLE hoặc OCCUPIED, luôn update tổng tiền
+        updateInvoiceTotalAmount(targetInvoice);
+        // Nếu bàn nguồn vẫn còn món, update tổng tiền
+        if (!remainingSourceDetails.isEmpty()) {
+            updateInvoiceTotalAmount(sourceInvoice);
+        }
     }
 
     /**
@@ -566,6 +615,7 @@ public class ReservationServiceImpl implements ReservationService {
         updateTableStatus(sourceTable, TableStatus.AVAILABLE);
 
         softDeleteReservation(sourceReservation);
+        updateInvoiceTotalAmount(sourceInvoice); // hoặc targetInvoice nếu cần
     }
 
     /**

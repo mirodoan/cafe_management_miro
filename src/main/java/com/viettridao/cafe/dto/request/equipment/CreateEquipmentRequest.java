@@ -3,6 +3,7 @@ package com.viettridao.cafe.dto.request.equipment;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 
@@ -17,6 +18,7 @@ public class CreateEquipmentRequest {
     @Min(value = 1, message = "Số lượng thiết bị phải lớn hơn 0")
     private Integer quantity;
 
+    @DateTimeFormat(pattern = "dd/MM/yyyy")
     @NotNull(message = "Ngày mua không được để trống")
     @PastOrPresent(message = "Ngày mua không được lớn hơn ngày hiện tại")
     private LocalDate purchaseDate;

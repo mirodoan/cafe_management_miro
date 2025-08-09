@@ -7,6 +7,8 @@
 <head>
     <meta charset="UTF-8"/>
     <title>Tạo đơn xuất</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
 <body>
 <div
@@ -65,10 +67,10 @@
                     * Ngày xuất:
                 </label>
                 <input
-                        type="date"
+                        type="text"
                         th:field="*{exportDate}"
                         id="exportDate"
-                        th:attr="max=${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}"
+                        placeholder="dd/mm/yyyy"
                         required
                         oninvalid="this.setCustomValidity('Ngày xuất không được để trống và không được lớn hơn ngày hiện tại')"
                         oninput="this.setCustomValidity('')"
@@ -90,15 +92,16 @@
                     * Đơn giá xuất (VND):
                 </label>
                 <input
-                        type="number"
+                        type="text"
                         th:field="*{unitExportPrice}"
                         id="unitExportPrice"
                         required
-                        min="1000"
-                        step="1000"
+                        minlength="4"
+                        maxlength="9"
+                        pattern="^[1-9][0-9]*$"
                         placeholder="Nhập đơn giá"
                         oninvalid="this.setCustomValidity('Đơn giá phải lớn hơn 1000 và không được để trống')"
-                        oninput="this.setCustomValidity('')"
+                        oninput="this.setCustomValidity(''); this.value = this.value.replace(/[^0-9]/g,'');"
                         class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-blue-300 outline-none"
                 />
                 <p
@@ -117,15 +120,16 @@
                     * Số lượng:
                 </label>
                 <input
-                        type="number"
+                        type="text"
                         th:field="*{quantity}"
                         id="quantity"
                         required
-                        min="1"
-                        step="1"
+                        minlength="4"
+                        maxlength="5"
+                        pattern="^[1-9][0-9]*$"
                         placeholder="Nhập số lượng"
                         oninvalid="this.setCustomValidity('Số lượng phải lớn hơn 0 và không được để trống')"
-                        oninput="this.setCustomValidity('')"
+                        oninput="this.setCustomValidity(''); this.value = this.value.replace(/[^0-9]/g,'');"
                         class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-blue-300 outline-none"
                 />
                 <p
@@ -172,6 +176,12 @@
               }
             });
           }
+
+           flatpickr("#exportDate", {
+        dateFormat: "d/m/Y",
+        allowInput: true,
+        maxDate: "today"
+    });
         });
     </script>
 </div>

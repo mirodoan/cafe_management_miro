@@ -1,13 +1,14 @@
 package com.viettridao.cafe.dto.request.export;
 
-import java.time.LocalDate;
-
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.time.LocalDate;
 
 /**
  * DTO cho việc cập nhật thông tin đơn xuất hàng.
@@ -24,6 +25,7 @@ public class UpdateExportRequest {
     @Positive(message = "Đơn giá xuất phải lớn hơn 0")
     private Double unitExportPrice;
 
+    @DateTimeFormat(pattern = "dd/MM/yyyy")
     @NotNull(message = "Ngày xuất không được để trống")
     @PastOrPresent(message = "Ngày xuất không được lớn hơn ngày hiện tại")
     private LocalDate exportDate;

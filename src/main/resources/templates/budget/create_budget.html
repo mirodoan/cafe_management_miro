@@ -77,14 +77,15 @@
                 <div>
                     <label class="block font-medium mb-1">Số tiền (VND)</label>
                     <input
-                            type="number"
+                            type="text"
                             th:field="*{amount}"
                             id="amount"
-                            step="1000"
-                            min="1000"
+                            minlength="4"
+                            maxlength="9"
+                            pattern="^[1-9][0-9]*$"
                             required
                             oninvalid="this.setCustomValidity('Số tiền phải lớn hơn 1000 VND')"
-                            oninput="this.setCustomValidity('')"
+                            oninput="this.setCustomValidity(''); this.value = this.value.replace(/[^0-9]/g,'');"
                             class="w-full border px-3 py-2 rounded border-gray-300 focus:border-yellow-500 focus:ring-yellow-500"
                     />
                     <div

@@ -1,15 +1,11 @@
 package com.viettridao.cafe.dto.request.promotion;
 
-import java.time.LocalDate;
-
-import jakarta.validation.constraints.AssertTrue;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.FutureOrPresent;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.time.LocalDate;
 
 /**
  * DTO cho việc tạo mới thông tin khuyến mãi.
@@ -23,10 +19,12 @@ public class CreatePromotionRequest {
     @Size(min = 5, message = "Tên khuyến mãi tối thiểu 5 ký tự")
     private String promotionName;
 
+    @DateTimeFormat(pattern = "dd/MM/yyyy")
     @NotNull(message = "Ngày bắt đầu không được để trống")
     @FutureOrPresent(message = "Ngày bắt đầu phải là hôm nay hoặc trong tương lai")
     private LocalDate startDate;
 
+    @DateTimeFormat(pattern = "dd/MM/yyyy")
     @NotNull(message = "Ngày kết thúc không được để trống")
     private LocalDate endDate;
 

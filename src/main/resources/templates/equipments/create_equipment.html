@@ -5,6 +5,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Thêm thiết bị</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
 <body>
 <div layout:fragment="content" class="bg-[#fefae0] min-h-screen w-full flex justify-center items-start py-12 px-4">
@@ -60,8 +62,8 @@
             <!-- Ngày mua -->
             <div>
                 <label for="purchaseDate" class="block text-[#3e2723] font-bold text-lg mb-2">* Ngày mua:</label>
-                <input type="date" th:field="*{purchaseDate}" id="purchaseDate"
-                       th:attr="max=${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}" required
+                <input type="text" th:field="*{purchaseDate}" id="purchaseDate"
+                       placeholder="dd/mm/yyyy" required
                        class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-yellow-300 outline-none"/>
                 <p class="text-red-500 text-sm mt-1" th:if="${#fields.hasErrors('purchaseDate')}"
                    th:errors="*{purchaseDate}"></p>
@@ -80,6 +82,13 @@
             </div>
         </form>
     </div>
+    <script>
+        flatpickr("#purchaseDate", {
+          dateFormat: "d/m/Y",
+          allowInput: true,
+          maxDate: "today"
+        });
+    </script>
 </div>
 </body>
 </html>

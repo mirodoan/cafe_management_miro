@@ -45,15 +45,16 @@
                         <label for="currentPrice" class="block text-[#3e2723] font-bold text-base xs:text-lg mb-2">* Giá
                             tiền (VNĐ):</label>
                         <input
-                                type="number"
+                                type="text"
                                 th:field="*{currentPrice}"
                                 id="currentPrice"
                                 required
-                                min="0"
-                                step="1"
+                                minlength="4"
+                                maxlength="9"
+                                pattern="^[1-9][0-9]*$"
                                 placeholder="Nhập giá tiền"
                                 oninvalid="this.setCustomValidity('Giá tiền phải là số hợp lệ và lớn hơn 0')"
-                                oninput="this.setCustomValidity('')"
+                                oninput="this.setCustomValidity(''); this.value = this.value.replace(/[^0-9]/g,'');"
                                 class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-yellow-400 focus:border-yellow-500 outline-none"
                         />
                         <p class="text-red-500 text-sm mt-1" th:if="${#fields.hasErrors('currentPrice')}"

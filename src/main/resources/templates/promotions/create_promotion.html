@@ -7,6 +7,8 @@
 <head>
     <meta charset="UTF-8"/>
     <title>Thêm khuyến mãi</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
 <body>
 <div
@@ -69,12 +71,11 @@
                 >* Ngày bắt đầu:</label
                 >
                 <input
-                        type="date"
+                        type="text"
                         th:field="*{startDate}"
-                        th:attr="min=${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}"
                         id="startDate"
                         required
-                        min="[[${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}]]"
+                        placeholder="dd/mm/yyyy"
                         oninvalid="this.setCustomValidity('Ngày bắt đầu phải là hôm nay hoặc trong tương lai')"
                         oninput="this.setCustomValidity('')"
                         class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-yellow-300 outline-none"
@@ -94,9 +95,9 @@
                 >* Ngày kết thúc:</label
                 >
                 <input
-                        type="date"
+                        type="text"
                         th:field="*{endDate}"
-                        th:attr="min=${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}"
+                        placeholder="dd/mm/yyyy"
                         id="endDate"
                         required
                         oninvalid="this.setCustomValidity('Ngày kết thúc phải lớn hơn ngày bắt đầu')"
@@ -163,6 +164,24 @@
                     this.value = this.value.replace(/\D/g, ''); // Loại bỏ mọi ký tự không phải số
                 });
             }
+
+            // Khởi tạo picker cho ngày bắt đầu
+            const startPicker = flatpickr("#startDate", {
+                dateFormat: "d/m/Y",
+                allowInput: true,
+                minDate: "today",
+                onChange: function(selectedDates, dateStr, instance) {
+                    // Khi chọn ngày bắt đầu, cập nhật minDate của endDate
+                    endPicker.set('minDate', selectedDates[0]);
+                }
+            });
+
+            // Khởi tạo picker cho ngày kết thúc
+            const endPicker = flatpickr("#endDate", {
+                dateFormat: "d/m/Y",
+                allowInput: true,
+                minDate: "today"
+            });
         });
     </script>
 </div>

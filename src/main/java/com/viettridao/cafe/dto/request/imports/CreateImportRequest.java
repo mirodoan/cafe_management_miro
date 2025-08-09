@@ -6,6 +6,8 @@ import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
+
 import java.time.LocalDate;
 
 /**
@@ -15,6 +17,7 @@ import java.time.LocalDate;
 @Getter
 @Setter
 public class CreateImportRequest {
+    @DateTimeFormat(pattern = "dd/MM/yyyy")
     @NotNull(message = "Ngày nhập không được để trống")
     @PastOrPresent(message = "Ngày nhập không được vượt quá ngày hôm nay")
     private LocalDate importDate;

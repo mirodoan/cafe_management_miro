@@ -1,7 +1,6 @@
 package com.viettridao.cafe.model;
 
 import jakarta.persistence.*;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -26,8 +25,9 @@ public class MenuDetailEntity {
     @Column(name = "quantity")
     private Double quantity; // Trọng lượng sản phẩm trong món ăn
 
-    @Column(name = "unit")
-    private String unitName; // Đơn vị tính của sản phẩm (ví dụ: kg, lít)
+    @ManyToOne
+    @JoinColumn(name = "unit_id", insertable = false, updatable = false)
+    private UnitEntity unit;
 
     @Column(name = "is_deleted")
     private Boolean isDeleted; // Trạng thái xóa mềm (soft delete) của chi tiết menu

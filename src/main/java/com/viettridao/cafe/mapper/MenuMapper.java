@@ -1,10 +1,5 @@
 package com.viettridao.cafe.mapper;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.springframework.stereotype.Component;
-
 import com.viettridao.cafe.dto.request.menu_item.CreateMenuItemRequest;
 import com.viettridao.cafe.dto.request.menu_item.UpdateMenuItemRequest;
 import com.viettridao.cafe.dto.request.menu_item_detail.CreateMenuItemDetailRequest;
@@ -12,7 +7,10 @@ import com.viettridao.cafe.dto.response.menu_item.MenuItemResponse;
 import com.viettridao.cafe.dto.response.menu_item_detail.MenuItemDetailResponse;
 import com.viettridao.cafe.model.MenuDetailEntity;
 import com.viettridao.cafe.model.MenuItemEntity;
-import com.viettridao.cafe.mapper.ProductMapper;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * MenuMapper
@@ -131,10 +129,13 @@ public class MenuMapper {
         MenuItemDetailResponse response = new MenuItemDetailResponse();
         response.setProduct(productMapper.toProductResponse(entity.getProduct()));
         response.setQuantity(entity.getQuantity());
-        response.setUnitName(entity.getUnitName());
-        // Lấy unitId từ Product -> Unit relationship
-        if (entity.getProduct() != null && entity.getProduct().getUnit() != null) {
-            response.setUnitId(entity.getProduct().getUnit().getId());
+        // Đơn vị tính: lấy từ trường unit của entity, không phải từ product
+        if (entity.getUnit() != null) {
+            response.setUnitId(entity.getUnit().getId());
+            response.setUnitName(entity.getUnit().getUnitName());
+        } else {
+            response.setUnitId(null);
+            response.setUnitName(null);
         }
         return response;
     }

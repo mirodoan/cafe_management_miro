@@ -123,14 +123,16 @@
                 </button>
             </div>
             <!-- Nút hành động -->
-            <div class="flex flex-col xs:flex-row justify-between items-center mt-8 xs:mt-10 gap-3 xs:gap-0">
+            <div class="flex justify-end items-center gap-3 mt-10">
                 <a
                         th:href="@{/menu}"
-                        class="w-full xs:w-auto bg-gray-500 hover:bg-gray-600 text-white font-semibold px-6 py-2 rounded-md shadow text-center"
+                        class="bg-gray-500 hover:bg-gray-600 text-white font-semibold px-6 py-2 rounded-md shadow"
+                        style="min-width: 100px; text-align:center;"
                 >Hủy</a>
                 <button
                         type="submit"
-                        class="w-full xs:w-auto bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-6 py-2 rounded-md shadow"
+                        class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-6 py-2 rounded-md shadow"
+                        style="min-width: 100px;"
                 >
                     Lưu
                 </button>
@@ -163,19 +165,57 @@
           const closeIngredientError = document.getElementById('closeIngredientError');
           let errorTimeout = null;
 
-          // Dữ liệu từ Thymeleaf
-          const products = [[${products}]];
-          const units = [[${units}]];
+          // Lấy dữ liệu sản phẩm và đơn vị từ backend (Thymeleaf)
+          const products = JSON.parse(/*[[${productsJson}]]*/ '[]');
+          const units = JSON.parse(/*[[${unitsJson}]]*/ '[]');
+          const initialIngredients = /*[[${#lists.isEmpty(menu.menuDetails) ? '[]' : menu.menuDetails}]]*/ [];
 
-          let ingredientList = [];
+          // Luôn có 1 dòng trống nếu tạo mới
+          let ingredientList = Array.isArray(initialIngredients) && initialIngredients.length > 0
+              ? initialIngredients.map(i => ({
+                  productId: i.productId,
+                  quantity: i.quantity,
+                  unitId: i.unitId
+                }))
+              : [{ productId: '', quantity: '', unitId: '' }];
 
           function isMobileView() {
             return window.innerWidth < 640;
           }
 
+          // --- ĐOẠN CODE MỚI: Đồng bộ dữ liệu từ DOM trước khi render lại ---
+          function syncIngredientListFromDOM() {
+            // Nếu đang ở mobile view
+            if (isMobileView()) {
+              const cards = cardList.querySelectorAll('div');
+              ingredientList = Array.from(cards).map(card => {
+                return {
+                  productId: card.querySelector('select[name*="productId"]').value,
+                  quantity: card.querySelector('input[name*="quantity"]').value,
+                  unitId: card.querySelector('select[name*="unitId"]').value
+                }
+              });
+            } else {
+              const rows = tableBody.querySelectorAll('tr');
+              ingredientList = Array.from(rows).map(tr => {
+                return {
+                  productId: tr.querySelector('select[name*="productId"]').value,
+                  quantity: tr.querySelector('input[name*="quantity"]').value,
+                  unitId: tr.querySelector('select[name*="unitId"]').value
+                }
+              });
+            }
+          }
+          // --- KẾT THÚC CODE MỚI ---
+
           function renderIngredients() {
             tableBody.innerHTML = '';
             cardList.innerHTML = '';
+
+            // Nếu không có products hoặc units thì không render bảng
+            if (!products.length || !units.length) {
+              return;
+            }
 
             if (isMobileView()) {
               ingredientList.forEach((item, idx) => {
@@ -272,6 +312,7 @@
           }
 
           addBtn.addEventListener('click', function () {
+            syncIngredientListFromDOM();
             ingredientList.push({productId: '', quantity: '', unitId: ''});
             renderIngredients();
           });
@@ -279,9 +320,14 @@
           [tableBody, cardList].forEach(container => {
             container.addEventListener('click', function (e) {
               if (e.target.classList.contains('btn-remove-ingredient')) {
+                syncIngredientListFromDOM();
                 const idx = Array.from(container.children).indexOf(e.target.closest('tr,div'));
                 if (idx > -1) {
                   ingredientList.splice(idx, 1);
+                  // Nếu xóa hết thì phải luôn còn 1 dòng trống để nhập mới
+                  if (ingredientList.length === 0) {
+                    ingredientList.push({productId: '', quantity: '', unitId: ''});
+                  }
                   renderIngredients();
                 }
               }
@@ -289,11 +335,17 @@
           });
 
           window.addEventListener('resize', renderIngredients);
+
+          // Sau khi DOM load, thử log dữ liệu để debug
+          console.log("products", products, "units", units, "ingredientList", ingredientList);
+
           renderIngredients();
 
           // --- Hiển thị lỗi ingredient dưới danh sách nguyên liệu, tự động ẩn sau 3s hoặc bấm nút x ---
           menuForm.addEventListener('submit', function(e) {
-            if (ingredientList.length < 1) {
+            // Nếu tất cả nguyên liệu đều trống thì không cho submit
+            const filled = ingredientList.filter(i => i.productId && i.quantity && i.unitId);
+            if (filled.length < 1) {
               ingredientError.style.display = "block";
               ingredientError.scrollIntoView({behavior: "smooth", block: "center"});
               clearTimeout(errorTimeout);

@@ -3,7 +3,10 @@ function showSuccess(message = "Thành công!") {
         icon: 'success',
         title: 'Thành công!',
         text: message,
-        timer: 2000
+        timer: 3000,
+        showConfirmButton: false, // ẩn nút OK
+        allowOutsideClick: true,  // cho phép click ra ngoài để tắt
+        allowEscapeKey: true
     });
 }
 
@@ -12,7 +15,7 @@ function showError(message = "Đã xảy ra lỗi!") {
         icon: 'error',
         title: 'Lỗi!',
         text: message,
-        timer: 2000
+        timer: 5000
     });
 }
 
@@ -21,7 +24,7 @@ function showWarning(message = "Cảnh báo!") {
         icon: 'warning',
         title: 'Cảnh báo!',
         text: message,
-        timer: 2000
+        timer: 5000
     });
 }
 

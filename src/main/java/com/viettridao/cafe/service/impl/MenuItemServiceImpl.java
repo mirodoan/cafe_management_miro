@@ -1,29 +1,26 @@
 package com.viettridao.cafe.service.impl;
 
+import com.viettridao.cafe.dto.request.menu_item.CreateMenuItemRequest;
+import com.viettridao.cafe.dto.request.menu_item.UpdateMenuItemRequest;
 import com.viettridao.cafe.dto.request.menu_item_detail.CreateMenuItemDetailRequest;
-import com.viettridao.cafe.model.MenuDetailEntity;
-import com.viettridao.cafe.model.MenuKey;
-import com.viettridao.cafe.model.ProductEntity;
-import com.viettridao.cafe.model.UnitEntity;
+import com.viettridao.cafe.dto.response.menu_item.MenuItemPageResponse;
+import com.viettridao.cafe.mapper.MenuMapper;
+import com.viettridao.cafe.model.*;
+import com.viettridao.cafe.repository.MenuItemDetailRepository;
+import com.viettridao.cafe.repository.MenuItemRepository;
+import com.viettridao.cafe.repository.ProductRepository;
 import com.viettridao.cafe.service.MenuItemService;
 import com.viettridao.cafe.service.UnitService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-
-import com.viettridao.cafe.dto.request.menu_item.CreateMenuItemRequest;
-import com.viettridao.cafe.dto.request.menu_item.UpdateMenuItemRequest;
-import com.viettridao.cafe.dto.response.menu_item.MenuItemPageResponse;
-import com.viettridao.cafe.mapper.MenuMapper;
-import com.viettridao.cafe.model.MenuItemEntity;
-import com.viettridao.cafe.repository.MenuItemDetailRepository;
-import com.viettridao.cafe.repository.MenuItemRepository;
-import com.viettridao.cafe.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * MenuItemServiceImpl
@@ -80,21 +77,46 @@ public class MenuItemServiceImpl implements MenuItemService {
         menuItemRepository.save(menuItem);
 
         if (request.getMenuDetails() != null && !request.getMenuDetails().isEmpty()) {
-            List<MenuDetailEntity> menuDetailEntityList = new ArrayList<>();
-            for (CreateMenuItemDetailRequest detailRequest : request.getMenuDetails()) {
-                // Lấy ProductEntity từ productId
-                ProductEntity product = productRepository.findById(detailRequest.getProductId())
-                        .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy sản phẩm"));
+            // Gộp các nguyên liệu trùng productId & unitId, cộng dồn quantity
+            Map<String, Double> mergedDetailMap = new HashMap<>();
+            Map<String, CreateMenuItemDetailRequest> detailRequestMap = new HashMap<>();
 
-                // Tạo Menukey
+            for (CreateMenuItemDetailRequest detailRequest : request.getMenuDetails()) {
+                String key = detailRequest.getProductId() + "_" + detailRequest.getUnitId();
+                mergedDetailMap.put(key, mergedDetailMap.getOrDefault(key, 0.0) + detailRequest.getQuantity());
+                // Lưu lại detailRequest cuối cùng để lấy các thông tin khác nếu cần
+                detailRequestMap.put(key, detailRequest);
+            }
+
+            List<MenuDetailEntity> menuDetailEntityList = new ArrayList<>();
+            for (Map.Entry<String, Double> entry : mergedDetailMap.entrySet()) {
+                String key = entry.getKey();
+                Double quantity = entry.getValue();
+                CreateMenuItemDetailRequest detailRequest = detailRequestMap.get(key);
+
+                Integer productId = detailRequest.getProductId();
+                Integer unitId = detailRequest.getUnitId();
+
+                ProductEntity product = productRepository.findById(productId)
+                        .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy sản phẩm"));
+                UnitEntity unit = unitService.getAllUnits().stream()
+                        .filter(u -> u.getId().equals(unitId))
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn vị tính"));
+
                 MenuKey menuKey = new MenuKey();
                 menuKey.setIdProduct(product.getId());
                 menuKey.setIdMenuItem(menuItem.getId());
+                menuKey.setIdUnit(unit.getId());
 
                 MenuDetailEntity detail = menuMapper.toMenuDetailEntity(detailRequest);
                 detail.setProduct(product);
                 detail.setMenuItem(menuItem);
                 detail.setId(menuKey);
+                detail.setUnit(unit);
+
+                // Sửa quantity thành tổng
+                detail.setQuantity(quantity);
 
                 menuDetailEntityList.add(detail);
             }
@@ -121,28 +143,45 @@ public class MenuItemServiceImpl implements MenuItemService {
         // Xóa các MenuDetailEntity cũ
         menuItemDetailRepository.deleteByMenuItem_Id(menuItem.getId());
 
-        // Thêm mới các MenuDetailEntity từ request
+        // Thêm mới các MenuDetailEntity từ request (gộp các nguyên liệu trùng productId & unitId, cộng dồn quantity)
         if (request.getMenuDetails() != null && !request.getMenuDetails().isEmpty()) {
-            List<MenuDetailEntity> menuDetailEntityList = new ArrayList<>();
-            for (CreateMenuItemDetailRequest detailRequest : request.getMenuDetails()) {
-                ProductEntity product = productRepository.findById(detailRequest.getProductId())
-                        .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy sản phẩm"));
+            Map<String, Double> mergedDetailMap = new HashMap<>();
+            Map<String, CreateMenuItemDetailRequest> detailRequestMap = new HashMap<>();
 
-                // Lấy unit từ unitId
+            for (CreateMenuItemDetailRequest detailRequest : request.getMenuDetails()) {
+                String key = detailRequest.getProductId() + "_" + detailRequest.getUnitId();
+                mergedDetailMap.put(key, mergedDetailMap.getOrDefault(key, 0.0) + detailRequest.getQuantity());
+                detailRequestMap.put(key, detailRequest);
+            }
+
+            List<MenuDetailEntity> menuDetailEntityList = new ArrayList<>();
+            for (Map.Entry<String, Double> entry : mergedDetailMap.entrySet()) {
+                String key = entry.getKey();
+                Double quantity = entry.getValue();
+                CreateMenuItemDetailRequest detailRequest = detailRequestMap.get(key);
+
+                Integer productId = detailRequest.getProductId();
+                Integer unitId = detailRequest.getUnitId();
+
+                ProductEntity product = productRepository.findById(productId)
+                        .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy sản phẩm"));
                 UnitEntity unit = unitService.getAllUnits().stream()
-                        .filter(u -> u.getId().equals(detailRequest.getUnitId()))
+                        .filter(u -> u.getId().equals(unitId))
                         .findFirst()
                         .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn vị tính"));
 
                 MenuKey menuKey = new MenuKey();
                 menuKey.setIdProduct(product.getId());
                 menuKey.setIdMenuItem(menuItem.getId());
+                menuKey.setIdUnit(unit.getId());
 
                 MenuDetailEntity detail = menuMapper.toMenuDetailEntity(detailRequest);
                 detail.setProduct(product);
                 detail.setMenuItem(menuItem);
                 detail.setId(menuKey);
-                detail.setUnitName(unit.getUnitName()); // Set unitName từ Unit entity
+                detail.setUnit(unit);
+
+                detail.setQuantity(quantity);
 
                 menuDetailEntityList.add(detail);
             }

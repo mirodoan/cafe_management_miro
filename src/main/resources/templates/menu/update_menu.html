@@ -126,14 +126,16 @@
                 </button>
             </div>
             <!-- Nút hành động -->
-            <div class="flex flex-col xs:flex-row justify-between items-center mt-8 xs:mt-10 gap-3 xs:gap-0">
+            <div class="flex justify-end items-center gap-3 mt-10">
                 <a
                         th:href="@{/menu}"
-                        class="w-full xs:w-auto bg-gray-500 hover:bg-gray-600 text-white font-semibold px-6 py-2 rounded-md shadow text-center"
+                        class="bg-gray-500 hover:bg-gray-600 text-white font-semibold px-6 py-2 rounded-md shadow"
+                        style="min-width: 100px; text-align:center;"
                 >Hủy</a>
                 <button
                         type="submit"
-                        class="w-full xs:w-auto bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-6 py-2 rounded-md shadow"
+                        class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-6 py-2 rounded-md shadow"
+                        style="min-width: 100px;"
                 >
                     Lưu
                 </button>
@@ -187,6 +189,30 @@
             // sm:hidden <=> <640px là mobile
             return window.innerWidth < 640;
           }
+
+          // --- ĐOẠN CODE MỚI: Đồng bộ dữ liệu từ DOM trước khi render lại ---
+          function syncIngredientListFromDOM() {
+            if (isMobileView()) {
+              const cards = cardList.querySelectorAll('div');
+              ingredientList = Array.from(cards).map(card => {
+                return {
+                  productId: card.querySelector('select[name*="productId"]').value,
+                  quantity: card.querySelector('input[name*="quantity"]').value,
+                  unitId: card.querySelector('select[name*="unitId"]').value
+                }
+              });
+            } else {
+              const rows = tableBody.querySelectorAll('tr');
+              ingredientList = Array.from(rows).map(tr => {
+                return {
+                  productId: tr.querySelector('select[name*="productId"]').value,
+                  quantity: tr.querySelector('input[name*="quantity"]').value,
+                  unitId: tr.querySelector('select[name*="unitId"]').value
+                }
+              });
+            }
+          }
+          // --- KẾT THÚC CODE MỚI ---
 
           function renderIngredients() {
             tableBody.innerHTML = '';
@@ -303,6 +329,7 @@
 
           // Thêm nguyên liệu
           addBtn.addEventListener('click', function () {
+            syncIngredientListFromDOM();
             ingredientList.push({productId: '', quantity: '', unitId: ''});
             renderIngredients();
           });
@@ -311,6 +338,7 @@
           [tableBody, cardList].forEach(container => {
             container.addEventListener('click', function (e) {
               if (e.target.classList.contains('btn-remove-ingredient')) {
+                syncIngredientListFromDOM();
                 const idx = Array.from(container.children).indexOf(e.target.closest('tr,div'));
                 if (idx > -1) {
                   ingredientList.splice(idx, 1);

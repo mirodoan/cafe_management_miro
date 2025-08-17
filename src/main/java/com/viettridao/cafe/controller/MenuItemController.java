@@ -1,5 +1,6 @@
 package com.viettridao.cafe.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.viettridao.cafe.dto.request.menu_item.CreateMenuItemRequest;
 import com.viettridao.cafe.dto.request.menu_item.UpdateMenuItemRequest;
 import com.viettridao.cafe.dto.response.menu_item.MenuItemResponse;
@@ -37,12 +38,14 @@ public class MenuItemController {
         model.addAttribute("menus", menuItemService.getAllMenuItems(keyword, page, size));
         return "/menu/menu";
     }
-
+    
     @GetMapping("/create")
-    public String showFormCreate(Model model) {
-        // Nạp danh sách sản phẩm & đơn vị tính cho form tạo mới
-        model.addAttribute("products", productService.getAllProducts());
-        model.addAttribute("units", unitService.getAllUnitResponses());
+    public String showFormCreate(Model model) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        String productsJson = mapper.writeValueAsString(productService.getAllProducts());
+        String unitsJson = mapper.writeValueAsString(unitService.getAllUnitResponses());
+        model.addAttribute("productsJson", productsJson);
+        model.addAttribute("unitsJson", unitsJson);
         model.addAttribute("menu", new CreateMenuItemRequest());
         return "/menu/create_menu";
     }
@@ -50,28 +53,25 @@ public class MenuItemController {
     @PostMapping("/create")
     public String createMenu(@Valid @ModelAttribute("menu") CreateMenuItemRequest request, BindingResult result,
                              RedirectAttributes redirectAttributes, Model model) {
+        // Đảm bảo luôn truyền đủ dữ liệu cho view
+        model.addAttribute("products", productService.getAllProducts());
+        model.addAttribute("units", unitService.getAllUnitResponses());
+        model.addAttribute("menu", request);
+
         try {
+            // Validate dữ liệu nhập
             if (result.hasErrors()) {
-                // Nếu có lỗi validate, nạp lại dữ liệu cho form
-                model.addAttribute("products", productService.getAllProducts());
-                model.addAttribute("units", unitService.getAllUnitResponses());
-                model.addAttribute("menu", request);
+                // Trả về form với dữ liệu đã nhập và lỗi
                 return "/menu/create_menu";
             }
             // Kiểm tra trùng tên thực đơn
             if (menuItemService.existsByItemName(request.getItemName())) {
                 result.rejectValue("itemName", "error.itemName", "Tên thực đơn đã tồn tại");
-                model.addAttribute("products", productService.getAllProducts());
-                model.addAttribute("units", unitService.getAllUnitResponses());
-                model.addAttribute("menu", request);
                 return "/menu/create_menu";
             }
             // Validate nguyên liệu - phải có ít nhất 1 nguyên liệu
             if (request.getMenuDetails() == null || request.getMenuDetails().isEmpty()) {
                 result.reject("error.menuDetails", "Phải có ít nhất một nguyên liệu");
-                model.addAttribute("products", productService.getAllProducts());
-                model.addAttribute("units", unitService.getAllUnitResponses());
-                model.addAttribute("menu", request);
                 return "/menu/create_menu";
             }
             menuItemService.createMenuItem(request);

@@ -37,11 +37,11 @@
                     📈 Báo cáo thống kê
                 </h2>
                 <a
-                        th:href="@{/report/download(startDate=${startDate}, endDate=${endDate}, type=${type})}"
+                        th:href="@{/report/download-excel(startDate=${startDate}, endDate=${endDate}, type=${type})}"
                         target="_blank"
                         class="w-full md:w-auto flex justify-center items-center bg-blue-600 hover:bg-blue-700 text-white font-semibold text-base px-4 py-2 md:px-6 md:h-[48px] rounded shadow mt-2 md:mt-0 text-center"
                 >
-                    📅 Tải PDF
+                    📅 Tải Excel
                 </a>
             </div>
             <!-- Form lọc -->
@@ -174,7 +174,7 @@
                                     <span th:text="${e.position.positionName}"></span>
                                 </div>
                                 <div>
-                                    <span class="block text-xs font-semibold text-gray-400">Lương</span>
+                                    <span class="block text-xs font-semibold text-gray-400">Lương (VND)</span>
                                     <span th:text="${#numbers.formatDecimal(e.position.salary, 0, 'COMMA', 0, 'POINT')}"></span>
                                 </div>
                             </div>
@@ -192,11 +192,7 @@
                                     <span th:text="${#temporals.format(inv.createdAt, 'dd/MM/yyyy HH:mm')}"></span>
                                 </div>
                                 <div>
-                                    <span class="block text-xs font-semibold text-gray-400">Trạng thái</span>
-                                    <span th:text="${inv.status}"></span>
-                                </div>
-                                <div>
-                                    <span class="block text-xs font-semibold text-gray-400">Tổng tiền</span>
+                                    <span class="block text-xs font-semibold text-gray-400">Tổng tiền (VND)</span>
                                     <span th:text="${#numbers.formatDecimal(inv.totalAmount, 0, 'COMMA', 0, 'POINT')}"></span>
                                 </div>
                             </div>
@@ -210,7 +206,7 @@
                                     <span class="font-medium text-[#3e2723]" th:text="${r.date}"></span>
                                 </div>
                                 <div>
-                                    <span class="block text-xs font-semibold text-gray-400">Doanh thu</span>
+                                    <span class="block text-xs font-semibold text-gray-400">Doanh thu (VND)</span>
                                     <span th:text="${#numbers.formatDecimal(r.income, 0, 'COMMA', 0, 'POINT')}"></span>
                                 </div>
                                 <div>
@@ -220,12 +216,12 @@
                             </div>
                             <div class="bg-gray-100 rounded-lg shadow border border-gray-200 p-3 flex flex-col gap-2 font-semibold mt-2">
                                 <div>
-                                    <span class="block text-xs font-semibold text-gray-400">Tổng doanh thu</span>
+                                    <span class="block text-xs font-semibold text-gray-400">Tổng doanh thu (VND)</span>
                                     <span class="text-green-800"
                                           th:text="${#numbers.formatDecimal(reportData[0].totalIncome, 0, 'COMMA', 0, 'POINT')}"></span>
                                 </div>
                                 <div>
-                                    <span class="block text-xs font-semibold text-gray-400">Tổng chi phí</span>
+                                    <span class="block text-xs font-semibold text-gray-400">Tổng chi phí (VND)</span>
                                     <span class="text-red-800"
                                           th:text="${#numbers.formatDecimal(reportData[0].totalExpense, 0, 'COMMA', 0, 'POINT')}"></span>
                                 </div>
@@ -244,7 +240,7 @@
                                     <span th:text="${ex.expenseDate}"></span>
                                 </div>
                                 <div>
-                                    <span class="block text-xs font-semibold text-gray-400">Số tiền</span>
+                                    <span class="block text-xs font-semibold text-gray-400">Số tiền (VND)</span>
                                     <span th:text="${#numbers.formatDecimal(ex.amount, 0, 'COMMA', 0, 'POINT')}"></span>
                                 </div>
                             </div>
@@ -267,7 +263,7 @@
                                     <span th:text="${imp.quantity}"></span>
                                 </div>
                                 <div>
-                                    <span class="block text-xs font-semibold text-gray-400">Tổng tiền</span>
+                                    <span class="block text-xs font-semibold text-gray-400">Tổng tiền (VND)</span>
                                     <span th:text="${#numbers.formatDecimal(imp.unitImportPrice * imp.quantity, 0, 'COMMA', 0, 'POINT')}"></span>
                                 </div>
                                 <div>
@@ -293,7 +289,7 @@
                                     <span th:text="${ex.quantity}"></span>
                                 </div>
                                 <div>
-                                    <span class="block text-xs font-semibold text-gray-400">Tổng tiền</span>
+                                    <span class="block text-xs font-semibold text-gray-400">Tổng tiền (VND)</span>
                                     <span th:text="${#numbers.formatDecimal(ex.unitExportPrice * ex.quantity, 0, 'COMMA', 0, 'POINT')}"></span>
                                 </div>
                                 <div>
@@ -323,7 +319,7 @@
                                     <span th:text="${imp.quantity}"></span>
                                 </div>
                                 <div>
-                                    <span class="block text-xs font-semibold text-gray-400">Tổng tiền</span>
+                                    <span class="block text-xs font-semibold text-gray-400">Tổng tiền (VND)</span>
                                     <span th:text="${#numbers.formatDecimal(imp.unitImportPrice * imp.quantity, 0, 'COMMA', 0, 'POINT')}"></span>
                                 </div>
                                 <div>
@@ -349,7 +345,7 @@
                                     <span th:text="${ex.quantity}"></span>
                                 </div>
                                 <div>
-                                    <span class="block text-xs font-semibold text-gray-400">Tổng tiền</span>
+                                    <span class="block text-xs font-semibold text-gray-400">Tổng tiền (VND)</span>
                                     <span th:text="${#numbers.formatDecimal(ex.unitExportPrice * ex.quantity, 0, 'COMMA', 0, 'POINT')}"></span>
                                 </div>
                                 <div>
@@ -377,7 +373,7 @@
                                 <th class="px-2 sm:px-4 py-2 sm:py-3 text-left">SĐT</th>
                                 <th class="px-2 sm:px-4 py-2 sm:py-3 text-left">Địa chỉ</th>
                                 <th class="px-2 sm:px-4 py-2 sm:py-3 text-left">Chức vụ</th>
-                                <th class="px-2 sm:px-4 py-2 sm:py-3 text-right">Lương</th>
+                                <th class="px-2 sm:px-4 py-2 sm:py-3 text-right">Lương (VND)</th>
                             </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200">
@@ -390,6 +386,7 @@
                                 </td>
                                 <td class="px-2 sm:px-4 py-2 sm:py-3 text-right"
                                     th:text="${#numbers.formatDecimal(e.position.salary, 0, 'COMMA', 0, 'POINT')}">Lương
+                                    (VND)
                                 </td>
                             </tr>
                             </tbody>
@@ -403,8 +400,7 @@
                             <tr>
                                 <th class="px-2 sm:px-4 py-2 sm:py-3 text-left">Mã hóa đơn</th>
                                 <th class="px-2 sm:px-4 py-2 sm:py-3 text-left">Ngày tạo</th>
-                                <th class="px-2 sm:px-4 py-2 sm:py-3 text-center">Trạng thái</th>
-                                <th class="px-2 sm:px-4 py-2 sm:py-3 text-right">Tổng tiền</th>
+                                <th class="px-2 sm:px-4 py-2 sm:py-3 text-right">Tổng tiền (VND)</th>
                             </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200">
@@ -412,8 +408,6 @@
                                 <td class="px-2 sm:px-4 py-2 sm:py-3 text-left" th:text="${inv.id}">#</td>
                                 <td class="px-2 sm:px-4 py-2 sm:py-3 text-left"
                                     th:text="${#temporals.format(inv.createdAt, 'dd/MM/yyyy HH:mm')}">Ngày
-                                </td>
-                                <td class="px-2 sm:px-4 py-2 sm:py-3 text-center" th:text="${inv.status}">Trạng thái
                                 </td>
                                 <td class="px-2 sm:px-4 py-2 sm:py-3 text-right"
                                     th:text="${#numbers.formatDecimal(inv.totalAmount, 0, 'COMMA', 0, 'POINT')}">Tổng
@@ -429,8 +423,8 @@
                             <thead class="bg-[#FFF8E1] text-xs font-semibold text-gray-700 uppercase">
                             <tr>
                                 <th class="px-2 sm:px-4 py-2 sm:py-3 text-left">Ngày</th>
-                                <th class="px-2 sm:px-4 py-2 sm:py-3 text-right">Doanh thu</th>
-                                <th class="px-2 sm:px-4 py-2 sm:py-3 text-right">Chi phí</th>
+                                <th class="px-2 sm:px-4 py-2 sm:py-3 text-right">Doanh thu (VND)</th>
+                                <th class="px-2 sm:px-4 py-2 sm:py-3 text-right">Chi phí (VND)</th>
                             </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200">
@@ -438,9 +432,10 @@
                                 <td class="px-2 sm:px-4 py-2 sm:py-3 text-left" th:text="${r.date}">Ngày</td>
                                 <td class="px-2 sm:px-4 py-2 sm:py-3 text-right"
                                     th:text="${#numbers.formatDecimal(r.income, 0, 'COMMA', 0, 'POINT')}">Doanh thu
+                                    (VND)
                                 </td>
                                 <td class="px-2 sm:px-4 py-2 sm:py-3 text-right"
-                                    th:text="${#numbers.formatDecimal(r.expense, 0, 'COMMA', 0, 'POINT')}">Chi phí
+                                    th:text="${#numbers.formatDecimal(r.expense, 0, 'COMMA', 0, 'POINT')}">Chi phí (VND)
                                 </td>
                             </tr>
                             </tbody>
@@ -464,7 +459,7 @@
                             <tr>
                                 <th class="px-2 sm:px-4 py-2 sm:py-3 text-left">Tên chi tiêu</th>
                                 <th class="px-2 sm:px-4 py-2 sm:py-3 text-left">Ngày</th>
-                                <th class="px-2 sm:px-4 py-2 sm:py-3 text-right">Số tiền</th>
+                                <th class="px-2 sm:px-4 py-2 sm:py-3 text-right">Số tiền (VND)</th>
                             </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200">
@@ -472,7 +467,7 @@
                                 <td class="px-2 sm:px-4 py-2 sm:py-3 text-left" th:text="${ex.expenseName}">Tên</td>
                                 <td class="px-2 sm:px-4 py-2 sm:py-3 text-left" th:text="${ex.expenseDate}">Ngày</td>
                                 <td class="px-2 sm:px-4 py-2 sm:py-3 text-right"
-                                    th:text="${#numbers.formatDecimal(ex.amount, 0, 'COMMA', 0, 'POINT')}">Số tiền
+                                    th:text="${#numbers.formatDecimal(ex.amount, 0, 'COMMA', 0, 'POINT')}">Số tiền (VND)
                                 </td>
                             </tr>
                             </tbody>
@@ -484,7 +479,7 @@
                                 <th class="px-2 sm:px-4 py-2 sm:py-3 text-left">Sản phẩm</th>
                                 <th class="px-2 sm:px-4 py-2 sm:py-3 text-left">Ngày nhập</th>
                                 <th class="px-2 sm:px-4 py-2 sm:py-3 text-right">Số lượng</th>
-                                <th class="px-2 sm:px-4 py-2 sm:py-3 text-right">Tổng tiền</th>
+                                <th class="px-2 sm:px-4 py-2 sm:py-3 text-right">Tổng tiền (VND)</th>
                                 <th class="px-2 sm:px-4 py-2 sm:py-3 text-left">Nhân viên</th>
                             </tr>
                             </thead>
@@ -511,7 +506,7 @@
                                 <th class="px-2 sm:px-4 py-2 sm:py-3 text-left">Sản phẩm</th>
                                 <th class="px-2 sm:px-4 py-2 sm:py-3 text-left">Ngày xuất</th>
                                 <th class="px-2 sm:px-4 py-2 sm:py-3 text-right">Số lượng</th>
-                                <th class="px-2 sm:px-4 py-2 sm:py-3 text-right">Tổng tiền</th>
+                                <th class="px-2 sm:px-4 py-2 sm:py-3 text-right">Tổng tiền (VND)</th>
                                 <th class="px-2 sm:px-4 py-2 sm:py-3 text-left">Nhân viên</th>
                             </tr>
                             </thead>
@@ -541,7 +536,7 @@
                                     <th class="px-2 sm:px-4 py-2 sm:py-3 text-left">Sản phẩm</th>
                                     <th class="px-2 sm:px-4 py-2 sm:py-3 text-left">Ngày nhập</th>
                                     <th class="px-2 sm:px-4 py-2 sm:py-3 text-right">Số lượng</th>
-                                    <th class="px-2 sm:px-4 py-2 sm:py-3 text-right">Tổng tiền</th>
+                                    <th class="px-2 sm:px-4 py-2 sm:py-3 text-right">Tổng tiền (VND)</th>
                                     <th class="px-2 sm:px-4 py-2 sm:py-3 text-left">Nhân viên</th>
                                 </tr>
                                 </thead>
@@ -572,7 +567,7 @@
                                     <th class="px-2 sm:px-4 py-2 sm:py-3 text-left">Sản phẩm</th>
                                     <th class="px-2 sm:px-4 py-2 sm:py-3 text-left">Ngày xuất</th>
                                     <th class="px-2 sm:px-4 py-2 sm:py-3 text-right">Số lượng</th>
-                                    <th class="px-2 sm:px-4 py-2 sm:py-3 text-right">Tổng tiền</th>
+                                    <th class="px-2 sm:px-4 py-2 sm:py-3 text-right">Tổng tiền (VND)</th>
                                     <th class="px-2 sm:px-4 py-2 sm:py-3 text-left">Nhân viên</th>
                                 </tr>
                                 </thead>
@@ -599,6 +594,15 @@
             </div>
         </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+          var today = new Date().toISOString().split('T')[0];
+          var start = document.getElementById('start');
+          var end = document.getElementById('end');
+          if (!start.value) start.value = today;
+          if (!end.value) end.value = today;
+        });
+    </script>
 </div>
 </body>
 </html>

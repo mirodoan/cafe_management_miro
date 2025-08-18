@@ -37,11 +37,11 @@
                     </div>
                     <div>
                         <span class="block text-xs font-semibold text-gray-400">Đơn giá</span>
-                        <span th:text="${#numbers.formatDecimal(equipment.purchasePrice, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                        <span th:text="${#numbers.formatDecimal(equipment.purchasePrice, 0, 'COMMA', 0, 'POINT')}"></span>
                     </div>
                     <div>
-                        <span class="block text-xs font-semibold text-gray-400">Giá</span>
-                        <span th:text="${#numbers.formatDecimal(equipment.quantity * equipment.purchasePrice, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                        <span class="block text-xs font-semibold text-gray-400">Giá (VND)</span>
+                        <span th:text="${#numbers.formatDecimal(equipment.quantity * equipment.purchasePrice, 0, 'COMMA', 0, 'POINT')}"></span>
                     </div>
                     <div class="flex gap-2 mt-2">
                         <a th:href="@{/equipment/update/{id}(id=${equipment.id})}"
@@ -72,7 +72,7 @@
                         <th class="w-[15%] px-2 sm:px-4 py-2 sm:py-3 text-left">Ngày mua</th>
                         <th class="w-[10%] px-2 sm:px-4 py-2 sm:py-3 text-center">Số lượng</th>
                         <th class="w-[15%] px-2 sm:px-4 py-2 sm:py-3 text-right">Đơn giá</th>
-                        <th class="w-[15%] px-2 sm:px-4 py-2 sm:py-3 text-right">Giá</th>
+                        <th class="w-[15%] px-2 sm:px-4 py-2 sm:py-3 text-right">Giá (VND)</th>
                         <th class="w-[15%] px-2 sm:px-4 py-2 sm:py-3 text-center">Thao tác</th>
                     </tr>
                     </thead>
@@ -85,11 +85,11 @@
                         </td>
                         <td class="px-2 sm:px-4 py-2 sm:py-3 text-center" th:text="${equipment.quantity}">1</td>
                         <td class="px-2 sm:px-4 py-2 sm:py-3 text-right"
-                            th:text="${#numbers.formatDecimal(equipment.purchasePrice, 0, 'COMMA', 0, 'POINT')} + ' đ'">
+                            th:text="${#numbers.formatDecimal(equipment.purchasePrice, 0, 'COMMA', 0, 'POINT')}">
                             100,000
                         </td>
                         <td class="px-2 sm:px-4 py-2 sm:py-3 text-right"
-                            th:text="${#numbers.formatDecimal(equipment.quantity * equipment.purchasePrice, 0, 'COMMA', 0, 'POINT')} + ' đ'">
+                            th:text="${#numbers.formatDecimal(equipment.quantity * equipment.purchasePrice, 0, 'COMMA', 0, 'POINT')}">
                             100,000
                         </td>
                         <td class="px-2 sm:px-4 py-2 sm:py-3">

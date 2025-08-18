@@ -94,4 +94,29 @@ public class ReportController {
         response.getOutputStream().flush();
     }
 
+    @GetMapping("/download-excel")
+    public void downloadExcel(
+            @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam("type") String type,
+            HttpServletResponse response
+    ) throws IOException {
+        ReportFilterRequest request = new ReportFilterRequest();
+        request.setStartDate(startDate);
+        request.setEndDate(endDate);
+        try {
+            request.setType(ReportType.valueOf(type));
+        } catch (IllegalArgumentException e) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Loại báo cáo không hợp lệ");
+            return;
+        }
+
+        byte[] excelData = reportService.generateReportExcel(request);
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=report.xlsx");
+        response.getOutputStream().write(excelData);
+        response.getOutputStream().flush();
+    }
+
 }

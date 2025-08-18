@@ -19,6 +19,8 @@ public interface ReportService {
      */
     byte[] generateReport(ReportFilterRequest request);
 
+    byte[] generateReportExcel(ReportFilterRequest request); // Excel
+
     /**
      * Lấy dữ liệu báo cáo theo bộ lọc.
      *

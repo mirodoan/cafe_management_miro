@@ -32,7 +32,8 @@
                 <label for="quantity" class="block text-[#3e2723] font-bold text-lg mb-2">* Số lượng:</label>
 
                 <input type="text" th:field="*{quantity}" id="quantity" min="1" step="1" required
-                       pattern="^[1-9][0-9]*$"
+                       pattern="^0*[1-9][0-9]*$"
+                       maxlength="4"
                        oninvalid="this.setCustomValidity('Chỉ có thể nhập số nguyên dương')"
                        oninput="this.setCustomValidity(''); this.value = this.value.replace(/[^0-9]/g,'');"
                        class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-yellow-300 outline-none"/>
@@ -46,7 +47,8 @@
                 <input type="text" id="purchasePrice" min="1000" step="1000" required
                        name="purchasePrice"
                        th:value="${T(java.lang.Math).round(equipment.purchasePrice)}"
-                       pattern="^[1-9][0-9]*$"
+                       pattern="^0*[1-9][0-9]*$"
+                       maxlength="9"
                        oninvalid="this.setCustomValidity('Chỉ có thể nhập số nguyên dương')"
                        oninput="this.setCustomValidity(''); this.value = this.value.replace(/[^0-9]/g,'');"
                        class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-yellow-300 outline-none"/>

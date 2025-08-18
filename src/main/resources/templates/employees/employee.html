@@ -82,8 +82,8 @@
                     <thead class="bg-[#FFF8E1] text-xs font-semibold text-gray-700 uppercase">
                     <tr>
                         <th class="w-[32%] px-2 sm:px-4 py-2 sm:py-3 text-left">Họ và tên</th>
-                        <th class="w-[28%] px-2 sm:px-4 py-2 sm:py-3 text-left">Chức vụ</th>
-                        <th class="w-[20%] px-2 sm:px-4 py-2 sm:py-3 text-right">Lương</th>
+                        <th class="w-[22%] px-2 sm:px-4 py-2 sm:py-3 text-left">Chức vụ</th>
+                        <th class="w-[26%] px-2 sm:px-4 py-2 sm:py-3 text-right">Lương (VND)</th>
                         <th class="w-[20%] px-2 sm:px-4 py-2 sm:py-3 text-center">Thao tác</th>
                     </tr>
                     </thead>
@@ -101,7 +101,7 @@
                         </td>
                         <td
                                 class="px-2 sm:px-4 py-2 sm:py-3 text-right"
-                                th:text="${#numbers.formatInteger(employee.salary, 3, 'COMMA')} + ' đ'"
+                                th:text="${#numbers.formatInteger(employee.salary, 3, 'COMMA')}"
                         >
                             7,000,000
                         </td>
@@ -158,8 +158,8 @@
                         <span th:text="${employee.positionName}"></span>
                     </div>
                     <div>
-                        <span class="block text-xs font-semibold text-gray-400">Lương</span>
-                        <span th:text="${#numbers.formatInteger(employee.salary, 3, 'COMMA')} + ' đ'"></span>
+                        <span class="block text-xs font-semibold text-gray-400">Lương (VND)</span>
+                        <span th:text="${#numbers.formatInteger(employee.salary, 3, 'COMMA')}"></span>
                     </div>
                     <div class="flex gap-2 mt-2">
                         <a th:href="@{/employee/update/{id}(id=${employee.id})}"

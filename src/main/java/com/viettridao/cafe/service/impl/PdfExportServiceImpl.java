@@ -2,6 +2,12 @@ package com.viettridao.cafe.service.impl;
 
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.AreaBreak;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.Table;
+import com.itextpdf.layout.properties.TextAlignment;
+import com.itextpdf.layout.properties.UnitValue;
 import com.viettridao.cafe.common.ReportType;
 import com.viettridao.cafe.dto.response.revenue.RevenueItemResponse;
 import com.viettridao.cafe.dto.response.revenue.RevenueResponse;
@@ -10,16 +16,12 @@ import com.viettridao.cafe.service.PdfExportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import com.itextpdf.layout.*;
-import com.itextpdf.layout.element.*;
-import com.itextpdf.layout.properties.TextAlignment;
-import com.itextpdf.layout.properties.UnitValue;
-
 import java.io.ByteArrayOutputStream;
 import java.text.DecimalFormat;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * PdfExportServiceImpl
@@ -60,8 +62,8 @@ public class PdfExportServiceImpl implements PdfExportService {
 
         table.addHeaderCell("Tên món");
         table.addHeaderCell("Số lượng");
-        table.addHeaderCell("Đơn giá (VNĐ)");
-        table.addHeaderCell("Thành tiền (VNĐ)");
+        table.addHeaderCell("Đơn giá (VND)");
+        table.addHeaderCell("Thành tiền (VND)");
 
         DecimalFormat df = new DecimalFormat("#,###");
 
@@ -73,7 +75,7 @@ public class PdfExportServiceImpl implements PdfExportService {
         }
 
         document.add(table);
-        document.add(new Paragraph("\nTổng cộng: " + df.format(invoice.getTotalAmount()) + " VNĐ").setBold());
+        document.add(new Paragraph("\nTổng cộng: " + df.format(invoice.getTotalAmount()) + " VND").setBold());
         document.close();
 
         return out.toByteArray();
@@ -105,7 +107,7 @@ public class PdfExportServiceImpl implements PdfExportService {
         Table table = new Table(UnitValue.createPercentArray(new float[]{4, 3, 2})).useAllAvailableWidth();
         table.addHeaderCell("Họ tên");
         table.addHeaderCell("Chức vụ");
-        table.addHeaderCell("Lương (VNĐ)");
+        table.addHeaderCell("Lương (VND)");
         DecimalFormat df = new DecimalFormat("#,###");
 
         for (EmployeeEntity e : employees) {
@@ -125,7 +127,6 @@ public class PdfExportServiceImpl implements PdfExportService {
         Table table = new Table(UnitValue.createPercentArray(new float[]{2, 3, 3, 2})).useAllAvailableWidth();
         table.addHeaderCell("Mã HD");
         table.addHeaderCell("Ngày tạo");
-        table.addHeaderCell("Trạng thái");
         table.addHeaderCell("Tổng tiền");
         DecimalFormat df = new DecimalFormat("#,###");
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -148,8 +149,8 @@ public class PdfExportServiceImpl implements PdfExportService {
 
         Table table = new Table(UnitValue.createPercentArray(new float[]{3, 3, 3})).useAllAvailableWidth();
         table.addHeaderCell("Ngày");
-        table.addHeaderCell("Thu (VNĐ)");
-        table.addHeaderCell("Chi (VNĐ)");
+        table.addHeaderCell("Thu (VND)");
+        table.addHeaderCell("Chi (VND)");
         DecimalFormat df = new DecimalFormat("#,###");
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
@@ -159,8 +160,8 @@ public class PdfExportServiceImpl implements PdfExportService {
             table.addCell(df.format(Optional.ofNullable(i.getExpense()).orElse(0.0)));
         }
         doc.add(table);
-        doc.add(new Paragraph("\nTổng thu: " + df.format(res.getTotalIncome()) + " VNĐ").setBold());
-        doc.add(new Paragraph("Tổng chi: " + df.format(res.getTotalExpense()) + " VNĐ").setBold());
+        doc.add(new Paragraph("\nTổng thu: " + df.format(res.getTotalIncome()) + " VND").setBold());
+        doc.add(new Paragraph("Tổng chi: " + df.format(res.getTotalExpense()) + " VND").setBold());
         doc.close();
         return out.toByteArray();
     }

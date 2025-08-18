@@ -43,7 +43,7 @@
                 <div class="space-y-4 xs:space-y-6">
                     <div>
                         <label for="currentPrice" class="block text-[#3e2723] font-bold text-base xs:text-lg mb-2">* Giá
-                            tiền (VNĐ):</label>
+                            tiền (VND):</label>
                         <input
                                 type="text"
                                 th:field="*{currentPrice}"
@@ -51,7 +51,7 @@
                                 required
                                 minlength="4"
                                 maxlength="9"
-                                pattern="^[1-9][0-9]*$"
+                                pattern="^0*[1-9][0-9]*$"
                                 placeholder="Nhập giá tiền"
                                 oninvalid="this.setCustomValidity('Giá tiền phải là số hợp lệ và lớn hơn 0')"
                                 oninput="this.setCustomValidity(''); this.value = this.value.replace(/[^0-9]/g,'');"

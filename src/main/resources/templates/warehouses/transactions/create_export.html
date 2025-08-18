@@ -98,7 +98,7 @@
                         required
                         minlength="4"
                         maxlength="9"
-                        pattern="^[1-9][0-9]*$"
+                        pattern="^0*[1-9][0-9]*$"
                         placeholder="Nhập đơn giá"
                         oninvalid="this.setCustomValidity('Đơn giá phải lớn hơn 1000 và không được để trống')"
                         oninput="this.setCustomValidity(''); this.value = this.value.replace(/[^0-9]/g,'');"
@@ -124,9 +124,8 @@
                         th:field="*{quantity}"
                         id="quantity"
                         required
-                        minlength="4"
                         maxlength="5"
-                        pattern="^[1-9][0-9]*$"
+                        pattern="^0*[1-9][0-9]*$"
                         placeholder="Nhập số lượng"
                         oninvalid="this.setCustomValidity('Số lượng phải lớn hơn 0 và không được để trống')"
                         oninput="this.setCustomValidity(''); this.value = this.value.replace(/[^0-9]/g,'');"

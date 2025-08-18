@@ -148,23 +148,40 @@ public class SalesController {
      */
     @PostMapping("/select-menu-on-sales")
     public String selectMenuOnSales(
-            @Valid @ModelAttribute("selectMenuRequest") CreateSelectMenuRequest request,
+            @ModelAttribute("selectMenuRequest") CreateSelectMenuRequest request,
             BindingResult bindingResult,
             Model model) {
-        // Kiểm tra lỗi validate dữ liệu nhập vào
+
+        // Validate thủ công
+        if (request.getCustomerName() != null && !request.getCustomerName().trim().isEmpty()) {
+            if (request.getCustomerName().trim().length() < 3) {
+                bindingResult.rejectValue("customerName", "error.customerName", "Tên khách hàng tối thiểu 3 ký tự");
+            }
+        }
+        if (request.getCustomerPhone() != null && !request.getCustomerPhone().trim().isEmpty()) {
+            if (!request.getCustomerPhone().matches("^0\\d{9,10}$")) {
+                bindingResult.rejectValue("customerPhone", "error.customerPhone", "Số điện thoại phải bắt đầu từ 0 và có từ 10 đến 11 chữ số");
+            }
+        }
+
+        // Set mặc định nếu để trống
+        if (request.getCustomerName() == null || request.getCustomerName().trim().isEmpty()) {
+            request.setCustomerName("Khách vãng lai");
+        }
+        if (request.getCustomerPhone() == null || request.getCustomerPhone().trim().isEmpty()) {
+            request.setCustomerPhone("0000000000");
+        }
+
+        // Kiểm tra lỗi
         if (bindingResult.hasErrors()) {
             prepareSelectMenuFormModel(model, request);
             return "sales/sales";
         }
         try {
-            // Tạo order mới cho bàn và thông báo thành công
             Integer employeeId = getCurrentEmployeeId();
             model.addAttribute("orderDetail", selectMenuService.createOrderForAvailableTable(request, employeeId));
             model.addAttribute("success", "Chọn món thành công!");
             model.addAttribute("showSelectMenuForm", false);
-        } catch (IllegalArgumentException e) {
-            model.addAttribute("error", e.getMessage());
-            prepareSelectMenuFormModel(model, request);
         } catch (RuntimeException e) {
             model.addAttribute("error", e.getMessage());
             prepareSelectMenuFormModel(model, request);
@@ -366,14 +383,15 @@ public class SalesController {
      * @return Tên view sales/sales
      */
     @GetMapping("/show-merge-table-form")
-    public String showMergeTableForm(@RequestParam Integer selectedTableId, Model model) {
+    public String showMergeTableForm(
+            @RequestParam(value = "selectedTableId", required = false) Integer selectedTableId, Model model) {
         // Lấy danh sách bàn đang sử dụng để gộp bàn
         List<TableEntity> occupiedTables = tableRepository.findAll().stream()
                 .filter(table -> table.getStatus() == TableStatus.OCCUPIED)
                 .toList();
         model.addAttribute("showMergeModal", true);
         model.addAttribute("occupiedTables", occupiedTables);
-        model.addAttribute("selectedTableId", selectedTableId);
+        model.addAttribute("selectedTableId", selectedTableId); // Có thể null
         return "sales/sales";
     }
 

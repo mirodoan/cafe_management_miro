@@ -37,7 +37,7 @@
             <div>
                 <label for="quantity" class="block text-[#3e2723] font-bold text-lg mb-2">* Số lượng:</label>
                 <input type="text" th:field="*{quantity}" id="quantity" min="1" step="1" required
-                       pattern="^[1-9][0-9]*$"
+                       pattern="^0*[1-9][0-9]*$"
                        maxlength="4"
                        oninvalid="this.setCustomValidity('Chỉ có thể nhập số nguyên dương')"
                        oninput="this.setCustomValidity(''); this.value = this.value.replace(/[^0-9]/g,'');"
@@ -50,7 +50,7 @@
             <div>
                 <label for="purchasePrice" class="block text-[#3e2723] font-bold text-lg mb-2">* Đơn giá (VND):</label>
                 <input type="text" th:field="*{purchasePrice}" id="purchasePrice" min="1000" step="1000" required
-                       pattern="^[1-9][0-9]*$"
+                       pattern="^0*[1-9][0-9]*$"
                        maxlength="9"
                        oninvalid="this.setCustomValidity('Chỉ có thể nhập số nguyên dương')"
                        oninput="this.setCustomValidity(''); this.value = this.value.replace(/[^0-9]/g,'');"
@@ -83,11 +83,21 @@
         </form>
     </div>
     <script>
-        flatpickr("#purchaseDate", {
-          dateFormat: "d/m/Y",
-          allowInput: true,
-          maxDate: "today"
-        });
+        <!--        document.getElementById('quantity').addEventListener('blur', function() {-->
+        <!--            // Loại bỏ số 0 ở đầu-->
+        <!--            this.value = this.value.replace(/^0+/, '');-->
+        <!--        });-->
+
+        <!--        document.getElementById('purchasePrice').addEventListener('blur', function() {-->
+        <!--            // Loại bỏ số 0 ở đầu-->
+        <!--            this.value = this.value.replace(/^0+/, '');-->
+        <!--        });-->
+
+                flatpickr("#purchaseDate", {
+                  dateFormat: "d/m/Y",
+                  allowInput: true,
+                  maxDate: "today"
+                });
     </script>
 </div>
 </body>

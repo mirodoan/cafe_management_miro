@@ -1,40 +1,48 @@
-<!-- Modal/Form Thanh toán: chỉ hiển thị khi showPaymentModal=true và orderDetail!=null -->
 <div xmlns:th="http://www.thymeleaf.org" th:fragment="payment-modal">
     <div
             th:if="${showPaymentModal} and ${orderDetail != null}"
             class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
     >
-        <div class="bg-white rounded-2xl shadow-2xl px-2 py-4 sm:p-6 md:p-8 max-w-[95vw] w-full max-w-md sm:max-w-lg md:max-w-xl relative border border-[#b5c99a] flex flex-col">
-            <button
-                    type="button"
-                    onclick="closePaymentModal()"
-                    class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-xl"
-            >X
-            </button>
-            <h3
-                    class="text-xl sm:text-2xl md:text-3xl font-extrabold mb-4 sm:mb-6 text-center tracking-tight break-words"
-                    style="color: #3e2723"
-            >
-                Thanh toán -
-                <span th:text="${orderDetail.tableName}"></span>
-            </h3>
-            <div class="mb-2 sm:mb-4">
-                <div class="grid grid-cols-1 gap-3 sm:gap-5 md:grid-cols-2">
+        <div class="bg-white rounded-2xl shadow-2xl px-4 py-6 sm:p-8 w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl relative border border-[#b5c99a] flex flex-col"
+             style="max-height: 92vh; display: flex; flex-direction: column;">
+            <!-- Header sticky -->
+            <div class="sticky top-0 z-10 bg-white rounded-t-2xl flex items-center justify-center gap-3 px-4 py-2"
+                 style="border-bottom: 1px solid #e5e7eb;">
+                <h3
+                        class="text-xl sm:text-2xl md:text-3xl font-extrabold text-center tracking-tight break-words m-0"
+                        style="color: #3e2723"
+                >
+                    Thanh toán -
+                    <span th:text="${orderDetail.tableName}"></span>
+                </h3>
+                <button
+                        type="button"
+                        onclick="closePaymentModal()"
+                        class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-xl"
+                >×
+                </button>
+            </div>
+            <!-- Thông tin khách hàng -->
+            <div class="mb-3">
+                <div class="grid grid-cols-2 gap-3 items-end">
                     <div>
                         <label class="block text-base font-semibold text-[#3e2723] mb-1">Khách hàng</label>
-                        <div class="mt-1 w-full rounded-lg border border-[#b5c99a] bg-[#f6e7cb] px-2 py-1 sm:px-3 sm:py-2 text-[15px] sm:text-base">
+                        <div class="w-full rounded-lg border border-[#b5c99a] bg-[#f6e7cb] px-3 py-2 text-base truncate"
+                             style="min-width: 0;">
                             <span th:text="${orderDetail.customerName ?: '---'}"></span>
                         </div>
                     </div>
                     <div>
                         <label class="block text-base font-semibold text-[#3e2723] mb-1">Số điện thoại</label>
-                        <div class="mt-1 w-full rounded-lg border border-[#b5c99a] bg-[#f6e7cb] px-2 py-1 sm:px-3 sm:py-2 text-[15px] sm:text-base">
+                        <div class="w-full rounded-lg border border-[#b5c99a] bg-[#f6e7cb] px-3 py-2 text-base truncate"
+                             style="min-width: 0;">
                             <span th:text="${orderDetail.customerPhone ?: '---'}"></span>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="overflow-x-auto mb-4 sm:mb-6">
+            <!-- Table món ăn -->
+            <div class="overflow-x-auto mb-3" style="max-height: 230px;">
                 <table class="min-w-full border rounded-lg text-sm sm:text-base">
                     <thead>
                     <tr class="bg-gray-200">
@@ -59,7 +67,8 @@
                     </tbody>
                 </table>
             </div>
-            <div class="flex flex-col sm:flex-row sm:justify-end sm:items-center gap-2 mb-2 sm:mb-4">
+            <!-- Tổng tiền -->
+            <div class="flex flex-row justify-end items-center gap-2 mb-2 sm:mb-2">
                 <span class="font-bold text-base sm:text-lg text-[#3e2723]">Tổng tiền (VND):</span>
                 <span
                         id="totalAmountValue"
@@ -67,87 +76,90 @@
                         th:text="${#numbers.formatDecimal(orderDetail.totalAmount ?: 0, 0, 'COMMA', 0, 'POINT')}">
                 </span>
             </div>
+            <!-- Form nhập tiền khách đưa và tiền thừa (2 hàng ngang) -->
             <form
                     id="payment-form"
                     th:action="@{/sale/pay-invoice}"
                     method="post"
-                    class="mt-2 sm:mt-4 flex flex-col items-center"
+                    class="mt-1 flex flex-col items-center w-full"
             >
-                <!-- CSRF token: Bảo vệ chống tấn công Cross-Site Request Forgery -->
+                <!-- CSRF token -->
                 <input
                         type="hidden"
                         th:name="${_csrf.parameterName}"
                         th:value="${_csrf.token}"
                 />
-
                 <input
                         type="hidden"
                         name="tableId"
                         th:value="${orderDetail.tableId}"
                 />
-                <div class="flex flex-col w-full max-w-[260px] sm:max-w-xs mb-3 sm:mb-4">
-                    <label for="customerPaid" class="block text-base font-semibold text-[#3e2723] mb-1">
+
+                <!-- Đưa về 2 hàng ngang: Hàng 1 là Khách đưa + input + lỗi. Hàng 2 là Tiền thừa + value -->
+                <div class="flex flex-row items-center justify-center w-full gap-3 mb-0">
+                    <label for="customerPaid"
+                           class="block text-base font-semibold text-[#3e2723] mb-0 mr-2 min-w-[80px] text-right">
                         Khách đưa:
                     </label>
-                    <input
-                            type="text"
-                            id="customerPaid"
-                            name="customerPaid"
-                            maxlength="11"
-                            class="border border-gray-400 rounded px-2 py-1 sm:px-3 sm:py-2 text-right font-bold text-base sm:text-lg"
-                            placeholder="0"
-                            autocomplete="off"
-                            oninput="validateInput(this)"
-                            onpaste="return handlePaste(event)"
-                            style="max-width: 220px;"
-                    />
-                    <span
-                            id="customerPaidError"
-                            class="text-red-500 text-xs sm:text-sm mt-1 min-h-[18px] sm:min-h-[20px]"
-                            style="display: none"
-                    ></span>
+                    <div class="flex flex-col" style="min-width:0;">
+                        <input
+                                type="text"
+                                id="customerPaid"
+                                name="customerPaid"
+                                maxlength="11"
+                                class="border border-gray-400 rounded px-3 py-2 text-right font-bold text-base sm:text-lg"
+                                placeholder="0"
+                                autocomplete="off"
+                                oninput="validateInput(this)"
+                                onpaste="return handlePaste(event)"
+                                style="width: 180px;"
+                        />
+                        <span
+                                id="customerPaidError"
+                                class="text-red-500 text-xs sm:text-sm mt-1 min-h-[18px] sm:min-h-[20px] block"
+                                style="height: 18px;"
+                        ></span>
+                    </div>
                 </div>
-                <div class="flex flex-col w-full max-w-[260px] sm:max-w-xs mb-4 sm:mb-6">
-                    <label class="block text-base font-semibold text-[#3e2723] mb-1">Tiền thừa của khách:</label>
-                    <span id="changeAmount" class="font-bold text-base sm:text-lg text-[#3e2723] block truncate"
-                          style="max-width:220px;">0</span>
+                <div class="flex flex-row items-center justify-center w-full gap-3 mt-2 mb-2">
+                    <label class="block text-base font-semibold text-[#3e2723] mb-0 mr-2 min-w-[160px] text-right">
+                        Tiền thừa của khách:
+                    </label>
+                    <span id="changeAmount" class="font-bold text-base sm:text-lg text-[#3e2723] block ml-2"
+                          style="width:120px;text-align:right;">0</span>
                 </div>
-                <button
-                        type="submit"
-                        class="bg-gradient-to-tr from-[#3e2723] to-[#b5c99a] text-white w-full px-2 sm:px-8 py-2 sm:py-3 rounded-lg font-semibold shadow hover:scale-105 hover:from-[#5d4037] hover:to-[#b5c99a] transition-all duration-200 text-base sm:text-lg"
-                >
-                    Xác nhận thanh toán
-                </button>
+                <!-- Nút xác nhận & hủy: đẹp, ngắn, căn giữa -->
+                <div class="flex justify-center gap-3 pt-1 pb-1 w-full">
+                    <button
+                            type="submit"
+                            class="px-7 py-2 rounded-lg font-semibold text-white bg-green-500 hover:bg-green-600 shadow min-w-[110px] text-base sm:text-lg"
+                    >Xác nhận thanh toán
+                    </button>
+                    <button
+                            type="button"
+                            onclick="closePaymentModal()"
+                            class="px-7 py-2 rounded-lg font-semibold text-white bg-gray-500 hover:bg-gray-600 shadow min-w-[110px] text-base sm:text-lg"
+                    >Hủy
+                    </button>
+                </div>
             </form>
             <script>
-                // Giới hạn số tiền khách đưa tối đa 9 số (tối đa 999,999,999 VND)
                 const MAX_PAID = 999999999;
-
-                // Định dạng số tiền thành chuỗi có dấu phẩy ngăn cách, ví dụ: 1,000,000
                 function formatVND(num) {
                     return num.toLocaleString('en-US');
                 }
-                // Chuyển chuỗi nhập liệu tiền thành số nguyên, loại bỏ dấu phẩy/chấm ngăn cách
                 function parseVND(str) {
                     if (!str) return 0;
                     return parseInt(str.replace(/[.,]/g, ''), 10) || 0;
                 }
-
-                // Validate và format lại dữ liệu khi người dùng nhập số tiền khách đưa
                 function validateInput(input) {
-                    // Chỉ lấy số, loại bỏ ký tự khác
                     let value = input.value.replace(/[^0-9]/g, '');
-                    // Giới hạn tối đa 11 chữ số
                     if (value.length > 11) value = value.substring(0, 11);
                     let num = parseInt(value || '0', 10);
-                    // Không cho vượt quá MAX_PAID
                     if (num > MAX_PAID) num = MAX_PAID;
-                    // Hiển thị lại giá trị với dấu phẩy ngăn cách
                     input.value = num ? num.toLocaleString('en-US') : '';
                     updateChange();
                 }
-
-                // Xử lý khi dán dữ liệu vào ô nhập số tiền khách đưa
                 function handlePaste(event) {
                     event.preventDefault();
                     const paste = (event.clipboardData || window.clipboardData).getData('text');
@@ -159,18 +171,14 @@
                     updateChange();
                     return false;
                 }
-
-                // Lấy các phần tử giao diện liên quan
                 const totalAmountEl = document.getElementById('totalAmountValue');
                 const customerPaidInput = document.getElementById('customerPaid');
                 const changeAmountEl = document.getElementById('changeAmount');
                 const errorEl = document.getElementById('customerPaidError');
-                // Lưu tổng số tiền hóa đơn (tự động lấy từ giao diện)
                 let totalAmount = 0;
                 if (totalAmountEl) {
                     totalAmount = parseVND(totalAmountEl.textContent);
                 }
-                // Kiểm tra tính hợp lệ của số tiền khách đưa
                 function validatePaid(value) {
                     if (!value || value.trim() === '') return 'Vui lòng nhập số tiền khách đưa.';
                     const num = parseVND(value);
@@ -179,7 +187,6 @@
                     if (num > MAX_PAID) return 'Tối đa chỉ nhận 99,999,999,999 VND.';
                     return '';
                 }
-                // Cập nhật tiền thối lại và hiển thị thông báo lỗi nếu có
                 function updateChange() {
                     const value = customerPaidInput.value.trim();
                     const errorMsg = validatePaid(value);
@@ -197,10 +204,8 @@
                         return true;
                     }
                 }
-                // Gắn sự kiện để cập nhật tiền thừa khi nhập số tiền khách đưa
                 customerPaidInput.addEventListener('input', updateChange);
                 customerPaidInput.addEventListener('paste', handlePaste);
-                // Xử lý khi submit form thanh toán
                 document.getElementById('payment-form').addEventListener('submit', function (e) {
                     if (!updateChange()) {
                         e.preventDefault();
@@ -211,7 +216,6 @@
             </script>
         </div>
     </div>
-    <!-- Nếu showPaymentModal=true nhưng orderDetail==null, hiện thông báo lỗi -->
     <div
             th:if="${showPaymentModal} and ${orderDetail == null}"
             class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
@@ -221,7 +225,7 @@
                     type="button"
                     onclick="closePaymentModal()"
                     class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-xl"
-            >X
+            >×
             </button>
             <h3 class="text-lg sm:text-2xl font-bold mb-4 text-center text-[#3e2723]">
                 Không có thông tin hóa đơn để thanh toán!

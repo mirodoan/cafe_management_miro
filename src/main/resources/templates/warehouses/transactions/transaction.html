@@ -120,11 +120,11 @@
                     </div>
                     <div>
                         <span class="block text-xs font-semibold text-gray-400">Đơn giá</span>
-                        <span th:text="${#numbers.formatInteger(transaction.unitPrice, 0, 'COMMA')} + ' đ'"></span>
+                        <span th:text="${#numbers.formatInteger(transaction.unitPrice, 0, 'COMMA')}"></span>
                     </div>
                     <div>
-                        <span class="block text-xs font-semibold text-gray-400">Thành tiền</span>
-                        <span th:text="${#numbers.formatInteger(transaction.totalAmount, 0, 'COMMA')} + ' đ'"></span>
+                        <span class="block text-xs font-semibold text-gray-400">Thành tiền (VND)</span>
+                        <span th:text="${#numbers.formatInteger(transaction.totalAmount, 0, 'COMMA')}"></span>
                     </div>
                 </div>
                 <!-- Nếu không có giao dịch -->
@@ -145,7 +145,7 @@
                         <th class="px-2 sm:px-4 py-2 sm:py-3 text-left min-w-[80px]">Số lượng</th>
                         <th class="px-2 sm:px-4 py-2 sm:py-3 text-left min-w-[60px]">Đơn vị</th>
                         <th class="px-2 sm:px-4 py-2 sm:py-3 text-right min-w-[120px]">Đơn giá</th>
-                        <th class="px-2 sm:px-4 py-2 sm:py-3 text-right min-w-[120px]">Thành tiền</th>
+                        <th class="px-2 sm:px-4 py-2 sm:py-3 text-right min-w-[120px]">Thành tiền (VND)</th>
                     </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200">
@@ -165,9 +165,9 @@
                         <td class="px-2 sm:px-4 py-2 sm:py-3" th:text="${transaction.quantity}"></td>
                         <td class="px-2 sm:px-4 py-2 sm:py-3" th:text="${transaction.unitName}"></td>
                         <td class="px-2 sm:px-4 py-2 sm:py-3 text-right whitespace-nowrap"
-                            th:text="${#numbers.formatInteger(transaction.unitPrice, 0, 'COMMA')} + ' đ'"></td>
+                            th:text="${#numbers.formatInteger(transaction.unitPrice, 0, 'COMMA')}"></td>
                         <td class="px-2 sm:px-4 py-2 sm:py-3 text-right whitespace-nowrap"
-                            th:text="${#numbers.formatInteger(transaction.totalAmount, 0, 'COMMA')} + ' đ'"></td>
+                            th:text="${#numbers.formatInteger(transaction.totalAmount, 0, 'COMMA')}"></td>
                     </tr>
                     <tr th:if="${transactions.transactions.size() == 0}">
                         <td colspan="7" class="text-center py-6 text-gray-400">

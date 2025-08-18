@@ -233,6 +233,12 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        var focusInput = document.getElementById('searchInput');
+        if (focusInput) {
+          focusInput.focus();
+          focusInput.setSelectionRange(focusInput.value.length, focusInput.value.length);
+        }
+
       const searchInput = document.getElementById('searchInput');
       const searchForm = searchInput.closest('form');
 

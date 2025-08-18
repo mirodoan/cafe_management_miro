@@ -128,8 +128,12 @@ public class SalesController {
      */
     @GetMapping("/show-select-menu-form")
     public String showSelectMenuForm(@RequestParam(value = "tableId", required = false) Integer tableId, Model model) {
-        // Chuẩn bị dữ liệu cho form chọn món, nếu lỗi thì set thông báo lỗi
         try {
+            TableEntity table = tableRepository.findById(tableId).orElse(null);
+            model.addAttribute("selectedTable", table);
+            if (table != null) {
+                model.addAttribute("selectedTableStatus", table.getStatus().name()); // Truyền status là String
+            }
             prepareSelectMenuFormModel(model, selectMenuService.prepareSelectMenuRequest(tableId));
         } catch (IllegalArgumentException e) {
             model.addAttribute("error", e.getMessage());
@@ -152,7 +156,7 @@ public class SalesController {
             BindingResult bindingResult,
             Model model) {
 
-        // Validate thủ công
+        // Validate các trường khách hàng
         if (request.getCustomerName() != null && !request.getCustomerName().trim().isEmpty()) {
             if (request.getCustomerName().trim().length() < 3) {
                 bindingResult.rejectValue("customerName", "error.customerName", "Tên khách hàng tối thiểu 3 ký tự");
@@ -174,7 +178,9 @@ public class SalesController {
 
         // Kiểm tra lỗi
         if (bindingResult.hasErrors()) {
+            // Lỗi validate form (các trường khách hàng)
             prepareSelectMenuFormModel(model, request);
+            // Modal chọn món vẫn mở
             return "sales/sales";
         }
         try {
@@ -183,8 +189,10 @@ public class SalesController {
             model.addAttribute("success", "Chọn món thành công!");
             model.addAttribute("showSelectMenuForm", false);
         } catch (RuntimeException e) {
-            model.addAttribute("error", e.getMessage());
+            // Đúng ở đây: set lỗi vào menuError thay vì error
+            model.addAttribute("menuError", e.getMessage());
             prepareSelectMenuFormModel(model, request);
+            // Modal chọn món vẫn mở
         }
         prepareTableList(model);
         return "sales/sales";

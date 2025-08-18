@@ -23,6 +23,9 @@
         >
             Tạo đơn xuất hàng
         </h1>
+        <p class="text-base text-gray-600 mb-6 text-center">
+            <span class="font-bold text-red-500">*</span> là các trường bắt buộc nhập
+        </p>
         <form
                 th:action="@{/warehouse/transaction/export/create}"
                 th:object="${export}"
@@ -157,6 +160,12 @@
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+
+        var focusInput = document.getElementById('productId');
+          if (focusInput) {
+            focusInput.focus();
+          }
+
           var input = document.getElementById('unitExportPrice');
           if (input) {
             input.addEventListener('input', function () {

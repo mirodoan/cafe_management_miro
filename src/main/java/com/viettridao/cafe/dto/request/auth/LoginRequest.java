@@ -15,10 +15,12 @@ import lombok.Setter;
 public class LoginRequest {
 
     @NotBlank(message = "Tên đăng nhập không được để trống")
-    @Size(min = 3, message = "Tên đăng nhập phải có tối thiểu 3 ký tự")
+    @Size(min = 3, message = "Tên đăng nhập tổi thiểu 3 ký tự")
+    @Size(max = 20, message = "Tên đăng nhập tối đa 20 ký tự")
     private String username;
 
     @NotBlank(message = "Mật khẩu không được để trống")
     @Size(min = 6, message = "Mật khẩu phải có tối thiểu 6 ký tự")
+    @Size(max = 20, message = "Mật khẩu phải có tối đa 20 ký tự")
     private String password;
 }

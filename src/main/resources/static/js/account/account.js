@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (value.length < 5) {
       showFieldError(input, 'Họ tên phải có ít nhất 5 ký tự');
       return false;
-    } else if (value.length > 50) {
+    } else if (value.length > 20) {
       showFieldError(input, 'Họ tên không được vượt quá 50 ký tự');
       return false;
     } else if (!/^[a-zA-ZÀ-ỹ\s]+$/.test(value)) {
@@ -35,8 +35,8 @@ document.addEventListener('DOMContentLoaded', function () {
     } else if (value.length < 5) {
       showFieldError(input, 'Địa chỉ phải có ít nhất 5 ký tự nếu nhập');
       return false;
-    } else if (value.length > 200) {
-      showFieldError(input, 'Địa chỉ không được vượt quá 200 ký tự');
+    } else if (value.length > 20) {
+      showFieldError(input, 'Địa chỉ không được vượt quá 20 ký tự');
       return false;
     } else {
       clearFieldErrorByElement(errorElement);

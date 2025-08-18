@@ -47,7 +47,9 @@ public class SelectMenuServiceImpl implements SelectMenuService {
     @Transactional
     public OrderDetailRessponse createOrderForAvailableTable(CreateSelectMenuRequest request, Integer employeeId) {
         // Lọc những item hợp lệ (menuItemId != null và quantity > 0)
-        List<CreateSelectMenuRequest.MenuOrderItem> validItems = request.getItems().stream()
+        List<CreateSelectMenuRequest.MenuOrderItem> items = request.getItems();
+        if (items == null) items = new ArrayList<>();
+        List<CreateSelectMenuRequest.MenuOrderItem> validItems = items.stream()
                 .filter(item -> item.getMenuItemId() != null && item.getQuantity() != null && item.getQuantity() > 0)
                 .toList();
         if (validItems.isEmpty()) {
@@ -272,7 +274,11 @@ public class SelectMenuServiceImpl implements SelectMenuService {
         selectMenuRequest.setTableId(tableId);
         selectMenuRequest.setItems(new ArrayList<>());
 
-        if (table.getStatus() == TableStatus.RESERVED || table.getStatus() == TableStatus.OCCUPIED) {
+        if (table.getStatus() == TableStatus.AVAILABLE) {
+            // Nếu bàn trống, fill mặc định
+            selectMenuRequest.setCustomerName("Khách vãng lai");
+            selectMenuRequest.setCustomerPhone("0000000000");
+        } else if (table.getStatus() == TableStatus.RESERVED || table.getStatus() == TableStatus.OCCUPIED) {
             ReservationEntity reservation = reservationService.findCurrentReservationByTableId(tableId);
             if (reservation != null) {
                 selectMenuRequest.setCustomerName(reservation.getCustomerName());

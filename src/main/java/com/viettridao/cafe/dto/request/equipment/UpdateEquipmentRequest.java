@@ -16,10 +16,12 @@ public class UpdateEquipmentRequest {
 
     @NotBlank(message = "Tên thiết bị không được để trống")
     @Size(min = 5, message = "Tên thiết bị tối thiểu 5 ký tự")
+    @Size(max = 30, message = "Tên thiết bị tối đa 30 ký tự")
     private String equipmentName;
 
     @NotNull(message = "Số lượng thiết bị không được để trống")
     @Min(value = 1, message = "Số lượng thiết bị phải lớn hơn 0")
+    @Max(value = 999, message = "Số lượng thiết bị tối đa là 999")
     private Integer quantity;
 
     @DateTimeFormat(pattern = "dd/MM/yyyy")
@@ -29,5 +31,6 @@ public class UpdateEquipmentRequest {
 
     @NotNull(message = "Giá mua không được để trống")
     @DecimalMin(value = "0.0", inclusive = false, message = "Giá mua phải lớn hơn 0")
+    @DecimalMax(value = "999999999.0", message = "Giá mua phải nhỏ hơn hoặc bằng 999999999")
     private Double purchasePrice;
 }

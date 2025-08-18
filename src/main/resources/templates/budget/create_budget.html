@@ -15,9 +15,12 @@
 >
     <div class="max-w-[500px] mx-auto">
         <div class="bg-white rounded-xl shadow-lg p-6">
-            <h2 class="text-2xl font-semibold text-gray-800 mb-6">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6 text-center">
                 Thêm Chi Tiêu
             </h2>
+            <p class="text-base text-gray-600 mb-6 text-center">
+                <span class="font-bold text-red-500">*</span> là các trường bắt buộc nhập
+            </p>
 
             <form
                     th:action="@{/budget/create}"
@@ -34,7 +37,7 @@
 
                 <!-- Ngày -->
                 <div>
-                    <label class="block font-medium mb-1">Ngày</label>
+                    <label class="block font-medium mb-1">* Ngày</label>
                     <input
                             type="date"
                             th:field="*{expenseDate}"
@@ -53,16 +56,16 @@
 
                 <!-- Khoản chi -->
                 <div>
-                    <label class="block font-medium mb-1">Khoản chi</label>
+                    <label class="block font-medium mb-1">* Khoản chi</label>
                     <input
                             type="text"
                             th:field="*{expenseName}"
                             required
-                            minlength="3"
-                            maxlength="50"
-                            pattern="^(?!\s*$).{3,}$"
+                            minlength="5"
+                            maxlength="20"
+                            pattern="^(?!\s*$).{5,20}$"
                             placeholder="Ví dụ: Mua nguyên liệu"
-                            oninvalid="this.setCustomValidity('Khoản chi phải có ít nhất 3 ký tự và không được để trống hoặc toàn dấu cách')"
+                            oninvalid="this.setCustomValidity('Khoản chi phải có ít nhất 5 ký tự và không được để trống hoặc toàn dấu cách')"
                             oninput="this.setCustomValidity('')"
                             class="w-full border px-3 py-2 rounded border-gray-300 focus:border-yellow-500 focus:ring-yellow-500"
                     />
@@ -75,7 +78,7 @@
 
                 <!-- Số tiền -->
                 <div>
-                    <label class="block font-medium mb-1">Số tiền (VND)</label>
+                    <label class="block font-medium mb-1">* Số tiền (VND)</label>
                     <input
                             type="text"
                             th:field="*{amount}"
@@ -114,6 +117,11 @@
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            var focusInput = document.getElementById('expenseDate');
+            if (focusInput) {
+              focusInput.focus();
+            }
+
             var input = document.getElementById('amount');
             if (input) {
                 input.addEventListener('input', function () {

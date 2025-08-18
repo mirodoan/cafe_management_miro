@@ -21,6 +21,9 @@
         >
             Chỉnh sửa nhân viên
         </h1>
+        <p class="text-base text-gray-600 mb-6 text-center">
+            <span class="font-bold text-red-500">*</span> là các trường bắt buộc nhập
+        </p>
 
         <form
                 th:action="@{'/employee/update'}"
@@ -51,9 +54,9 @@
                                 id="fullName"
                                 required
                                 minlength="5"
-                                maxlength="50"
-                                pattern="^(?!\s*$).{5,}$"
-                                oninvalid="this.setCustomValidity('Họ tên phải có ít nhất 5 ký tự và không được để trống hoặc toàn dấu cách')"
+                                maxlength="20"
+                                pattern="^(?!\s*$).{5,20}$"
+                                oninvalid="this.setCustomValidity('Họ tên phải có 5 đến 20 ký tự và không được để trống hoặc toàn dấu cách')"
                                 oninput="this.setCustomValidity('')"
                                 class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-yellow-400 focus:border-yellow-500 outline-none"
                         />
@@ -100,9 +103,9 @@
                                 th:field="*{address}"
                                 id="address"
                                 minlength="5"
-                                maxlength="200"
-                                pattern="^$|^(?!\s*$).{5,}$"
-                                oninvalid="this.setCustomValidity('Địa chỉ phải có ít nhất 5 ký tự nếu nhập, hoặc để trống')"
+                                maxlength="50"
+                                pattern="^$|^(?!\s*$).{5,50}$"
+                                oninvalid="this.setCustomValidity('Địa chỉ phải có 5 đến 50 ký tự nếu nhập, hoặc để trống')"
                                 oninput="this.setCustomValidity('')"
                                 class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-yellow-400 focus:border-yellow-500 outline-none"
                         />
@@ -206,8 +209,8 @@
                                 type="password"
                                 th:field="*{password}"
                                 id="password"
-                                pattern="^$|.{6,}"
-                                oninvalid="this.setCustomValidity('Mật khẩu mới phải để trống hoặc có ít nhất 6 ký tự')"
+                                pattern="^$|.{6,20}"
+                                oninvalid="this.setCustomValidity('Mật khẩu mới phải để trống hoặc có từ 6 đến 20 ký tự')"
                                 oninput="this.setCustomValidity('')"
                                 placeholder="Nhập mật khẩu mới (hoặc để trống)"
                                 class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-yellow-400 focus:border-yellow-500 outline-none"
@@ -267,6 +270,11 @@
           if (positionSelect) {
             positionSelect.addEventListener('change', updateSalaryDisplay);
             updateSalaryDisplay(); // Load sẵn khi mở form
+          }
+
+          var fullNameInput = document.getElementById('fullName');
+          if (fullNameInput) {
+            fullNameInput.focus();
           }
         });
     </script>

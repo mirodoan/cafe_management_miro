@@ -12,6 +12,9 @@
 <div layout:fragment="content" class="bg-[#fefae0] min-h-screen w-full flex justify-center items-start py-12 px-4">
     <div class="w-full max-w-md bg-white p-10 rounded-2xl shadow-xl border border-gray-200">
         <h1 class="text-3xl font-bold text-[#3e2723] mb-10 text-center tracking-wide">Chỉnh sửa thiết bị</h1>
+        <p class="text-base text-gray-600 mb-6 text-center">
+            <span class="font-bold text-red-500">*</span> là các trường bắt buộc nhập
+        </p>
 
         <form th:action="@{/equipment/update}" th:object="${equipment}" method="post" class="space-y-6">
             <input type="hidden" th:field="*{id}"/>
@@ -20,8 +23,11 @@
             <div>
                 <label for="equipmentName" class="block text-[#3e2723] font-bold text-lg mb-2">* Tên thiết bị:</label>
                 <input type="text" th:field="*{equipmentName}" id="equipmentName"
-                       required minlength="5" pattern="^(?!\s*$).{5,}$"
-                       title="Tên thiết bị phải có ít nhất 5 ký tự và không được để trống"
+                       required minlength="5" pattern="^(?!\s*$).{5,30}$"
+                       maxlength="30"
+                       title="Tên thiết bị phải từ 5 đến 30 ký tự và không được để trống hoặc toàn dấu cách"
+                       oninvalid="this.setCustomValidity('Tên thiết bị phải từ 5 đến 30 ký tự và không được để trống hoặc toàn dấu cách')"
+                       oninput="this.setCustomValidity('');"
                        class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-yellow-300 outline-none"/>
                 <p class="text-red-500 text-sm mt-1" th:if="${#fields.hasErrors('equipmentName')}"
                    th:errors="*{equipmentName}"></p>
@@ -60,7 +66,9 @@
             <div>
                 <label for="purchaseDate" class="block text-[#3e2723] font-bold text-lg mb-2">* Ngày mua:</label>
                 <input type="text" th:field="*{purchaseDate}" id="purchaseDate"
-                       placeholder="dd/mm/yyyy" required
+                       placeholder="dd/mm/yyyy"
+                       oninvalid="this.setCustomValidity('Không được để trống hoặc định dạng không đúng')"
+                       required
                        class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-yellow-300 outline-none"/>
                 <p class="text-red-500 text-sm mt-1" th:if="${#fields.hasErrors('purchaseDate')}"
                    th:errors="*{purchaseDate}"></p>
@@ -80,6 +88,13 @@
         </form>
     </div>
     <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            var focusInput = document.getElementById('equipmentName');
+              if (focusInput) {
+                focusInput.focus();
+              }
+        });
+
         flatpickr("#purchaseDate", {
           dateFormat: "d/m/Y",
           allowInput: true,

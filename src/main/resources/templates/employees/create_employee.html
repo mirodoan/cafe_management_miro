@@ -21,6 +21,9 @@
         >
             Thêm nhân viên mới
         </h1>
+        <p class="text-base text-gray-600 mb-6 text-center">
+            <span class="font-bold text-red-500">*</span> là các trường bắt buộc nhập
+        </p>
 
         <form
                 th:action="@{/employee/create}"
@@ -51,9 +54,9 @@
                                 id="fullName"
                                 required
                                 minlength="5"
-                                maxlength="50"
-                                pattern="^(?!\s*$).{5,}$"
-                                oninvalid="this.setCustomValidity('Họ tên phải có ít nhất 5 ký tự và không được để trống hoặc toàn dấu cách')"
+                                maxlength="20"
+                                pattern="^(?!\s*$).{5,20}$"
+                                oninvalid="this.setCustomValidity('Họ tên phải có 5 đến 20 ký tự và không được để trống hoặc toàn dấu cách')"
                                 oninput="this.setCustomValidity('')"
                                 class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-yellow-400 focus:border-yellow-500 outline-none"
                         />
@@ -100,9 +103,9 @@
                                 th:field="*{address}"
                                 id="address"
                                 minlength="5"
-                                maxlength="200"
-                                pattern="^$|^(?!\s*$).{5,}$"
-                                oninvalid="this.setCustomValidity('Địa chỉ phải có ít nhất 5 ký tự nếu nhập, hoặc để trống')"
+                                maxlength="20"
+                                pattern="^$|^(?!\s*$).{5,50}$"
+                                oninvalid="this.setCustomValidity('Địa chỉ phải có 5 đến 50 ký tự nếu nhập, hoặc để trống')"
                                 oninput="this.setCustomValidity('')"
                                 class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-yellow-400 focus:border-yellow-500 outline-none"
                         />
@@ -195,10 +198,10 @@
                                 th:field="*{username}"
                                 id="username"
                                 required
-                                placeholder="Tối thiểu 6 ký tự"
+                                placeholder="Tối thiểu 3 ký tự"
                                 minlength="3"
-                                maxlength="30"
-                                oninvalid="this.setCustomValidity('Tên đăng nhập phải có ít nhất 3 ký tự')"
+                                maxlength="20"
+                                oninvalid="this.setCustomValidity('Tên đăng nhập phải có 3 đến 20 ký tự')"
                                 oninput="this.setCustomValidity('')"
                                 class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-yellow-400 focus:border-yellow-500 outline-none"
                         />
@@ -221,10 +224,10 @@
                                 id="password"
                                 required
                                 minlength="6"
-                                maxlength="64"
-                                pattern="^(?!\s*$).{6,}$"
+                                maxlength="20"
+                                pattern="^(?!\s*$).{6,20}$"
                                 placeholder="Tối thiểu 6 ký tự"
-                                oninvalid="this.setCustomValidity('Mật khẩu phải có ít nhất 6 ký tự')"
+                                oninvalid="this.setCustomValidity('Mật khẩu phải có từ 6 đến 20 ký tự')"
                                 oninput="this.setCustomValidity('')"
                                 class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-yellow-400 focus:border-yellow-500 outline-none"
                         />
@@ -285,6 +288,11 @@
           if (positionSelect) {
             positionSelect.addEventListener('change', updateSalaryDisplay);
             updateSalaryDisplay(); // khi load lại trang
+          }
+
+          var fullNameInput = document.getElementById('fullName');
+          if (fullNameInput) {
+            fullNameInput.focus();
           }
         });
     </script>

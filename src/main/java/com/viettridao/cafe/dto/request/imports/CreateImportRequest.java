@@ -1,9 +1,9 @@
 package com.viettridao.cafe.dto.request.imports;
 
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
-import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -23,11 +23,13 @@ public class CreateImportRequest {
     private LocalDate importDate;
 
     @NotNull(message = "Đơn giá nhập không được để trống")
-    @Positive(message = "Đơn giá nhập phải lớn hơn 0")
+    @Min(value = 1000, message = "Đơn giá xuất phải lớn hơn hoặc bằng 1000 VND")
+    @Max(value = 999999999, message = "Đơn giá xuất phải nhỏ hơn hoặc bằng 999,999,999 VND")
     private Double unitImportPrice;
 
     @NotNull(message = "Số lượng nhập không được để trống")
     @Min(value = 1, message = "Số lượng nhập phải lớn hơn 0")
+    @Max(value = 9999, message = "Số lượng nhập không được vượt quá 9999")
     private Integer quantity;
 
     @NotNull(message = "Id hàng hóa không được để trống")

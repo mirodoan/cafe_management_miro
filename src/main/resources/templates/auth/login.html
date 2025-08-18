@@ -1,9 +1,3 @@
-<!--
-  Trang đăng nhập cho ứng dụng Cafe Management
-  Sử dụng Thymeleaf để binding dữ liệu với Spring Boot.
-  Tích hợp các thư viện: TailwindCSS, FontAwesome, Google Fonts.
--->
-
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -118,9 +112,10 @@
                         placeholder="Ví dụ: nhanvien_a"
                         required
                         minlength="3"
-                        pattern="^(?!\s*$).{3,}$"
+                        maxlength="20"
+                        pattern="^(?!\s*$).{3,20}$"
                         th:field="*{username}"
-                        oninvalid="this.setCustomValidity('Tên đăng nhập phải có ít nhất 3 ký tự và không được để trống hoặc toàn dấu cách')"
+                        oninvalid="this.setCustomValidity('Tên đăng nhập có từ 3 đến 20 ký tự và không được để trống hoặc toàn dấu cách')"
                         oninput="this.setCustomValidity('')"
                 />
                 <!-- Hiển thị lỗi validate cho trường tên đăng nhập -->
@@ -143,8 +138,9 @@
                             th:field="*{password}"
                             required
                             minlength="6"
-                            pattern="^(?!\s*$).{6,}$"
-                            oninvalid="this.setCustomValidity('Mật khẩu phải có ít nhất 6 ký tự và không được để trống hoặc toàn dấu cách')"
+                            maxlength="20"
+                            pattern="^(?!\s*$).{6,20}$"
+                            oninvalid="this.setCustomValidity('Mật khẩu phải có từ 6 đến 20 ký tự và không được để trống hoặc toàn dấu cách')"
                             oninput="this.setCustomValidity('')"
                     />
                     <!-- Nút ẩn/hiện mật khẩu khi người dùng bấm vào icon con mắt -->
@@ -170,7 +166,14 @@
             </button>
         </form>
     </div>
-
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            var firstInput = document.getElementById('tenDangNhap');
+            if (firstInput) {
+                firstInput.focus();
+            }
+        });
+    </script>
 </div>
 </body>
 </html>

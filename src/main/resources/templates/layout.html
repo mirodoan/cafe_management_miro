@@ -65,7 +65,7 @@
         <div class="flex items-center gap-2">
             <div class="hidden sm:block text-right" :class="isMobile && !sidebarOpen ? 'text-base' : 'text-sm'">
                 <div class="font-bold" th:text="${user.username}">Tên đăng nhập</div>
-                <div class="opacity-80" th:text="'Chức vụ: ' + ${user.permission}">Chức vụ</div>
+                <div class="opacity-80" th:text="'Role: ' + ${user.permission}">Chức vụ</div>
             </div>
             <img th:src="${user.imageUrl}" alt="avatar"
                  :class="isMobile && !sidebarOpen ? 'w-8 h-8' : 'w-10 h-10'"

@@ -1,5 +1,6 @@
 package com.viettridao.cafe.dto.request.export;
 
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
@@ -17,7 +18,8 @@ import java.time.LocalDate;
 @Setter
 public class CreateExportRequest {
     @NotNull(message = "Đơn giá xuất không được để trống")
-    @Min(value = 1000, message = "Đơn giá xuất phải lớn hơn hoặc bằng 1000 VNĐ")
+    @Min(value = 1000, message = "Đơn giá xuất phải lớn hơn hoặc bằng 1000 VND")
+    @Max(value = 999999999, message = "Đơn giá xuất phải nhỏ hơn hoặc bằng 999,999,999 VND")
     private Double unitExportPrice;
 
     @DateTimeFormat(pattern = "dd/MM/yyyy")

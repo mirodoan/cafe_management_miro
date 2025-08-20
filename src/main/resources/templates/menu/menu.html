@@ -55,6 +55,13 @@
                         </span>
                     </button>
                 </form>
+                <script>
+                    // Tự động focus vào ô tìm kiếm khi vào trang
+                    document.addEventListener('DOMContentLoaded', function() {
+                        var searchInput = document.getElementById('searchMenuInput');
+                        if (searchInput) searchInput.focus();
+                    });
+                </script>
                 <!-- Breadcrumb khi đang tìm kiếm -->
                 <div
                         th:if="${param.keyword != null and param.keyword[0] != null and !param.keyword[0].isEmpty()}"

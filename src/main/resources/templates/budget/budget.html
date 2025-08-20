@@ -37,6 +37,7 @@
                     <input
                             type="date"
                             name="fromDate"
+                            id="fromDate"
                             th:value="${filter.fromDate}"
                             class="border px-3 py-2 rounded w-full"
                     />
@@ -188,6 +189,12 @@
             </div>
         </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          var focusInput = document.getElementById('fromDate');
+          if (focusInput) focusInput.focus();
+        });
+    </script>
 </div>
 </body>
 </html>

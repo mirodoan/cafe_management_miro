@@ -56,6 +56,13 @@
                     </button>
                 </form>
             </div>
+            <script>
+                // Tự động focus vào ô tìm kiếm khi vào trang
+                document.addEventListener('DOMContentLoaded', function() {
+                    var searchInput = document.getElementById('searchInput');
+                    if (searchInput) searchInput.focus();
+                });
+            </script>
 
             <!-- Breadcrumb khi đang tìm kiếm -->
             <div

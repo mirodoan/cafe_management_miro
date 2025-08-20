@@ -7,6 +7,13 @@
 <head>
     <meta charset="UTF-8"/>
     <title>Chỉnh sửa thực đơn</title>
+    <style>
+        /* Đảm bảo select luôn có nền trắng và chữ đen khi chọn */
+        select, select option {
+          background: #fff !important;
+          color: #222 !important;
+        }
+    </style>
 </head>
 <body>
 <div
@@ -17,6 +24,9 @@
         <h1 class="text-2xl xs:text-3xl font-bold text-[#3e2723] mb-6 xs:mb-10 text-center tracking-wide">
             Chỉnh sửa thực đơn
         </h1>
+        <p class="text-base text-gray-600 mb-6 text-center">
+            <span class="font-bold text-red-500">*</span> là các trường bắt buộc nhập
+        </p>
         <form th:action="@{'/menu/update'}" th:object="${menu}" method="post" id="menuEditForm">
             <input type="hidden" th:field="*{id}"/>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 xs:gap-8">
@@ -31,9 +41,10 @@
                                 id="itemName"
                                 required
                                 minlength="3"
-                                maxlength="100"
-                                pattern="^(?!\s*$).{3,}$"
-                                oninvalid="this.setCustomValidity('Tên món phải có ít nhất 3 ký tự và không được để trống hoặc toàn dấu cách')"
+                                maxlength="20"
+                                placeholder="Nhập tên món"
+                                pattern="^(?!\s*$).{3,20}$"
+                                oninvalid="this.setCustomValidity('Tên món phải có từ 3 đến 20 ký tự và không được để trống hoặc toàn dấu cách')"
                                 oninput="this.setCustomValidity('')"
                                 class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-yellow-400 focus:border-yellow-500 outline-none"
                         />
@@ -44,8 +55,9 @@
                 <!-- Giá tiền -->
                 <div class="space-y-4 xs:space-y-6">
                     <div>
-                        <label for="currentPrice" class="block text-[#3e2723] font-bold text-base xs:text-lg mb-2">* Giá
-                            tiền (VND):</label>
+                        <label for="currentPrice"
+                               class="block text-[#3e2723] font-bold text-base xs:text-lg mb-2">* Giá tiền
+                            (VND):</label>
                         <input
                                 type="text"
                                 th:field="*{currentPrice}"
@@ -57,9 +69,8 @@
                                 placeholder="Nhập giá tiền"
                                 oninvalid="this.setCustomValidity('Giá tiền phải là số hợp lệ và lớn hơn 0')"
                                 oninput="this.setCustomValidity(''); this.value = this.value.replace(/[^0-9]/g,'');"
-                                class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-yellow-400 focus:border-yellow-500 outline-none"
+                                class="w-full text-right border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-yellow-400 focus:border-yellow-500 outline-none text-right"
                         />
-
                         <p class="text-red-500 text-sm mt-1" th:if="${#fields.hasErrors('currentPrice')}"
                            th:errors="*{currentPrice}"></p>
                     </div>
@@ -76,8 +87,7 @@
 
             <!-- Danh sách nguyên liệu -->
             <div class="mt-8 xs:mt-10">
-                <h2 class="text-lg xs:text-xl font-bold text-[#3e2723] mb-3 xs:mb-4">Danh sách nguyên liệu</h2>
-
+                <h2 class="text-lg xs:text-xl font-bold text-[#3e2723] mb-3 xs:mb-4">* Danh sách nguyên liệu</h2>
                 <!-- Thông báo lỗi ngay dưới tiêu đề -->
                 <div id="ingredientError"
                      style="display:none;"
@@ -92,12 +102,8 @@
                         </button>
                     </div>
                 </div>
-
                 <!-- Card nguyên liệu trên mobile (sm:hidden) -->
-                <div class="sm:hidden space-y-3 mb-2" id="ingredientCardList">
-                    <!-- Các card nguyên liệu sẽ được JS render -->
-                </div>
-
+                <div class="sm:hidden space-y-3 mb-2" id="ingredientCardList"></div>
                 <!-- Table nguyên liệu trên desktop (hidden sm:block) -->
                 <div class="hidden sm:block">
                     <div class="overflow-x-auto">
@@ -110,17 +116,14 @@
                                 <th class="px-4 py-2 text-center">Thao tác</th>
                             </tr>
                             </thead>
-                            <tbody id="ingredientTableBody">
-                            <!-- Các hàng nguyên liệu sẽ được thêm động bằng JavaScript -->
-                            </tbody>
+                            <tbody id="ingredientTableBody"></tbody>
                         </table>
                     </div>
                 </div>
-
                 <button
                         type="button"
                         id="addIngredientBtn"
-                        class="mt-4 px-6 py-2 border-2 border-blue-500 text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition"
+                        class="mt-4 px-6 py-2 border-2 border-blue-500 text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition block w-fit"
                 >
                     + Thêm nguyên liệu
                 </button>
@@ -144,20 +147,20 @@
     </div>
     <script th:inline="javascript">
         document.addEventListener('DOMContentLoaded', function () {
-          // Giá tiền chỉ nhận số
+          var focusInput = document.getElementById('itemName');
+          if (focusInput) focusInput.focus();
+
           var input = document.getElementById('currentPrice');
           if (input) {
             input.addEventListener('input', function () {
-              this.value = this.value.replace(/\D/g,'');
+              this.value = this.value.replace(/[^0-9]/g,'');
             });
           }
           var priceInput = document.getElementById('currentPrice');
           if (priceInput) {
               var value = priceInput.value;
               if (value && !isNaN(value)) {
-                  if (Number(value) % 1 === 0) {
-                      priceInput.value = parseInt(value, 10);
-                  }
+                  if (Number(value) % 1 === 0) priceInput.value = parseInt(value, 10);
               }
           }
 
@@ -172,10 +175,8 @@
           // Dữ liệu từ Thymeleaf
           const products = [[${products}]];
           const units = [[${units}]];
-          // Lấy list nguyên liệu ban đầu từ backend (convert Thymeleaf object sang JS array)
           const initialDetails = /*[[${menu.menuDetails}]]*/[];
 
-          // Chuẩn hóa list cho JS
           let ingredientList = (initialDetails && initialDetails.length)
             ? initialDetails.map(x => ({
                 productId: x.productId || '',
@@ -184,16 +185,13 @@
               }))
             : [];
 
-          // Helper để kiểm tra chế độ mobile/desktop
           function isMobileView() {
-            // sm:hidden <=> <640px là mobile
             return window.innerWidth < 640;
           }
 
-          // --- ĐOẠN CODE MỚI: Đồng bộ dữ liệu từ DOM trước khi render lại ---
           function syncIngredientListFromDOM() {
             if (isMobileView()) {
-              const cards = cardList.querySelectorAll('div');
+              const cards = cardList.querySelectorAll('div[data-ingredient-card]');
               ingredientList = Array.from(cards).map(card => {
                 return {
                   productId: card.querySelector('select[name*="productId"]').value,
@@ -212,14 +210,58 @@
               });
             }
           }
-          // --- KẾT THÚC CODE MỚI ---
+
+          // Chặn nhập -, ., , chỉ cho nhập số nguyên dương, tối đa 3 chữ số, KHÔNG tự chuyển thành 999
+          function validateWeightInput(input) {
+            // Chỉ cho nhập số và tối đa 3 chữ số
+            input.value = input.value.replace(/[^0-9]/g, '').slice(0, 3);
+            // Nếu số bắt đầu bằng 0 và có nhiều hơn 1 số, xóa số 0 đầu
+            if (input.value.length > 1 && input.value.startsWith('0')) {
+              input.value = input.value.replace(/^0+/, '');
+            }
+            let num = parseInt(input.value, 10);
+            // Nếu rỗng hoặc < 1, báo lỗi
+            if (isNaN(num) || num < 1) {
+              input.setCustomValidity('Trọng lượng phải từ 1 - 999');
+            } else {
+              input.setCustomValidity('');
+            }
+          }
+
+          function addValidateEvent() {
+            document.querySelectorAll('input[name*="quantity"]').forEach(input => {
+              input.addEventListener('input', function(){ validateWeightInput(this); });
+            });
+            cardList.querySelectorAll('input[name*="quantity"]').forEach(input => {
+              input.addEventListener('input', function(){ validateWeightInput(this); });
+            });
+          }
+
+          // Sự kiện thêm/xóa nguyên liệu dùng delegation: hoạt động trên cả desktop/mobile
+          function addIngredientEvents() {
+            addBtn.onclick = function () {
+              syncIngredientListFromDOM();
+              ingredientList.push({productId: '', quantity: '', unitId: ''});
+              renderIngredients();
+            };
+            [tableBody, cardList].forEach(container => {
+              container.onclick = function (e) {
+                if (e.target.classList.contains('btn-remove-ingredient')) {
+                  syncIngredientListFromDOM();
+                  const idx = Array.from(container.children).indexOf(e.target.closest('tr,div[data-ingredient-card]'));
+                  if (idx > -1) {
+                    ingredientList.splice(idx, 1);
+                    renderIngredients();
+                  }
+                }
+              };
+            });
+          }
 
           function renderIngredients() {
             tableBody.innerHTML = '';
             cardList.innerHTML = '';
-
             ingredientList.forEach((item, idx) => {
-              // Kiểm tra nguyên liệu tồn tại trong products không
               const productExists = products.some(p => p.id == item.productId);
               let productOptions = '';
               if (!productExists && item.productId) {
@@ -232,8 +274,7 @@
                   (p) => `<option value="${p.id}" ${item.productId == p.id ? 'selected' : ''}>${p.productName}</option>`
                 )
                 .join('');
-
-              // Render desktop table
+              const selectStyle = 'background:#fff;color:#222;';
               if (!isMobileView()) {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -241,8 +282,9 @@
                     <select name="menuDetails[${idx}].productId" required
                             oninvalid="this.setCustomValidity('Vui lòng chọn nguyên liệu')"
                             oninput="this.setCustomValidity('')"
+                            style="${selectStyle}"
                             class="border border-gray-300 rounded-md px-3 py-2 w-full dropdown-normal"
-                            style="${!productExists ? 'background:#ffeaea;color:#c00' : ''}">
+                            >
                       ${productOptions}
                     </select>
                     ${!productExists && item.productId ?
@@ -251,16 +293,17 @@
                     }
                   </td>
                   <td>
-                    <input type="number" min="0.01" step="0.01" name="menuDetails[${idx}].quantity" required
+                    <input type="number" min="1" max="999" step="1" name="menuDetails[${idx}].quantity" required
                            value="${item.quantity || ''}"
-                           oninvalid="this.setCustomValidity('Trọng lượng phải lớn hơn 0')"
-                           oninput="this.setCustomValidity('')"
-                           class="border border-gray-300 rounded-md px-3 py-2 w-full" />
+                           oninvalid="this.setCustomValidity('Trọng lượng phải từ 1 - 999')"
+                           oninput="validateWeightInput(this)"
+                           class="border border-gray-300 rounded-md px-3 py-2 w-full text-right" />
                   </td>
                   <td>
                     <select name="menuDetails[${idx}].unitId" required
                             oninvalid="this.setCustomValidity('Vui lòng chọn đơn vị tính')"
                             oninput="this.setCustomValidity('')"
+                            style="${selectStyle}"
                             class="border border-gray-300 rounded-md px-3 py-2 w-full dropdown-normal">
                       <option value="">-- Chọn đơn vị --</option>
                       ${units
@@ -271,14 +314,16 @@
                     </select>
                   </td>
                   <td class="text-center">
-                    <button type="button" class="text-red-500 hover:underline btn-remove-ingredient">Xóa</button>
+                    <button type="button" class="btn-remove-ingredient bg-red-500 hover:bg-red-600 text-white text-xs font-medium px-4 py-1.5 rounded shadow transition text-center">
+                        Xóa
+                    </button>
                   </td>
                 `;
                 tableBody.appendChild(tr);
               } else {
-                // Render mobile card
                 const card = document.createElement('div');
-                card.className = 'bg-[#e3f2fd] rounded-lg p-3 flex flex-col gap-2 shadow border border-gray-200';
+                card.setAttribute('data-ingredient-card', 'true');
+                card.className = 'bg-[#e3f2fd] rounded-lg p-3 flex flex-col gap-2 shadow border border-gray-200 mb-3';
                 card.innerHTML = `
                   <div>
                     <label class="block text-xs font-semibold text-gray-500 mb-1">Nguyên liệu</label>
@@ -286,8 +331,9 @@
                             required
                             oninvalid="this.setCustomValidity('Vui lòng chọn nguyên liệu')"
                             oninput="this.setCustomValidity('')"
+                            style="${selectStyle}"
                             class="border border-gray-300 rounded-md px-3 py-2 w-full dropdown-normal"
-                            style="${!productExists ? 'background:#ffeaea;color:#c00' : ''}">
+                            >
                       ${productOptions}
                     </select>
                     ${!productExists && item.productId ?
@@ -297,17 +343,18 @@
                   </div>
                   <div>
                     <label class="block text-xs font-semibold text-gray-500 mb-1">Trọng lượng</label>
-                    <input type="number" min="0.01" step="0.01" name="menuDetails[${idx}].quantity" required
+                    <input type="number" min="1" max="999" step="1" name="menuDetails[${idx}].quantity" required
                            value="${item.quantity || ''}"
-                           oninvalid="this.setCustomValidity('Trọng lượng phải lớn hơn 0')"
-                           oninput="this.setCustomValidity('')"
-                           class="border border-gray-300 rounded-md px-3 py-2 w-full" />
+                           oninvalid="this.setCustomValidity('Trọng lượng phải từ 1 - 999')"
+                           oninput="validateWeightInput(this)"
+                           class="text-right border border-gray-300 rounded-md px-3 py-2 w-full" />
                   </div>
                   <div>
                     <label class="block text-xs font-semibold text-gray-500 mb-1">Đơn vị</label>
                     <select name="menuDetails[${idx}].unitId" required
                             oninvalid="this.setCustomValidity('Vui lòng chọn đơn vị tính')"
                             oninput="this.setCustomValidity('')"
+                            style="${selectStyle}"
                             class="border border-gray-300 rounded-md px-3 py-2 w-full dropdown-normal">
                       <option value="">-- Chọn đơn vị --</option>
                       ${units
@@ -318,41 +365,33 @@
                     </select>
                   </div>
                   <div class="flex justify-end">
-                    <button type="button" class="text-red-500 hover:underline btn-remove-ingredient">Xóa</button>
+                    <button type="button" class="btn-remove-ingredient bg-red-500 hover:bg-red-600 text-white text-xs font-medium px-4 py-1.5 rounded shadow transition text-center w-full mt-2">
+                        Xóa
+                    </button>
                   </div>
                 `;
                 cardList.appendChild(card);
               }
             });
-
+            addValidateEvent();
+            addIngredientEvents();
           }
-
-          // Thêm nguyên liệu
-          addBtn.addEventListener('click', function () {
-            syncIngredientListFromDOM();
-            ingredientList.push({productId: '', quantity: '', unitId: ''});
-            renderIngredients();
-          });
-
-          // Xóa nguyên liệu (delegate cho cả table và card)
-          [tableBody, cardList].forEach(container => {
-            container.addEventListener('click', function (e) {
-              if (e.target.classList.contains('btn-remove-ingredient')) {
-                syncIngredientListFromDOM();
-                const idx = Array.from(container.children).indexOf(e.target.closest('tr,div'));
-                if (idx > -1) {
-                  ingredientList.splice(idx, 1);
-                  renderIngredients();
-                }
-              }
-            });
-          });
 
           window.addEventListener('resize', renderIngredients);
 
-          // --- Hiển thị lỗi ingredient dưới danh sách nguyên liệu, tự động ẩn sau 3s hoặc bấm nút x ---
           menuEditForm.addEventListener('submit', function(e) {
-            // Kiểm tra có nguyên liệu bị xóa không
+            syncIngredientListFromDOM();
+            let isValid = true;
+            document.querySelectorAll('input[name*="quantity"]').forEach(input => {
+              validateWeightInput(input);
+              if (!input.checkValidity()) {
+                isValid = false;
+              }
+            });
+            if (!isValid) {
+              e.preventDefault();
+              return false;
+            }
             const hasDeletedIngredient = ingredientList.some(item => item.productId && !products.some(p => p.id == item.productId));
             if (ingredientList.length < 1) {
               ingredientError.style.display = "block";

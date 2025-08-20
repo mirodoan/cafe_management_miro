@@ -601,6 +601,9 @@
           var end = document.getElementById('end');
           if (!start.value) start.value = today;
           if (!end.value) end.value = today;
+
+          var focusInput = document.getElementById('start');
+          if (focusInput) focusInput.focus();
         });
     </script>
 </div>

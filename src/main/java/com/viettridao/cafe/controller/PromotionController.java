@@ -3,8 +3,8 @@ package com.viettridao.cafe.controller;
 import com.viettridao.cafe.dto.request.promotion.CreatePromotionRequest;
 import com.viettridao.cafe.dto.request.promotion.UpdatePromotionRequest;
 import com.viettridao.cafe.dto.response.promotion.PromotionPageResponse;
-import com.viettridao.cafe.dto.response.promotion.PromotionResponse;
 import com.viettridao.cafe.mapper.PromotionMapper;
+import com.viettridao.cafe.model.PromotionEntity;
 import com.viettridao.cafe.service.PromotionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -110,8 +110,9 @@ public class PromotionController {
                                  Model model,
                                  RedirectAttributes redirectAttributes) {
         try {
-            PromotionResponse response = promotionMapper.toPromotionResponse(promotionService.getPromotionById(id));
-            model.addAttribute("promotion", response);
+            PromotionEntity entity = promotionService.getPromotionById(id);
+            UpdatePromotionRequest dto = promotionMapper.toUpdatePromotionRequest(entity);
+            model.addAttribute("promotion", dto);
             return "/promotions/update_promotion";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());

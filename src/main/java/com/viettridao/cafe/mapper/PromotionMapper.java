@@ -1,5 +1,6 @@
 package com.viettridao.cafe.mapper;
 
+import com.viettridao.cafe.dto.request.promotion.UpdatePromotionRequest;
 import com.viettridao.cafe.dto.response.promotion.PromotionResponse;
 import com.viettridao.cafe.model.PromotionEntity;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,10 @@ public class PromotionMapper {
         modelMapper.map(entity, promotionResponse);
 
         return promotionResponse;
+    }
+
+    public UpdatePromotionRequest toUpdatePromotionRequest(PromotionEntity entity) {
+        return modelMapper.map(entity, UpdatePromotionRequest.class);
     }
 
     /**

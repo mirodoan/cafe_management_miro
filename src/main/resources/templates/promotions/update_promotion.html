@@ -19,10 +19,13 @@
             class="w-full max-w-md bg-white p-10 rounded-2xl shadow-xl border border-gray-200"
     >
         <h1
-                class="text-3xl font-bold text-[#3e2723] mb-10 text-center tracking-wide"
+                class="text-3xl font-bold text-[#3e2723] mb-5 text-center tracking-wide"
         >
             Chỉnh sửa khuyến mãi
         </h1>
+        <p class="text-base text-gray-600 mb-6 text-center">
+            <span class="font-bold text-red-500">*</span> là các trường bắt buộc nhập
+        </p>
 
         <form
                 th:action="@{/promotion/update}"
@@ -45,9 +48,9 @@
                         id="promotionName"
                         required
                         minlength="5"
-                        maxlength="100"
-                        pattern="^(?!\s*$).{5,}$"
-                        oninvalid="this.setCustomValidity('Tên khuyến mãi phải có ít nhất 5 ký tự và không được để trống hoặc toàn dấu cách')"
+                        maxlength="20"
+                        pattern="^(?!\s*$).{5,30}$"
+                        oninvalid="this.setCustomValidity('Tên khuyến mãi từ 5 đến 20 ký tự và không được để trống hoặc toàn dấu cách')"
                         oninput="this.setCustomValidity('')"
                         class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-yellow-300 outline-none"
                 />
@@ -151,6 +154,9 @@
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            var focusInput = document.getElementById('promotionName');
+            if (focusInput) focusInput.focus();
+
             var input = document.getElementById('discountValue');
             if (input) {
                 input.addEventListener('input', function () {
@@ -169,22 +175,18 @@
                 }
             }
 
-            // Khởi tạo picker cho ngày bắt đầu
+            // Chỉ khởi tạo flatpickr
             const startPicker = flatpickr("#startDate", {
                 dateFormat: "d/m/Y",
                 allowInput: true,
                 onChange: function(selectedDates, dateStr, instance) {
-                    // Khi chọn ngày bắt đầu, cập nhật minDate của endDate
                     endPicker.set('minDate', selectedDates[0]);
                 }
             });
-
-            // Khởi tạo picker cho ngày kết thúc
             const endPicker = flatpickr("#endDate", {
                 dateFormat: "d/m/Y",
                 allowInput: true,
             });
-
         });
     </script>
 </div>

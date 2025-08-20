@@ -21,6 +21,7 @@ public class UpdateProductRequest {
 
     @NotBlank(message = "Tên hàng hóa không được để trống")
     @Size(min = 3, message = "Tên hàng hóa tối thiểu 3 ký tự")
+    @Size(max = 20, message = "Tên hàng hóa tối đa 20 ký tự")
     private String productName;
 
     private String unitName;

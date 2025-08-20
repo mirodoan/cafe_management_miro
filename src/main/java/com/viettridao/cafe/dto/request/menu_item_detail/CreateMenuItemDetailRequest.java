@@ -1,5 +1,6 @@
 package com.viettridao.cafe.dto.request.menu_item_detail;
 
+import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -17,6 +18,7 @@ public class CreateMenuItemDetailRequest {
 
     @NotNull(message = "Khối lượng thành phần không được để trống")
     @DecimalMin(value = "0.0", inclusive = false, message = "Khối lượng thành phần phải lớn hơn 0")
+    @DecimalMax(value = "999.0", message = "Khối lượng thành phần phải nhỏ hơn hoặc bằng 999")
     private Double quantity;
 
     @NotNull(message = "Đơn vị tính không được để trống")

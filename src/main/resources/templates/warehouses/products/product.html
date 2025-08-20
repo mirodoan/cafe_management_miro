@@ -72,6 +72,12 @@
                         </span>
                     </button>
                 </form>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                      var searchInput = document.getElementById('searchProductInput');
+                      if (searchInput) searchInput.focus();
+                    });
+                </script>
                 <!-- Breadcrumb khi đang tìm kiếm -->
                 <div
                         th:if="${param.keyword != null and param.keyword[0] != null and !param.keyword[0].isEmpty()}"

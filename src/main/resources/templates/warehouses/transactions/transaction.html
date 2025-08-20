@@ -74,6 +74,14 @@
                         </span>
                     </button>
                 </form>
+
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                      var searchInput = document.getElementById('searchTransactionInput');
+                      if (searchInput) searchInput.focus();
+                    });
+                </script>
+
                 <!-- Breadcrumb khi đang tìm kiếm -->
                 <div th:if="${keyword != null and !keyword.isEmpty()}" class="mt-2">
                   <span class="text-xs sm:text-sm text-gray-600">

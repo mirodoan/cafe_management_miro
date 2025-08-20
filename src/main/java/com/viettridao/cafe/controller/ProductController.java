@@ -44,7 +44,9 @@ public class ProductController {
     @GetMapping("/create")
     public String showFormCreate(Model model) {
         model.addAttribute("units", unitService.getAllUnits());
-        model.addAttribute("product", new CreateProductRequest());
+        CreateProductRequest product = new CreateProductRequest();
+        product.setUnitId(null);
+        model.addAttribute("product", product);
         return "/warehouses/products/create_product";
     }
 

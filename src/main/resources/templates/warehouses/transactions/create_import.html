@@ -19,7 +19,7 @@
             class="w-full max-w-lg bg-white p-10 rounded-2xl shadow-xl border border-gray-200"
     >
         <h1
-                class="text-3xl font-bold text-[#3e2723] mb-10 text-center tracking-wide"
+                class="text-3xl font-bold text-[#3e2723] mb-5 text-center tracking-wide"
         >
             Tạo đơn nhập hàng
         </h1>
@@ -154,41 +154,51 @@
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-          var input = document.getElementById('unitImportPrice');
-          if (input) {
-            input.addEventListener('input', function () {
-              this.value = this.value.replace(/\D/g,''); // Loại bỏ mọi ký tự không phải số
-            });
-          }
+            var input = document.getElementById('unitImportPrice');
+            if (input) {
+                input.addEventListener('input', function () {
+                    this.value = this.value.replace(/\D/g,'');
+                });
+            }
 
-          var quantityInput = document.getElementById('quantity');
-          if (quantityInput) {
-            quantityInput.addEventListener('input', function() {
-              this.value = this.value.replace(/[^0-9]/g, '');
-            });
-            quantityInput.addEventListener('blur', function() {
-              if(this.value === '' || parseInt(this.value) < 1) {
-                this.value = '';
-              }
-            });
-          }
-    </script>
+            var quantityInput = document.getElementById('quantity');
+            if (quantityInput) {
+                quantityInput.addEventListener('input', function() {
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                });
+                quantityInput.addEventListener('blur', function() {
+                    if(this.value === '' || parseInt(this.value) < 1) {
+                        this.value = '';
+                    }
+                });
+            }
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-        var focusInput = document.getElementById('productId');
-          if (focusInput) {
-            focusInput.focus();
-          }
+            var focusInput = document.getElementById('productId');
+            if (focusInput) {
+                focusInput.focus();
+            }
 
-          flatpickr("#importDate", {
-            dateFormat: "d/m/Y",
-            allowInput: true,
-            maxDate: "today"
-          });
+            // Hàm lấy ngày hôm nay định dạng dd/mm/yyyy
+            function todayVNFormat() {
+                var d = new Date();
+                var day = String(d.getDate()).padStart(2, '0');
+                var month = String(d.getMonth() + 1).padStart(2, '0');
+                var year = d.getFullYear();
+                return day + '/' + month + '/' + year;
+            }
+            var importDateInput = document.getElementById('importDate');
+            if (importDateInput && !importDateInput.value) {
+                importDateInput.value = todayVNFormat();
+            }
+
+            flatpickr("#importDate", {
+                dateFormat: "d/m/Y",
+                allowInput: true,
+                maxDate: "today",
+                defaultDate: todayVNFormat()
+            });
         });
     </script>
-
 </div>
 </body>
 </html>

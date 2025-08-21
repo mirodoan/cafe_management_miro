@@ -134,7 +134,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <!-- Họ tên -->
                 <div class="info-field relative" th:classappend="${editMode} ? 'editing' : ''">
-                    <label for="fullName" class="font-semibold mb-1 block">HỌ TÊN</label>
+                    <label for="fullName" class="font-semibold mb-1 block">* HỌ TÊN</label>
                     <div class="input-editable-group">
                         <input
                                 id="fullName"
@@ -208,7 +208,7 @@
 
                 <!-- Số điện thoại -->
                 <div class="info-field relative" th:classappend="${editMode} ? 'editing' : ''">
-                    <label for="phoneNumber" class="font-semibold mb-1 block">SỐ ĐIỆN THOẠI</label>
+                    <label for="phoneNumber" class="font-semibold mb-1 block">* SỐ ĐIỆN THOẠI</label>
                     <div class="input-editable-group">
                         <input
                                 id="phoneNumber"
@@ -301,6 +301,11 @@
                 >
                     <i class="fas fa-times"></i> Hủy
                 </button>
+            </div>
+            <div class="mt-6">
+                <p class="text-base text-gray-600 mb-6 text-left">
+                    Lưu ý: <span class="font-bold text-red-500">*</span> là các trường bắt buộc nhập
+                </p>
             </div>
         </form>
     </main>

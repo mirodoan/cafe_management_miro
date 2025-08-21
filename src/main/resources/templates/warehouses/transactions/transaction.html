@@ -190,7 +190,7 @@
             <div class="flex flex-col xs:flex-row items-center justify-between mt-4 sm:mt-6 text-xs sm:text-sm text-gray-600 gap-2">
                 <div class="flex items-center gap-4">
                   <span>Trang <span th:text="${transactions.pageNumber + 1}"></span> /
-                    <span th:text="${transactions.totalPages}"></span></span>
+                    <span th:text="${transactions.totalPages == 0 ? 1 : transactions.totalPages}"></span></span>
                     <span>Tổng: <span th:text="${transactions.totalElements}"></span> giao dịch</span>
                 </div>
                 <nav th:if="${transactions.totalPages > 1}">
@@ -209,7 +209,7 @@
                             >Trước</a>
                         </li>
                         <!-- Trang -->
-                        <li th:each="pageNum : ${#numbers.sequence(1, transactions.totalPages)}">
+                        <li th:each="pageNum : ${#numbers.sequence(1, transactions.totalPages == 0 ? 1 : transactions.totalPages)}">
                             <a
                                     th:href="@{/warehouse/transaction(page=${pageNum - 1},keyword=${keyword})}"
                                     th:classappend="${transactions.pageNumber + 1 == pageNum} ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'"

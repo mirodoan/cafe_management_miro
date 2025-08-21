@@ -133,6 +133,14 @@ public class EmployeeServiceImpl implements EmployeeService {
         EmployeeEntity employee = getEmployeeById(id);
         employee.setIsDeleted(true);
 
+        // Xóa mềm tài khoản liên kết với nhân viên
+        // Nếu nhân viên có tài khoản, đặt isDeleted = true cho tài khoản đó
+        AccountEntity account = employee.getAccount();
+        if (account != null) {
+            account.setIsDeleted(true);
+            accountRepository.save(account);
+        }
+
         employeeRepository.save(employee);
     }
 

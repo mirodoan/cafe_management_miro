@@ -18,6 +18,7 @@ public class CreateReservationRequest {
 
     @NotBlank(message = "Tên khách hàng không được để trống")
     @Size(min = 3, message = "Tên khách hàng tối thiểu 3 ký tự")
+    @Size(max = 20, message = "Tên khách hàng tối đa 20 ký tự")
     private String customerName; // Tên khách hàng
 
     @NotBlank(message = "Số điện thoại không được để trống")

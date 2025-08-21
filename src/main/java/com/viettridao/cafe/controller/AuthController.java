@@ -67,7 +67,7 @@ public class AuthController {
             return "redirect:/login";
         } catch (AuthenticationException e) {
             // Lỗi xác thực (sai tài khoản, mật khẩu, user không tồn tại)
-            redirectAttributes.addFlashAttribute("error", "Tên đăng nhập hoặc mật khẩu không đúng");
+            redirectAttributes.addFlashAttribute("error", "Tên đăng nhập hoặc mật khẩu không hợp lệ");
             return "redirect:/login";
         } catch (Exception e) {
             // Lỗi không xác định

@@ -1,10 +1,11 @@
 package com.viettridao.cafe.repository;
 
-import java.util.Optional;
-
 import com.viettridao.cafe.model.AccountEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
 
 /**
  * AccountRepository
@@ -19,5 +20,6 @@ public interface AccountRepository extends JpaRepository<AccountEntity, Integer>
      * @param username tên đăng nhập
      * @return Optional<AccountEntity>
      */
+    @Query("SELECT a FROM AccountEntity a WHERE a.username = :username AND a.isDeleted = false")
     Optional<AccountEntity> findByUsername(String username);
 }

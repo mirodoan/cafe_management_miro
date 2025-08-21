@@ -11,7 +11,7 @@
 <body>
 <div layout:fragment="content" class="bg-[#fefae0] min-h-screen w-full flex justify-center items-start py-12 px-4">
     <div class="w-full max-w-md bg-white p-10 rounded-2xl shadow-xl border border-gray-200">
-        <h1 class="text-3xl font-bold text-[#3e2723] mb-10 text-center tracking-wide">Thêm thiết bị mới</h1>
+        <h1 class="text-3xl font-bold text-[#3e2723] mb-3 text-center tracking-wide">Thêm thiết bị mới</h1>
         <p class="text-base text-gray-600 mb-6 text-center">
             <span class="font-bold text-red-500">*</span> là các trường bắt buộc nhập
         </p>
@@ -71,6 +71,7 @@
                        placeholder="dd/mm/yyyy"
                        oninvalid="this.setCustomValidity('Không được để trống hoặc định dạng không đúng')"
                        required
+                       th:value="${#dates.format(#dates.createNow(), 'dd/MM/yyyy')}"
                        oninput="this.setCustomValidity('');"
                        class="w-full border border-gray-300 rounded-md px-4 py-3 text-base focus:ring focus:ring-yellow-300 outline-none"/>
                 <p class="text-red-500 text-sm mt-1" th:if="${#fields.hasErrors('purchaseDate')}"
@@ -91,17 +92,26 @@
         </form>
     </div>
     <script>
-        window.addEventListener('DOMContentLoaded', function() {
-            var focusInput = document.getElementById('equipmentName');
+        document.addEventListener('DOMContentLoaded', function() {
+        var focusInput = document.getElementById('equipmentName');
               if (focusInput) {
                 focusInput.focus();
               }
-        });
 
-        flatpickr("#purchaseDate", {
-          dateFormat: "d/m/Y",
-          allowInput: true,
-          maxDate: "today"
+          var dateInput = document.getElementById('purchaseDate');
+          if (dateInput && !dateInput.value) {
+            var now = new Date();
+            var day = String(now.getDate()).padStart(2, '0');
+            var month = String(now.getMonth() + 1).padStart(2, '0');
+            var year = now.getFullYear();
+            dateInput.value = `${day}/${month}/${year}`;
+          }
+
+          flatpickr("#purchaseDate", {
+            dateFormat: "d/m/Y",
+            allowInput: true,
+            maxDate: "today"
+          });
         });
     </script>
 </div>

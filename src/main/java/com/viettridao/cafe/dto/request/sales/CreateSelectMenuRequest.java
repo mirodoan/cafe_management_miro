@@ -18,7 +18,7 @@ public class CreateSelectMenuRequest {
     @Min(value = 1, message = "ID bàn phải lớn hơn 0")
     private Integer tableId; // ID bàn được chọn
 
-    @OptionalSize(min = 3, message = "Tên tối thiểu 3 ký tự nếu được nhập")
+    @OptionalSize(min = 3, max = 20, message = "Tên phải từ 3 đến 20 ký tự nếu được nhập")
     private String customerName; // Tên khách hàng
 
     @OptionalSize(min = 10, max = 11, message = "Số điện thoại phải bắt đầu từ 0 và có từ 10 đến 11 chữ số nếu được nhập")

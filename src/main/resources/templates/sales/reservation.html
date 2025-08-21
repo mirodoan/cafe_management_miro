@@ -32,13 +32,16 @@
                 </svg>
             </div>
             <h3
-                    class="text-3xl font-extrabold mb-6 text-center tracking-tight"
+                    class="text-3xl font-extrabold mb-3 text-center tracking-tight"
                     style="color: #3e2723"
             >
                 Đặt bàn -
                 <!-- Hiển thị tên bàn từ reservation -->
                 <span th:text="${reservation.tableName}"></span>
             </h3>
+            <p class="text-base text-gray-600 mb-6 text-center">
+                <span class="font-bold text-red-500">*</span> là các trường bắt buộc nhập
+            </p>
             <form
                     th:action="@{/sale/reservations}"
                     th:object="${reservation}"
@@ -63,7 +66,7 @@
                                 for="customerName"
                                 class="block text-base font-semibold text-[#3e2723] mb-1"
                         >
-                            Khách hàng
+                            * Khách hàng
                         </label>
                         <input
                                 type="text"
@@ -73,9 +76,9 @@
                                 class="mt-1 block w-full rounded-lg border border-[#b5c99a] bg-[#f6e7cb] shadow-sm focus:border-[#3e2723] focus:ring-[#b5c99a] text-base placeholder:text-gray-400 px-3 py-2"
                                 placeholder="Nhập tên khách hàng"
                                 minlength="3"
-                                maxlength="50"
-                                pattern="^(?!\s*$).{3,}$"
-                                oninvalid="this.setCustomValidity('Tên phải có ít nhất 3 ký tự và không được để trống hoặc toàn dấu cách')"
+                                maxlength="20"
+                                pattern="^(?!\s*$).{3,20}$"
+                                oninvalid="this.setCustomValidity('Tên phải có từ 3 đến 20 ký tự và không được để trống hoặc toàn dấu cách')"
                                 oninput="this.setCustomValidity(''); validateFullName(this);"
                         />
                         <p
@@ -89,7 +92,7 @@
                                 for="customerPhone"
                                 class="block text-base font-semibold text-[#3e2723] mb-1"
                         >
-                            Số điện thoại
+                            * Số điện thoại
                         </label>
                         <input
                                 type="tel"
@@ -112,12 +115,12 @@
                     </div>
                     <div class="md:col-span-2">
                         <label for="reservationDate" class="block text-base font-semibold text-[#3e2723] mb-1">
-                            Ngày
+                            Thời gian đặt bàn
                         </label>
                         <span th:text="${today}">2025-07-30</span>
                         <input type="hidden" id="reservationDate" name="reservationDate" th:value="${today}"/>
 
-                        <label for="reservationTime">Giờ đặt bàn:</label>
+                        <label for="reservationTime"> * Giờ đặt bàn:</label>
                         <input type="time" id="reservationTime" name="reservationTime" required min="08:00"
                                max="21:00"/>
 
@@ -148,6 +151,13 @@
 
             <script>
                 document.addEventListener('DOMContentLoaded', function () {
+
+                // Focus vào trường tên khách hàng khi mở modal
+                var focusInput = document.getElementById('customerName');
+                if (focusInput) {
+                   focusInput.focus();
+                }
+
                     // Kiểm tra giờ đóng cửa như bạn đã làm
                     const now = new Date();
                     if (now.getHours() >= 21) {

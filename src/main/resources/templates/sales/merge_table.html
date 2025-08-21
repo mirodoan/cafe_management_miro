@@ -32,10 +32,13 @@
                         />
                     </svg>
                 </div>
-                <h3 class="text-lg xs:text-xl sm:text-2xl lg:text-3xl font-extrabold mb-4 sm:mb-6 text-center tracking-tight"
+                <h3 class="text-lg xs:text-xl sm:text-2xl lg:text-3xl font-extrabold mb-4 sm:mb-3 text-center tracking-tight"
                     style="color: #3e2723">
                     Gộp bàn
                 </h3>
+                <p class="text-base text-gray-600 mb-6 text-center">
+                    <span class="font-bold text-red-500">*</span> là các trường bắt buộc nhập
+                </p>
             </div>
             <!-- Hiển thị lỗi từ controller nếu có -->
             <div
@@ -65,7 +68,7 @@
                     <div>
                         <fieldset class="border border-[#b5c99a] rounded-lg p-2 xs:p-3 sm:p-4">
                             <legend class="font-semibold text-[#3e2723] px-2 text-base sm:text-lg">
-                                Chọn các bàn cần gộp
+                                * Chọn các bàn cần gộp
                             </legend>
                             <div class="max-h-44 sm:max-h-60 overflow-y-auto space-y-2 sm:space-y-3 mt-3 sm:mt-4">
                                 <div th:each="table : ${occupiedTables}">
@@ -129,7 +132,7 @@
                     <div>
                         <fieldset class="border border-[#b5c99a] rounded-lg p-2 xs:p-3 sm:p-4">
                             <legend class="font-semibold text-[#3e2723] px-2 text-base sm:text-lg">
-                                Chọn bàn gộp đến
+                                * Chọn bàn gộp đến
                             </legend>
                             <div class="max-h-44 sm:max-h-60 overflow-y-auto space-y-2 sm:space-y-3 mt-3 sm:mt-4"
                                  id="merge-target-list">

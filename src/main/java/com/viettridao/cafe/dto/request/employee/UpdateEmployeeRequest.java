@@ -42,8 +42,6 @@ public class UpdateEmployeeRequest {
     @Size(max = 20, message = "Tên đăng nhập tối đa 20 ký tự")
     private String username;
 
-    @NotBlank(message = "Mật khẩu không được để trống")
-    @Size(min = 6, message = "Mật khẩu tối thiểu 6 ký tự")
-    @Size(min = 20, message = "Mật khẩu tối đa 20 ký tự")
+    @OptionalSize(min = 6, max = 20, message = "Mật khẩu mới phải từ 6 đến 20 ký tự nếu được nhập")
     private String password;
 }

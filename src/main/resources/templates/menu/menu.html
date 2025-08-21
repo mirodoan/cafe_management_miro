@@ -165,7 +165,7 @@
             <!-- Phân trang -->
             <div class="flex flex-col xs:flex-row items-center justify-between mt-4 sm:mt-6 text-xs sm:text-sm text-gray-600 gap-2">
                 <div>
-                    <span th:text="'Trang ' + (${menus.pageNumber + 1}) + ' / ' + ${menus.totalPages}">Trang 1 / 1</span>
+                    <span th:text="'Trang ' + (${menus.pageNumber + 1}) + ' / ' + (${menus.totalPages == 0 ? 1 : menus.totalPages})">Trang 1 / 1</span>
                     |
                     <span th:text="'Tổng: ' + ${menus.totalElements} + ' món'">Tổng: 0 món</span>
                 </div>
@@ -179,7 +179,7 @@
                             </a>
                         </li>
                         <!-- Trang -->
-                        <li th:each="pageNum : ${#numbers.sequence(0, menus.totalPages - 1)}">
+                        <li th:each="pageNum : ${#numbers.sequence(0, (menus.totalPages == 0 ? 1 : menus.totalPages) - 1)}">
                             <a th:href="@{/menu(page=${pageNum})}"
                                th:text="${pageNum + 1}"
                                th:class="'px-2 sm:px-3 py-1.5 rounded border text-xs sm:text-sm font-medium transition ' +

@@ -32,11 +32,12 @@
                 <h3 class="text-lg xs:text-xl sm:text-2xl lg:text-3xl font-bold text-center text-[#3e2723] m-0">
                     Tách bàn - <span th:text="${sourceTable?.tableName ?: 'Bàn'}">Bàn</span>
                 </h3>
+
                 <button
                         type="button"
                         onclick="closeSplitTableModal()"
                         class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-xl"
-                >×
+                >X
                 </button>
             </div>
             <!-- Hiển thị lỗi từ controller nếu có (không sticky) -->
@@ -67,7 +68,7 @@
                     <div class="sm:col-span-2">
                         <div class="bg-white border border-gray-200 rounded-lg p-2 xs:p-3 sm:p-4">
                             <h4 class="text-base sm:text-lg font-semibold text-[#3e2723] mb-2 sm:mb-4">
-                                Chọn món cần tách
+                                * Chọn món cần tách
                             </h4>
                             <div class="overflow-x-auto">
                                 <table class="w-full border-collapse text-sm sm:text-base">
@@ -139,7 +140,7 @@
                     <div class="sm:col-span-1">
                         <div class="bg-white border border-gray-200 rounded-lg p-2 xs:p-3 sm:p-4">
                             <h4 class="text-base sm:text-lg font-semibold text-[#3e2723] mb-2 sm:mb-4">
-                                Chọn bàn đích
+                                * Chọn bàn đích
                             </h4>
                             <!-- Bàn trống -->
                             <div th:if="${!#lists.isEmpty(availableTables ?: {})}" class="mb-2 sm:mb-4">

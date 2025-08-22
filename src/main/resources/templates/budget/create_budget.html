@@ -7,6 +7,8 @@
 <head>
     <meta charset="UTF-8"/>
     <title>Thêm Chi Tiêu</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
 <body>
 <div
@@ -39,10 +41,11 @@
                 <div>
                     <label class="block font-medium mb-1">* Ngày</label>
                     <input
-                            type="date"
+                            type="text"
                             th:field="*{expenseDate}"
-                            th:attr="max=${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}"
+                            id="expenseDate"
                             required
+                            placeholder="dd/mm/yyyy"
                             oninvalid="this.setCustomValidity('Vui lòng chọn ngày chi tiêu không quá ngày hôm nay')"
                             oninput="this.setCustomValidity('')"
                             class="w-full border px-3 py-2 rounded border-gray-300 focus:border-yellow-500 focus:ring-yellow-500"
@@ -128,6 +131,25 @@
                     this.value = this.value.replace(/\D/g, ''); // Loại bỏ mọi ký tự không phải số
                 });
             }
+
+            // Lấy ngày hôm nay dạng d/m/Y
+            const today = new Date();
+            const pad = n => n < 10 ? '0' + n : n;
+            const todayStr = pad(today.getDate()) + '/' + pad(today.getMonth() + 1) + '/' + today.getFullYear();
+
+            // Set value mặc định cho input nếu chưa có
+            const expenseDateInput = document.getElementById('expenseDate');
+            if (expenseDateInput && !expenseDateInput.value) {
+                expenseDateInput.value = todayStr;
+            }
+
+            // Khởi tạo flatpickr cho ngày chi tiêu
+            flatpickr("#expenseDate", {
+                dateFormat: "d/m/Y",
+                allowInput: true,
+                maxDate: "today",
+                defaultDate: todayStr
+            });
         });
     </script>
 </div>

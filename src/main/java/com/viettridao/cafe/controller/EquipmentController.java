@@ -3,8 +3,8 @@ package com.viettridao.cafe.controller;
 import com.viettridao.cafe.dto.request.equipment.CreateEquipmentRequest;
 import com.viettridao.cafe.dto.request.equipment.UpdateEquipmentRequest;
 import com.viettridao.cafe.dto.response.equipment.EquipmentPageResponse;
-import com.viettridao.cafe.dto.response.equipment.EquipmentResponse;
 import com.viettridao.cafe.mapper.EquipmentMapper;
+import com.viettridao.cafe.model.EquipmentEntity;
 import com.viettridao.cafe.service.EquipmentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -95,12 +95,11 @@ public class EquipmentController {
      * @return view template form update
      */
     @GetMapping("/update/{id}")
-    public String showFormUpdate(@PathVariable("id") Integer id,
-                                 Model model,
-                                 RedirectAttributes redirectAttributes) {
+    public String showFormUpdate(@PathVariable("id") Integer id, Model model, RedirectAttributes redirectAttributes) {
         try {
-            EquipmentResponse response = equipmentMapper.toEquipmentResponse(equipmentService.getEquipmentById(id));
-            model.addAttribute("equipment", response);
+            EquipmentEntity entity = equipmentService.getEquipmentById(id);
+            UpdateEquipmentRequest updateRequest = equipmentMapper.toUpdateEquipmentRequest(entity);
+            model.addAttribute("equipment", updateRequest);
             return "/equipments/update_equipment";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());

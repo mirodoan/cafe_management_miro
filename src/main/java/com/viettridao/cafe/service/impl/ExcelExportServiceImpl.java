@@ -5,14 +5,11 @@ import com.viettridao.cafe.dto.response.revenue.RevenueItemResponse;
 import com.viettridao.cafe.dto.response.revenue.RevenueResponse;
 import com.viettridao.cafe.model.*;
 import com.viettridao.cafe.service.ExcelExportService;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
-import java.text.DecimalFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
@@ -53,18 +50,33 @@ public class ExcelExportServiceImpl implements ExcelExportService {
             tableHeader.createCell(2).setCellValue("Đơn giá (VND)");
             tableHeader.createCell(3).setCellValue("Thành tiền (VND)");
 
-            DecimalFormat df = new DecimalFormat("#,###");
+            // Định dạng số tiền
+            CellStyle moneyStyle = workbook.createCellStyle();
+            DataFormat format = workbook.createDataFormat();
+            moneyStyle.setDataFormat(format.getFormat("#,##0"));
+
             for (InvoiceDetailEntity item : invoice.getInvoiceDetails()) {
                 Row row = sheet.createRow(rowIdx++);
                 row.createCell(0).setCellValue(item.getMenuItem().getItemName());
+
                 row.createCell(1).setCellValue(item.getQuantity());
-                row.createCell(2).setCellValue(df.format(item.getPrice()));
-                row.createCell(3).setCellValue(df.format(item.getQuantity() * item.getPrice()));
+
+                Cell priceCell = row.createCell(2);
+                priceCell.setCellValue(item.getPrice());
+                priceCell.setCellStyle(moneyStyle);
+
+                Cell totalCell = row.createCell(3);
+                totalCell.setCellValue(item.getQuantity() * item.getPrice());
+                totalCell.setCellStyle(moneyStyle);
             }
 
             rowIdx++;
             Row totalRow = sheet.createRow(rowIdx);
-            totalRow.createCell(0).setCellValue("Tổng cộng: " + df.format(invoice.getTotalAmount()) + " VND");
+            Cell totalLabelCell = totalRow.createCell(0);
+            totalLabelCell.setCellValue("Tổng cộng:");
+            Cell totalMoneyCell = totalRow.createCell(1);
+            totalMoneyCell.setCellValue(invoice.getTotalAmount());
+            totalMoneyCell.setCellStyle(moneyStyle);
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             workbook.write(out);
@@ -104,12 +116,19 @@ public class ExcelExportServiceImpl implements ExcelExportService {
             header.createCell(1).setCellValue("Chức vụ");
             header.createCell(2).setCellValue("Lương (VND)");
 
-            DecimalFormat df = new DecimalFormat("#,###");
+            // Tạo CellStyle cho số tiền có dấu phẩy
+            CellStyle moneyStyle = workbook.createCellStyle();
+            DataFormat format = workbook.createDataFormat();
+            moneyStyle.setDataFormat(format.getFormat("#,##0"));
+
             for (EmployeeEntity e : employees) {
                 Row row = sheet.createRow(rowIdx++);
                 row.createCell(0).setCellValue(e.getFullName());
                 row.createCell(1).setCellValue(e.getPosition().getPositionName());
-                row.createCell(2).setCellValue(df.format(e.getPosition().getSalary()));
+
+                Cell salaryCell = row.createCell(2);
+                salaryCell.setCellValue(e.getPosition().getSalary());
+                salaryCell.setCellStyle(moneyStyle);
             }
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -136,16 +155,24 @@ public class ExcelExportServiceImpl implements ExcelExportService {
             Row header = sheet.createRow(rowIdx++);
             header.createCell(0).setCellValue("Mã HD");
             header.createCell(1).setCellValue("Ngày tạo");
-            header.createCell(2).setCellValue("Tổng tiền");
+            header.createCell(2).setCellValue("Trạng thái");
+            header.createCell(3).setCellValue("Tổng tiền (VND)");
 
-            DecimalFormat df = new DecimalFormat("#,###");
+            // Tạo CellStyle cho số tiền
+            CellStyle moneyStyle = workbook.createCellStyle();
+            DataFormat format = workbook.createDataFormat();
+            moneyStyle.setDataFormat(format.getFormat("#,##0"));
+
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
             for (InvoiceEntity i : invoices) {
                 Row row = sheet.createRow(rowIdx++);
                 row.createCell(0).setCellValue(String.valueOf(i.getId()));
                 row.createCell(1).setCellValue(i.getCreatedAt().toLocalDate().format(dtf));
                 row.createCell(2).setCellValue(i.getStatus().name());
-                row.createCell(3).setCellValue(df.format(i.getTotalAmount()));
+
+                Cell totalCell = row.createCell(3);
+                totalCell.setCellValue(i.getTotalAmount());
+                totalCell.setCellStyle(moneyStyle);
             }
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -176,20 +203,37 @@ public class ExcelExportServiceImpl implements ExcelExportService {
             header.createCell(1).setCellValue("Thu (VND)");
             header.createCell(2).setCellValue("Chi (VND)");
 
-            DecimalFormat df = new DecimalFormat("#,###");
+            // Tạo CellStyle cho số tiền
+            CellStyle moneyStyle = workbook.createCellStyle();
+            DataFormat format = workbook.createDataFormat();
+            moneyStyle.setDataFormat(format.getFormat("#,##0"));
+
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
             for (RevenueItemResponse i : res.getSummaries()) {
                 Row row = sheet.createRow(rowIdx++);
                 row.createCell(0).setCellValue(i.getDate().format(dtf));
-                row.createCell(1).setCellValue(df.format(Optional.ofNullable(i.getIncome()).orElse(0.0)));
-                row.createCell(2).setCellValue(df.format(Optional.ofNullable(i.getExpense()).orElse(0.0)));
+
+                Cell thuCell = row.createCell(1);
+                thuCell.setCellValue(Optional.ofNullable(i.getIncome()).orElse(0.0));
+                thuCell.setCellStyle(moneyStyle);
+
+                Cell chiCell = row.createCell(2);
+                chiCell.setCellValue(Optional.ofNullable(i.getExpense()).orElse(0.0));
+                chiCell.setCellStyle(moneyStyle);
             }
 
             rowIdx++;
             Row totalIncomeRow = sheet.createRow(rowIdx++);
-            totalIncomeRow.createCell(0).setCellValue("Tổng thu: " + df.format(res.getTotalIncome()) + " VND");
+            totalIncomeRow.createCell(0).setCellValue("Tổng thu:");
+            Cell totalIncomeCell = totalIncomeRow.createCell(1);
+            totalIncomeCell.setCellValue(res.getTotalIncome());
+            totalIncomeCell.setCellStyle(moneyStyle);
+
             Row totalExpenseRow = sheet.createRow(rowIdx);
-            totalExpenseRow.createCell(0).setCellValue("Tổng chi: " + df.format(res.getTotalExpense()) + " VND");
+            totalExpenseRow.createCell(0).setCellValue("Tổng chi:");
+            Cell totalExpenseCell = totalExpenseRow.createCell(1);
+            totalExpenseCell.setCellValue(res.getTotalExpense());
+            totalExpenseCell.setCellStyle(moneyStyle);
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             workbook.write(out);
@@ -215,14 +259,21 @@ public class ExcelExportServiceImpl implements ExcelExportService {
             Row header = sheet.createRow(rowIdx++);
             header.createCell(0).setCellValue("Tên khoản chi");
             header.createCell(1).setCellValue("Ngày");
-            header.createCell(2).setCellValue("Số tiền");
+            header.createCell(2).setCellValue("Số tiền (VND)");
 
-            DecimalFormat df = new DecimalFormat("#,###");
+            // Tạo CellStyle cho số tiền
+            CellStyle moneyStyle = workbook.createCellStyle();
+            DataFormat format = workbook.createDataFormat();
+            moneyStyle.setDataFormat(format.getFormat("#,##0"));
+
             for (ExpenseEntity e : data) {
                 Row row = sheet.createRow(rowIdx++);
                 row.createCell(0).setCellValue(e.getExpenseName());
                 row.createCell(1).setCellValue(e.getExpenseDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-                row.createCell(2).setCellValue(df.format(e.getAmount()));
+
+                Cell amountCell = row.createCell(2);
+                amountCell.setCellValue(e.getAmount());
+                amountCell.setCellStyle(moneyStyle);
             }
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -250,15 +301,22 @@ public class ExcelExportServiceImpl implements ExcelExportService {
             header.createCell(0).setCellValue("Tên sản phẩm");
             header.createCell(1).setCellValue("Ngày nhập");
             header.createCell(2).setCellValue("Số lượng");
-            header.createCell(3).setCellValue("Tổng tiền");
+            header.createCell(3).setCellValue("Tổng tiền (VND)");
 
-            DecimalFormat df = new DecimalFormat("#,###");
+            // Tạo CellStyle cho số tiền
+            CellStyle moneyStyle = workbook.createCellStyle();
+            DataFormat format = workbook.createDataFormat();
+            moneyStyle.setDataFormat(format.getFormat("#,##0"));
+
             for (ImportEntity i : data) {
                 Row row = sheet.createRow(rowIdx++);
                 row.createCell(0).setCellValue(i.getProduct().getProductName());
                 row.createCell(1).setCellValue(i.getImportDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
                 row.createCell(2).setCellValue(i.getQuantity());
-                row.createCell(3).setCellValue(df.format(i.getTotalAmount()));
+
+                Cell totalCell = row.createCell(3);
+                totalCell.setCellValue(i.getTotalAmount());
+                totalCell.setCellStyle(moneyStyle);
             }
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -286,15 +344,22 @@ public class ExcelExportServiceImpl implements ExcelExportService {
             header.createCell(0).setCellValue("Tên sản phẩm");
             header.createCell(1).setCellValue("Ngày xuất");
             header.createCell(2).setCellValue("Số lượng");
-            header.createCell(3).setCellValue("Tổng tiền");
+            header.createCell(3).setCellValue("Tổng tiền (VND)");
 
-            DecimalFormat df = new DecimalFormat("#,###");
+            // Tạo CellStyle cho số tiền
+            CellStyle moneyStyle = workbook.createCellStyle();
+            DataFormat format = workbook.createDataFormat();
+            moneyStyle.setDataFormat(format.getFormat("#,##0"));
+
             for (ExportEntity i : data) {
                 Row row = sheet.createRow(rowIdx++);
                 row.createCell(0).setCellValue(i.getProduct().getProductName());
                 row.createCell(1).setCellValue(i.getExportDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
                 row.createCell(2).setCellValue(i.getQuantity());
-                row.createCell(3).setCellValue(df.format(i.getTotalAmount()));
+
+                Cell totalCell = row.createCell(3);
+                totalCell.setCellValue(i.getTotalAmount());
+                totalCell.setCellStyle(moneyStyle);
             }
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -321,16 +386,23 @@ public class ExcelExportServiceImpl implements ExcelExportService {
             header.createCell(0).setCellValue("Tên sản phẩm");
             header.createCell(1).setCellValue("Ngày nhập");
             header.createCell(2).setCellValue("Số lượng");
-            header.createCell(3).setCellValue("Tổng tiền");
+            header.createCell(3).setCellValue("Tổng tiền (VND)");
+
+            // Tạo CellStyle cho số tiền
+            CellStyle moneyStyle = workbook.createCellStyle();
+            DataFormat format = workbook.createDataFormat();
+            moneyStyle.setDataFormat(format.getFormat("#,##0"));
 
             List<ImportEntity> imports = (List<ImportEntity>) map.get("imports");
-            DecimalFormat df = new DecimalFormat("#,###");
             for (ImportEntity i : imports) {
                 Row row = importSheet.createRow(rowIdx++);
                 row.createCell(0).setCellValue(i.getProduct().getProductName());
                 row.createCell(1).setCellValue(i.getImportDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
                 row.createCell(2).setCellValue(i.getQuantity());
-                row.createCell(3).setCellValue(df.format(i.getTotalAmount()));
+
+                Cell totalCell = row.createCell(3);
+                totalCell.setCellValue(i.getTotalAmount());
+                totalCell.setCellStyle(moneyStyle);
             }
 
             // Xuất Hàng
@@ -347,15 +419,17 @@ public class ExcelExportServiceImpl implements ExcelExportService {
             expHeader.createCell(0).setCellValue("Tên sản phẩm");
             expHeader.createCell(1).setCellValue("Ngày xuất");
             expHeader.createCell(2).setCellValue("Số lượng");
-            expHeader.createCell(3).setCellValue("Tổng tiền");
+            expHeader.createCell(3).setCellValue("Tổng tiền (VND)");
 
-            List<ExportEntity> exports = (List<ExportEntity>) map.get("exports");
-            for (ExportEntity i : exports) {
+            for (ExportEntity i : (List<ExportEntity>) map.get("exports")) {
                 Row row = exportSheet.createRow(exportRowIdx++);
                 row.createCell(0).setCellValue(i.getProduct().getProductName());
                 row.createCell(1).setCellValue(i.getExportDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
                 row.createCell(2).setCellValue(i.getQuantity());
-                row.createCell(3).setCellValue(df.format(i.getTotalAmount()));
+
+                Cell totalCell = row.createCell(3);
+                totalCell.setCellValue(i.getTotalAmount());
+                totalCell.setCellStyle(moneyStyle);
             }
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();

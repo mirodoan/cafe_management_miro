@@ -1,5 +1,6 @@
 package com.viettridao.cafe.mapper;
 
+import com.viettridao.cafe.dto.request.equipment.UpdateEquipmentRequest;
 import com.viettridao.cafe.dto.response.equipment.EquipmentResponse;
 import com.viettridao.cafe.dto.response.expense.BudgetResponse;
 import com.viettridao.cafe.model.EquipmentEntity;
@@ -36,6 +37,18 @@ public class EquipmentMapper {
         equipmentResponse.setQuantity(entity.getQuantity());
 
         return equipmentResponse;
+    }
+
+    public UpdateEquipmentRequest toUpdateEquipmentRequest(EquipmentEntity entity) {
+        if (entity == null) return null;
+        UpdateEquipmentRequest dto = new UpdateEquipmentRequest();
+        dto.setId(entity.getId());
+        dto.setEquipmentName(entity.getEquipmentName());
+        dto.setQuantity(entity.getQuantity());
+        dto.setPurchaseDate(entity.getPurchaseDate());
+        dto.setPurchasePrice(entity.getPurchasePrice());
+        // Nếu có field khác thì map thêm ở đây
+        return dto;
     }
 
     /**

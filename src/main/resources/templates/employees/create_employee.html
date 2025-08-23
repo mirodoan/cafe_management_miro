@@ -259,6 +259,7 @@
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // Xử lý chỉ nhập số cho Số điện thoại
             var input = document.getElementById('phoneNumber');
             if (input) {
               input.addEventListener('input', function () {
@@ -266,34 +267,66 @@
               });
             }
 
-          const positionSelect = document.getElementById('positionId');
-          const salaryInput = document.getElementById('salary');
+            // Hiển thị lương theo chức vụ
+            const positionSelect = document.getElementById('positionId');
+            const salaryInput = document.getElementById('salary');
 
-          function formatVND(number) {
-            if (!number) return '';
-            return new Intl.NumberFormat('en-US').format(Number(number));
-          }
-
-          function updateSalaryDisplay() {
-            const selectedOption =
-              positionSelect.options[positionSelect.selectedIndex];
-            const salary = selectedOption.getAttribute('data-luong');
-            if (salary) {
-              salaryInput.value = formatVND(salary);
-            } else {
-              salaryInput.value = '';
+            function formatVND(number) {
+              if (!number) return '';
+              return new Intl.NumberFormat('en-US').format(Number(number));
             }
-          }
 
-          if (positionSelect) {
-            positionSelect.addEventListener('change', updateSalaryDisplay);
-            updateSalaryDisplay(); // khi load lại trang
-          }
+            function updateSalaryDisplay() {
+              const selectedOption =
+                positionSelect.options[positionSelect.selectedIndex];
+              const salary = selectedOption.getAttribute('data-luong');
+              if (salary) {
+                salaryInput.value = formatVND(salary);
+              } else {
+                salaryInput.value = '';
+              }
+            }
 
-          var fullNameInput = document.getElementById('fullName');
-          if (fullNameInput) {
-            fullNameInput.focus();
-          }
+            if (positionSelect) {
+              positionSelect.addEventListener('change', updateSalaryDisplay);
+              updateSalaryDisplay(); // khi load lại trang
+            }
+
+            // Focus vào trường đầu tiên bị lỗi nếu có, nếu không thì vào Họ tên
+            var errorFields = document.querySelectorAll('.text-red-500.text-sm.mt-1');
+            var focused = false;
+            for (var i = 0; i < errorFields.length; i++) {
+              var parentDiv = errorFields[i].parentElement;
+              var input = parentDiv.querySelector('input, select, textarea');
+              if (input && !focused) {
+                input.focus();
+                focused = true;
+              }
+            }
+            if (!focused) {
+              var fullNameInput = document.getElementById('fullName');
+              if (fullNameInput) {
+                fullNameInput.focus();
+              }
+            }
+
+            // Ẩn thông báo lỗi "Tên đăng nhập đã tồn tại" khi người dùng nhập lại
+            var usernameInput = document.getElementById('username');
+            if (usernameInput) {
+              var usernameError = null;
+              var errorElements = usernameInput.parentElement.querySelectorAll('.text-red-500.text-sm.mt-1');
+              errorElements.forEach(function (el) {
+                if (el.textContent.trim() === 'Tên đăng nhập đã tồn tại') {
+                  usernameError = el;
+                }
+              });
+
+              usernameInput.addEventListener('input', function () {
+                if (usernameError && usernameError.style.display !== 'none') {
+                  usernameError.style.display = 'none';
+                }
+              });
+            }
         });
     </script>
 </div>

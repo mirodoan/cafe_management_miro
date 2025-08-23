@@ -1,6 +1,52 @@
+// Quản lý trạng thái chỉnh sửa và cảnh báo khi đăng xuất trên trang cá nhân
+let isDirty = false;
+
+// Hàm gọi sau khi lưu thành công (submit hoặc hiện modal thành công)
+function onSaveSuccess() {
+  isDirty = false;
+}
 
 document.addEventListener('DOMContentLoaded', function () {
-  // Frontend validation functions
+saveButton.addEventListener('click', function(e) {
+  e.preventDefault();
+
+  var data = $('form').serialize(); // Nếu dùng jQuery và form là <form>
+  $.post('/account/update', data, function(response) {
+    if (response.success) {
+      onSaveSuccess();
+      window.location.href = '/account';
+    } else {
+      alert(response.error || 'Có lỗi xảy ra!');
+    }
+  });
+});
+
+  // Focus vào ô đầu tiên có thể chỉnh sửa khi load trang
+  var firstInput = document.querySelector('input.editable-input:not([readonly])');
+  if (firstInput) {
+    firstInput.focus();
+  }
+
+  // Theo dõi thay đổi trong các input chỉnh sửa để set isDirty
+  document.querySelectorAll('input.editable-input:not([readonly]), textarea.editable-input:not([readonly])')
+    .forEach(function (input) {
+      input.addEventListener('input', function () {
+        isDirty = true;
+      });
+    });
+
+  // Nếu nút Đăng xuất có id là 'logoutButton'
+  var logoutButton = document.getElementById('logoutButton');
+  if (logoutButton) {
+    logoutButton.addEventListener('click', function (e) {
+      if (isDirty) {
+        alert('Vui lòng lưu các lỗi trước khi lưu!');
+        e.preventDefault();
+      }
+    });
+  }
+
+  // Các hàm validate
   window.validateFullName = function (input) {
     const value = input.value.trim();
     const errorElement = input.closest('.input-wrapper').querySelector('.text-red-500');
@@ -18,13 +64,6 @@ document.addEventListener('DOMContentLoaded', function () {
       return true;
     }
   };
-
-  var input = document.getElementById('phoneNumber');
-  if (input) {
-    input.addEventListener('input', function () {
-      this.value = this.value.replace(/\D/g, ''); // Loại bỏ mọi ký tự không phải số
-    });
-  }
 
   window.validateAddress = function (input) {
     const value = input.value.trim();
@@ -59,7 +98,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   };
 
-  // Validate mật khẩu mới
   window.validatePassword = function (input) {
     const value = input.value;
     const error = document.getElementById('passwordError');
@@ -73,6 +111,14 @@ document.addEventListener('DOMContentLoaded', function () {
       return true;
     }
   };
+
+  // Validate số điện thoại chỉ nhận ký tự số
+  var inputPhone = document.getElementById('phoneNumber');
+  if (inputPhone) {
+    inputPhone.addEventListener('input', function () {
+      this.value = this.value.replace(/\D/g, '');
+    });
+  }
 
   // Helper functions for error display
   function showFieldError(input, message) {
@@ -94,6 +140,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
+  // Các biến DOM và logic chuyển đổi chế độ chỉnh sửa
   const editButton = document.getElementById('editButton');
   const saveButton = document.getElementById('saveButton');
   const cancelButton = document.getElementById('cancelButton');
@@ -105,7 +152,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Ngăn chặn form submit khi có lỗi
   form.addEventListener('submit', function (e) {
-    // Kiểm tra lỗi backend
     const errorElements = document.querySelectorAll('.text-red-500');
     let hasBackendError = false;
     errorElements.forEach((element) => {
@@ -118,7 +164,6 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
 
-    // Kiểm tra validation frontend
     let hasFrontendError = false;
     const fullNameInput = document.getElementById('fullName');
     const phoneNumberInput = document.getElementById('phoneNumber');
@@ -129,7 +174,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!fullNameInput.readOnly && !validateFullName(fullNameInput)) {
       hasFrontendError = true;
     }
-    if (!phoneNumberInput.readOnly && !validatePhoneNumber(phoneNumberInput)) {
+    if (!phoneNumberInput.readOnly && typeof validatePhoneNumber === 'function' && !validatePhoneNumber(phoneNumberInput)) {
       hasFrontendError = true;
     }
     if (!addressInput.readOnly && !validateAddress(addressInput)) {
@@ -157,28 +202,26 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('newPassword'),
     document.getElementById('avatarUrlInput'),
   ];
-  // Lưu lại giá trị ban đầu của positionName để không bị mất khi chuyển chế độ
+
   const positionNameInput = document.querySelector('input[th\\:field="*{positionName}"][type="text"]');
   const positionNameHidden = document.querySelector('input[th\\:field="*{positionName}"][type="hidden"]');
   let originalPositionName = positionNameInput ? positionNameInput.value : '';
   const originalValues = {};
 
-  // Gọi sau khi cập nhật URL ảnh đại diện thành công
   function updateHeaderAvatar(newUrl) {
-      // Chọn đúng selector avatar ở header
-      const headerAvatar = document.querySelector('header img[alt="avatar"]');
-      if (headerAvatar && newUrl) {
-          headerAvatar.src = newUrl;
-      }
+    const headerAvatar = document.querySelector('header img[alt="avatar"]');
+    if (headerAvatar && newUrl) {
+      headerAvatar.src = newUrl;
+    }
   }
 
-function onAccountUpdateSuccess() {
+  function onAccountUpdateSuccess() {
     const avatarUrlInput = document.getElementById('avatarUrlInput');
     if (avatarUrlInput) {
-        updateHeaderAvatar(avatarUrlInput.value);
+      updateHeaderAvatar(avatarUrlInput.value);
     }
-}
-  // Khi chuyển chế độ edit, ẩn/hiện các trường mật khẩu
+  }
+
   function setEditMode(editing) {
     editableInputs.forEach((input) => {
       if (input) input.readOnly = !editing;
@@ -200,17 +243,11 @@ function onAccountUpdateSuccess() {
       newPasswordField.style.display = editing ? 'block' : 'none';
     }
 
-    // Đảm bảo giữ lại giá trị chức vụ khi chuyển chế độ
     if (positionNameInput && positionNameHidden) {
       if (!originalPositionName)
         originalPositionName = positionNameInput.value;
-      if (editing) {
-        positionNameInput.value = originalPositionName;
-        positionNameHidden.value = originalPositionName;
-      } else {
-        positionNameInput.value = originalPositionName;
-        positionNameHidden.value = originalPositionName;
-      }
+      positionNameInput.value = originalPositionName;
+      positionNameHidden.value = originalPositionName;
     }
 
     editIcons.forEach((icon) => (icon.style.display = editing ? 'flex' : 'none'));
@@ -320,13 +357,6 @@ function onAccountUpdateSuccess() {
     return false;
   }
 
-  function debugAllErrors() {
-    const allErrors = document.querySelectorAll('.text-red-500');
-    allErrors.forEach((error, index) => {
-      // For debugging
-    });
-  }
-
   function clearFieldError(fieldName) {
     const mainInput = document.getElementById(fieldName);
     if (mainInput) {
@@ -370,7 +400,7 @@ function onAccountUpdateSuccess() {
         if (isValid && input.value.trim().length >= 2) {
           clearFieldError('fullName');
         }
-      } else if (inputId === 'phoneNumber') {
+      } else if (inputId === 'phoneNumber' && typeof validatePhoneNumber === 'function') {
         isValid = validatePhoneNumber(input);
         if (isValid && /^[0-9]{10,11}$/.test(input.value.trim())) {
           clearFieldError('phoneNumber');
@@ -391,7 +421,7 @@ function onAccountUpdateSuccess() {
       if (!input.readOnly) {
         if (inputId === 'fullName') {
           validateFullName(input);
-        } else if (inputId === 'phoneNumber') {
+        } else if (inputId === 'phoneNumber' && typeof validatePhoneNumber === 'function') {
           validatePhoneNumber(input);
         } else if (inputId === 'address') {
           validateAddress(input);

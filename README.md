@@ -20,7 +20,7 @@ Dự án này là hệ thống quản lý quán cafe, hỗ trợ các nghiệp v
 
 1. Clone dự án về máy:
    ```bash
-   git clone <repo-url>
+   git clone https://github.com/mirodoan/cafe_management_miro.git
    ```
 2. Cài đặt JDK 17 trở lên và Maven
 3. Cấu hình cơ sở dữ liệu trong `src/main/resources/application.properties`

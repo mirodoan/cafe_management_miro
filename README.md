@@ -1,31 +1,57 @@
-## Công nghệ sử dụng trong dự án quản lý quán cafe
+# Quản Lý Quán Cafe
 
-### 1. Ngôn ngữ lập trình & Framework
-- **Java 17**
-- **Spring Boot** (theo mô hình MVC): Tạo nền tảng vững chắc cho phát triển ứng dụng web, giúp tổ chức code rõ ràng, dễ bảo trì và mở rộng.
+## Giới thiệu
 
-### 2. Giao diện người dùng
-- **Thymeleaf**: Template engine mạnh mẽ, giúp kết nối dữ liệu động từ backend vào giao diện một cách trực quan.
-- **TailwindCSS**: Framework CSS tiện lợi, giúp xây dựng giao diện hiện đại, đẹp mắt, dễ tùy chỉnh.
-- **JavaScript**: Được sử dụng để xử lý các hiệu ứng động và tương tác trên giao diện người dùng, giúp trải nghiệm sử dụng mượt mà, thân thiện hơn.
+Dự án này là hệ thống quản lý quán cafe, hỗ trợ các nghiệp vụ như quản lý nhân viên, thực đơn, doanh thu, kho hàng, khuyến mãi, đặt bàn, v.v. Dự án được xây dựng theo mô hình Spring Boot, sử dụng giao diện web hiện đại.
 
-### 3. Quản lý cơ sở dữ liệu
-- **MySQL**: Hệ quản trị cơ sở dữ liệu quan hệ phổ biến, hiệu suất cao, dễ sử dụng.
-- **Spring Data JPA**: Tích hợp ORM, giúp thao tác với cơ sở dữ liệu đơn giản, hiệu quả và an toàn.
+![Ảnh trang đăng nhập](src/main/resources/static/image/Cafe_1.png)
+![Ảnh chức năng quản lý bán hàng](src/main/resources/static/image/Cafe_2.png)
 
-### 4. Bảo mật
-- **Spring Security**: Quản lý xác thực, phân quyền truy cập hệ thống, đảm bảo an toàn cho dữ liệu và người dùng.
+## Tính năng chính
 
-### 5. Các thư viện & công cụ hỗ trợ
-- **MapStruct, ModelMapper**: Hỗ trợ chuyển đổi dữ liệu giữa các tầng (DTO mapping).
-- **iText7**: Xuất file PDF từ dữ liệu hệ thống.
-- **Lombok**: Loại bỏ code lặp, giúp code ngắn gọn, dễ đọc.
-- **Thymeleaf Layout Dialect**: Hỗ trợ chia sẻ layout giao diện.
-- **Spring Boot Devtools**: Tăng tốc phát triển, tự động reload khi thay đổi code.
-- **Spring Boot Starter Test**: Hỗ trợ kiểm thử tự động cho ứng dụng.
+- Quản lý tài khoản nhân viên
+- Quản lý thực đơn, món ăn, đồ uống
+- Quản lý kho hàng, nhập/xuất sản phẩm
+- Quản lý doanh thu, báo cáo
+- Quản lý khuyến mãi
+- Đặt bàn, thanh toán, gộp bàn, tách bàn
 
----
+## Cài đặt
 
-## Tổng kết
+1. Clone dự án về máy:
+   ```bash
+   git clone <repo-url>
+   ```
+2. Cài đặt JDK 17 trở lên và Maven
+3. Cấu hình cơ sở dữ liệu trong `src/main/resources/application.properties`
+4. Chạy lệnh build và khởi động:
+   ```bash
+   ./mvnw clean install
+   ./mvnw spring-boot:run
+   ```
 
-Dự án Cafe Management ứng dụng đầy đủ các công nghệ hiện đại: backend mạnh mẽ với Spring Boot, giao diện linh hoạt với Thymeleaf, TailwindCSS và JavaScript, bảo mật tốt cùng với Spring Security, quản lý dữ liệu hiệu quả với MySQL. Đồng thời, các thư viện hỗ trợ giúp dự án dễ phát triển, bảo trì và mở rộng trong tương lai.
+## Cấu trúc thư mục
+
+```
+src/
+	main/
+		java/com/viettridao/cafe/   # Mã nguồn Java
+		resources/
+			static/                    # Tài nguyên tĩnh (JS, CSS)
+			templates/                 # Giao diện HTML
+	test/
+		java/com/viettridao/        # Unit test
+```
+
+## Hướng dẫn sử dụng
+
+1. Truy cập giao diện web tại địa chỉ: `http://localhost:8080`
+2. Đăng nhập bằng tài khoản được cấp
+3. Sử dụng các chức năng theo phân quyền
+
+## Công nghệ sử dụng
+
+- Java 17, Spring Boot
+- Thymeleaf, HTML, CSS, JavaScript
+- MySQL/PostgreSQL
+- Maven
